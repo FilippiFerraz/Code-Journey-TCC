@@ -1,0 +1,85 @@
+.home-mapa {
+  position: relative;
+  width: calc(100% + 40px);
+  margin: -20px; /* cancela o padding do .layout-conteudo, imagem cola nas bordas */
+}
+
+.home-mapa-imagem {
+  display: block;
+  width: 100%;
+  height: auto; /* mantém a proporção original - a imagem fica alta, e é isso que gera o scroll */
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Portal (botão posicionado sobre o mapa) */
+.home-portal {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.home-portal-anel {
+  position: relative;
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #2f6fed, #6a3fd9, #9b2fc9, #2f6fed);
+  animation: girar 4s linear infinite;
+  box-shadow: 0 0 16px 4px rgba(155, 47, 201, 0.7);
+}
+
+.home-portal-nucleo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, #c9a3ff 60%, transparent 100%);
+  animation: pulsar 1.6s ease-in-out infinite;
+}
+
+.home-portal-nome {
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 0 4px #000000, 0 0 8px #000000;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.home-portal:hover .home-portal-anel {
+  box-shadow: 0 0 22px 8px rgba(155, 47, 201, 0.9);
+}
+
+@keyframes girar {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulsar {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}

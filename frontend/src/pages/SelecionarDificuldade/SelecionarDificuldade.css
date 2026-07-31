@@ -1,0 +1,160 @@
+/* ============================================================
+   SelecionarDificuldade.css — placa de madeira com 2 dificuldades
+   Estilo baseado na placa de "DESAFIOS" (madeira + botões pílula).
+   ============================================================ */
+
+.dif-tela {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 14px;
+  /* fundo roxo do projeto, pra combinar com a identidade */
+  background: linear-gradient(180deg, #6a3fd9 0%, #9b2fc9 100%);
+}
+
+/* Placa de madeira */
+.dif-placa {
+  width: 100%;
+  max-width: 360px;
+  border-radius: 18px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+  border: 6px solid #6b3f1f;
+  overflow: hidden;
+}
+
+/* Topo laranja com título + botão fechar */
+.dif-placa-topo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  background: linear-gradient(180deg, #e0862f 0%, #c96a1a 100%);
+  border-bottom: 4px solid #6b3f1f;
+}
+
+.dif-placa-titulo {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.dif-fechar {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: #6b3f1f;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dif-fechar:hover {
+  background: #562f14;
+}
+
+/* Corpo de pergaminho quadriculado */
+.dif-placa-corpo {
+  padding: 28px 20px 24px;
+  background: #e8c99a;
+  background-image: linear-gradient(
+      0deg,
+      rgba(107, 63, 31, 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(107, 63, 31, 0.06) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+/* Duas colunas (um botão em cada) */
+.dif-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* Botão pílula com borda de madeira e brilho magenta */
+.dif-botao {
+  position: relative;
+  padding: 18px 8px;
+  border-radius: 999px;
+  border: 3px solid #6b3f1f;
+  background: linear-gradient(180deg, #d43fc0, #a220a0);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #7a1878, 0 8px 14px rgba(0, 0, 0, 0.3);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.dif-botao:hover {
+  transform: translateY(1px);
+  box-shadow: 0 5px 0 #7a1878, 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.dif-botao:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #7a1878, 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dif-botao-nome {
+  display: block;
+}
+
+/* Rótulo que aparece ao passar o mouse (fácil / difícil) */
+.dif-tooltip {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  white-space: nowrap;
+  background: #6b3f1f;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 5;
+}
+
+/* setinha do balão */
+.dif-tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: #6b3f1f;
+}
+
+.dif-botao:hover .dif-tooltip,
+.dif-botao:focus-visible .dif-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Espadas cruzadas no rodapé */
+.dif-espadas {
+  text-align: center;
+  font-size: 28px;
+  margin-top: 34px; /* espaço extra pro tooltip não encostar */
+}

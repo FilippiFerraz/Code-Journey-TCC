@@ -1,0 +1,89 @@
+.layout-container {
+  height: 100vh; /* trava na altura da tela (antes era min-height, por isso a página inteira rolava) */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  overflow: hidden; /* impede que o container inteiro role */
+}
+
+/* Cabeçalho */
+.layout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #7a1fa8;
+  flex-shrink: 0; /* nunca encolhe nem some ao rolar */
+}
+
+.layout-header-titulo {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.layout-header-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Linha gradiente (usada abaixo do header e acima do footer) */
+.layout-linha-gradiente {
+  height: 4px;
+  width: 100%;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #2f6fed, #6a3fd9, #9b2fc9, #b229c4);
+}
+
+/* Área de conteúdo - é a ÚNICA parte que rola */
+.layout-conteudo {
+  flex: 1;
+  min-height: 0; /* essencial pro overflow funcionar dentro de um flex container */
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* rolagem suave no iOS/mobile */
+}
+
+/* Rodapé */
+.layout-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 0 16px;
+  background: #ffffff;
+  flex-shrink: 0; /* nunca encolhe nem some ao rolar */
+}
+
+.layout-footer-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  color: #a23fd0;
+  text-decoration: none;
+  opacity: 0.55;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.layout-footer-item:hover {
+  opacity: 0.85;
+}
+
+.layout-footer-item-ativo {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.layout-footer-icon {
+  width: 26px;
+  height: 26px;
+}

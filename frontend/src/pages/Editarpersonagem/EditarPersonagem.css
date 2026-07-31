@@ -1,0 +1,201 @@
+/* ============================================================
+   EditarPersonagem.css — tela de edição/equipamento do personagem
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   Base visual do protótipo; equipar itens virá numa etapa futura.
+   ============================================================ */
+
+.editar {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --teal: #1b9ec9;
+  --azul: #2f86c9;
+  --azul-escuro: #1f66a8;
+  --madeira-borda: #5c3a1a;
+  --madeira-fundo: #a9723f;
+  --madeira-celula: #6e4523;
+  --texto: #22283a;
+
+  position: relative;
+  background: #ffffff;
+  min-height: 100%;
+  padding-bottom: 24px;
+}
+
+/* ---------- Botão Voltar ---------- */
+.editar-voltar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  background: rgba(15, 20, 38, 0.85);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.editar-voltar:hover {
+  background: rgba(30, 38, 66, 0.95);
+}
+
+/* ---------- Cena de equipamento ---------- */
+.editar-cena {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 22px 14px;
+  background: radial-gradient(
+      circle at 50% 30%,
+      rgba(138, 47, 184, 0.25),
+      transparent 65%
+    ),
+    linear-gradient(180deg, #4b4550 0%, #2c2732 100%);
+  border-bottom: 4px solid var(--roxo);
+}
+
+.editar-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editar-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.editar-slot-caixa {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.editar-slot-icone {
+  font-size: 24px;
+  opacity: 0.55; /* vazio: mais apagado, indicando slot livre */
+}
+
+.editar-slot-nome {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.editar-avatar {
+  height: 150px;
+  width: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5));
+}
+
+/* ---------- Títulos de seção ---------- */
+.editar-titulo {
+  margin: 22px 20px 12px;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--texto);
+}
+
+/* ---------- Card do inventário ---------- */
+.editar-card {
+  margin: 0 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+}
+
+.editar-card-topo {
+  padding: 12px 16px;
+  background: linear-gradient(180deg, var(--roxo), var(--roxo-forte));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.editar-inventario {
+  padding: 16px;
+  background: linear-gradient(180deg, var(--roxo-forte), var(--roxo));
+}
+
+/* moldura de madeira */
+.editar-madeira {
+  padding: 12px;
+  border-radius: 12px;
+  border: 5px solid var(--madeira-borda);
+  background: linear-gradient(180deg, #b57f47, var(--madeira-fundo));
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.15);
+}
+
+.editar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.editar-celula {
+  aspect-ratio: 1 / 1;
+  border-radius: 5px;
+  background: var(--madeira-celula);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- Conquistas ---------- */
+.editar-conquistas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px;
+}
+
+.editar-conquista {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--azul), var(--azul-escuro));
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(31, 102, 168, 0.35);
+}
+
+.editar-conquista-icone {
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.editar-conquista-texto {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+/* respeita quem prefere menos animação (nada anima aqui, mas fica pronto) */
+@media (prefers-reduced-motion: reduce) {
+  .editar * {
+    animation: none !important;
+  }
+}

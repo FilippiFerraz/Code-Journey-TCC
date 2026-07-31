@@ -1,0 +1,12 @@
+/* Reaproveita toda a base visual da tela de Login (card, abas, inputs, botão, logo) */
+@import "../Login/Login.css";
+
+/* Ajustes específicos do Cadastro: como não tem o link "Esqueceu a senha?"
+   antes do botão, damos um respiro extra no topo do botão */
+.login-button-cadastro {
+  margin-top: 8px;
+}
+
+.login-erro-cadastro {
+  margin-top: -6px;
+}
