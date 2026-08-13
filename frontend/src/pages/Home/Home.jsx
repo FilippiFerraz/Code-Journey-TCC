@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import mapa from "../../assets/images/mapa.png";
+import portalDesafios from "../../assets/images/Portal_Desafios.gif";
 import "./Home.css";
 
 // Posições em % relativas ao tamanho da imagem do mapa (ajuste livremente)
 const PORTAIS = [
   { id: "1", nome: "Vila Inicial", top: "16%", left: "39%" },
-  { id: "2", nome: "Floresta Sombria", top: "50%", left: "51%" },
-  { id: "3", nome: "Torre do Código", top: "86%", left: "39%" },
+  { id: "2", nome: "Floresta Sombria", top: "56%", left: "51%" },
+  { id: "3", nome: "Ponte do Código", top: "87%", left: "50%" },
 ];
 
 function Home() {
@@ -30,8 +31,13 @@ function Home() {
             style={{ top: portal.top, left: portal.left }}
             onClick={() => handlePortalClick(portal)}
           >
-            <span className="home-portal-anel" />
-            <span className="home-portal-nucleo" />
+            <img
+              src={portalDesafios}
+              alt=""
+              aria-hidden="true"
+              className="home-portal-gif"
+              draggable={false}
+            />
             <span className="home-portal-nome">{portal.nome}</span>
           </button>
         ))}

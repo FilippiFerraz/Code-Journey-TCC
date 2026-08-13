@@ -1,6 +1,6 @@
 /* ============================================================
    SelecionarDificuldade.css — placa de madeira com 2 dificuldades
-   Estilo baseado na placa de "DESAFIOS" (madeira + botões pílula).
+   Estilo baseado na placa de "DESAFIOS" (madeira + botões pixel-art).
    ============================================================ */
 
 .dif-tela {
@@ -83,31 +83,95 @@
   gap: 14px;
 }
 
-/* Botão pílula com borda de madeira e brilho magenta */
+/* ===== Botão estilo "START" pixel-art (moldura em degraus) =====
+   Mesma técnica usada em Desafios.css: o <button> é a camada externa
+   (cor da borda grossa) e o .dif-botao-miolo é a camada interna (cor de
+   preenchimento), os dois com o MESMO clip-path em "escada" de 4px. */
+
 .dif-botao {
+  --recorte-pixel: polygon(
+    0px 12px,
+    4px 12px,
+    4px 8px,
+    8px 8px,
+    8px 4px,
+    12px 4px,
+    12px 0px,
+    calc(100% - 12px) 0px,
+    calc(100% - 12px) 4px,
+    calc(100% - 8px) 4px,
+    calc(100% - 8px) 8px,
+    calc(100% - 4px) 8px,
+    calc(100% - 4px) 12px,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    12px calc(100% - 4px),
+    8px calc(100% - 4px),
+    8px calc(100% - 8px),
+    4px calc(100% - 8px),
+    4px calc(100% - 12px),
+    0px calc(100% - 12px)
+  );
+
   position: relative;
-  padding: 18px 8px;
-  border-radius: 999px;
-  border: 3px solid #6b3f1f;
-  background: linear-gradient(180deg, #d43fc0, #a220a0);
-  color: #ffffff;
+  padding: 4px; /* espessura da "moldura" grossa */
+  border: none;
+  border-radius: 0;
+  background: #3a1530; /* cor da moldura — mesma do padrão em Desafios */
+  cursor: pointer;
+  clip-path: var(--recorte-pixel);
+  image-rendering: pixelated;
+  transition: transform 0.05s ease;
+}
+
+.dif-botao:active {
+  transform: translateY(2px);
+}
+
+.dif-botao-miolo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 6px 0 #7a1878, 0 8px 14px rgba(0, 0, 0, 0.3);
-  transition: transform 0.08s, box-shadow 0.08s;
+  color: #ffffff;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+  clip-path: var(--recorte-pixel);
+  /* faixas sólidas (sem gradiente suave) simulando luz em cima e sombra
+     embaixo, igual ao botão de referência */
+  background: linear-gradient(
+    to bottom,
+    #f27fd6 0%,
+    #f27fd6 16%,
+    #d43fc0 16%,
+    #d43fc0 78%,
+    #a220a0 78%,
+    #a220a0 100%
+  );
 }
 
-.dif-botao:hover {
-  transform: translateY(1px);
-  box-shadow: 0 5px 0 #7a1878, 0 6px 10px rgba(0, 0, 0, 0.3);
-}
-
-.dif-botao:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 #7a1878, 0 3px 6px rgba(0, 0, 0, 0.3);
+/* "brilho" pixelado no canto superior esquerdo */
+.dif-botao-miolo::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 10px;
+  height: 8px;
+  background: #ffffff;
+  opacity: 0.9;
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 40% 40%, 40% 100%, 0 100%);
 }
 
 .dif-botao-nome {

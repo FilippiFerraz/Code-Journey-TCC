@@ -3,20 +3,23 @@ import MainLayout from "../../layouts/MainLayout";
 import "./Desafios.css";
 import magoImagem from "../../assets/images/mago.png";
 import guerreiro from "../../assets/images/Guerreiro_simples.png";
+import fundoPersonagem from "../../assets/images/Fundo_personagem.png";
+import { desafioLiberado } from "../../data/progresso";
 
-// Por enquanto, só o primeiro desafio vem desbloqueado (o resto libera conforme o progresso do jogador)
-const DESAFIOS = [
-  { id: 1, bloqueado: false },
-  { id: 2, bloqueado: true },
-  { id: 3, bloqueado: true },
-  { id: 4, bloqueado: true },
-  { id: 5, bloqueado: true },
-  { id: 6, bloqueado: true },
-];
+// Ids dos desafios da trilha. Quem está liberado ou não é calculado a partir
+// do progresso salvo (ver desafioLiberado em data/progresso.js): o desafio 1
+// sempre começa aberto, e cada próximo só libera depois que o anterior for
+// concluído com sucesso.
+const IDS_DESAFIOS = [1, 2, 3, 4, 5, 6];
 
 function Desafios() {
   const { mundoId, dificuldade } = useParams();
   const navigate = useNavigate();
+
+  const desafios = IDS_DESAFIOS.map((id) => ({
+    id,
+    bloqueado: !desafioLiberado(mundoId, dificuldade, id),
+  }));
 
   function handleAbrirDesafio(desafio) {
     if (desafio.bloqueado) return;
@@ -27,7 +30,15 @@ function Desafios() {
     <MainLayout titulo="DESAFIOS - ATO 1">
       <div className="desafios-container">
         {/* Cena do personagem */}
-        <div className="desafios-cena">
+        <div
+          className="desafios-cena"
+          style={{
+            backgroundImage: `url(${fundoPersonagem})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
           <img src={guerreiro} alt="Guerreiro" className="personagem" />
         </div>
 
@@ -47,7 +58,7 @@ function Desafios() {
 
           <div className="desafios-placa-corpo">
             <div className="desafios-grid">
-              {DESAFIOS.map((desafio) => (
+              {desafios.map((desafio) => (
                 <button
                   key={desafio.id}
                   type="button"
@@ -57,8 +68,21 @@ function Desafios() {
                   onClick={() => handleAbrirDesafio(desafio)}
                   disabled={desafio.bloqueado}
                 >
-                  {desafio.bloqueado && <span className="desafios-cadeado">🔒</span>}
-                  DESAFIO {desafio.id}
+                  {/* miolo = camada interna, separada só pra poder ter o
+                      mesmo recorte pixelado da borda externa, criando o
+                      efeito de "moldura" em degraus */}
+                  <span
+                    className={`desafios-botao-miolo ${
+                      desafio.bloqueado
+                        ? "desafios-botao-miolo-bloqueado"
+                        : "desafios-botao-miolo-liberado"
+                    }`}
+                  >
+                    {desafio.bloqueado && (
+                      <span className="desafios-cadeado">🔒</span>
+                    )}
+                    DESAFIO {desafio.id}
+                  </span>
                 </button>
               ))}
             </div>

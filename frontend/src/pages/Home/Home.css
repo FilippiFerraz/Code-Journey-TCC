@@ -27,27 +27,15 @@
   padding: 0;
 }
 
-.home-portal-anel {
-  position: relative;
+.home-portal-gif {
   display: block;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, #2f6fed, #6a3fd9, #9b2fc9, #2f6fed);
-  animation: girar 4s linear infinite;
-  box-shadow: 0 0 16px 4px rgba(155, 47, 201, 0.7);
-}
-
-.home-portal-nucleo {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #ffffff 0%, #c9a3ff 60%, transparent 100%);
-  animation: pulsar 1.6s ease-in-out infinite;
+  width: 85px;
+  height: 85px;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none; /* clique continua indo pro <button> pai */
+  filter: drop-shadow(0 0 12px rgba(155, 47, 201, 0.7));
+  transition: filter 0.2s ease;
 }
 
 .home-portal-nome {
@@ -59,27 +47,6 @@
   text-align: center;
 }
 
-.home-portal:hover .home-portal-anel {
-  box-shadow: 0 0 22px 8px rgba(155, 47, 201, 0.9);
-}
-
-@keyframes girar {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulsar {
-  0%,
-  100% {
-    opacity: 0.85;
-    transform: translate(-50%, -50%) scale(0.9);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
-  }
+.home-portal:hover .home-portal-gif {
+  filter: drop-shadow(0 0 18px rgba(155, 47, 201, 0.9));
 }

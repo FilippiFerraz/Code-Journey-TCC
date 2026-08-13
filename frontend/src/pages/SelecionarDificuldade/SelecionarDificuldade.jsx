@@ -39,7 +39,14 @@ function SelecionarDificuldade() {
                 className="dif-botao"
                 onClick={() => selecionar(d.id)}
               >
-                <span className="dif-botao-nome">{d.nome}</span>
+                {/* miolo = camada interna com o mesmo recorte pixelado da
+                    borda externa (mesma técnica usada em Desafios.css) */}
+                <span className="dif-botao-miolo">
+                  <span className="dif-botao-nome">{d.nome}</span>
+                </span>
+
+                {/* tooltip fica fora do recorte, senão o balão também
+                    ficaria cortado em degraus junto com o botão */}
                 <span className="dif-tooltip">{d.rotulo}</span>
               </button>
             ))}

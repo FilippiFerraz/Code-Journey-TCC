@@ -9,7 +9,7 @@ import DesafioIntro from "./pages/DesafioIntro/DesafioIntro";
 import ResolverDesafio from "./pages/ResolverDesafio/ResolverDesafio";
 import Perfil from "./pages/Perfil/Perfil";
 import EditarPersonagem from "./pages/EditarPersonagem/EditarPersonagem";
-
+import RecompensaDesafio from './pages/RecompensaDesafio/RecompensaDesafio';
 
 
 
@@ -27,6 +27,7 @@ function App() {
         <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<ResolverDesafio />} />
         <Route path="/perfil" element={<Perfil />} />
         <Route path="/editar-personagem" element={<EditarPersonagem />} />
+        <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RecompensaDesafio />} />
       </Routes>
     </BrowserRouter>
   );

@@ -4,6 +4,7 @@ import api from "../../services/api";
 import "./Perfil.css";
 // Avatar provisório — troque pela arte real do personagem no futuro.
 import avatar from "../../assets/images/Guerreiro_simples.png";
+import fundoPersonagemPerfil from "../../assets/images/Fundo_Personagem_Perfil.png";
 
 // "2024-04-10..." -> "abril de 2024"
 function formatarMesAno(dataIso) {
@@ -59,7 +60,15 @@ function Perfil() {
       </button>
 
       {/* Banner do personagem */}
-      <div className="perfil-banner">
+      <div
+        className="perfil-banner"
+        style={{
+          backgroundImage: `url(${fundoPersonagemPerfil})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         <img
           src={avatar}
           alt="Personagem"
@@ -102,7 +111,7 @@ function Perfil() {
       <button
         type="button"
         className="perfil-editar"
-       onClick={() => navigate("/editar-personagem")}
+        onClick={() => navigate("/editar-personagem")}
       >
         Editar personagem
       </button>

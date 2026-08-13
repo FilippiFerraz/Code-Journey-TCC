@@ -1,0 +1,120 @@
+.recompensa-tela {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 16px 32px;
+  text-align: center;
+  color: #fff;
+  background: radial-gradient(
+      circle at 50% 0%,
+      #3a2a55 0%,
+      #1b1330 55%,
+      #0d0818 100%
+    ),
+    linear-gradient(#000, #000);
+}
+
+.recompensa-cabecalho {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recompensa-titulo {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.recompensa-icone-voltar {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.recompensa-icone-menu {
+  font-size: 1.25rem;
+}
+
+.recompensa-banner-vitoria {
+  width: 100%;
+  background: linear-gradient(135deg, #b229c4, #6a3fd9);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.recompensa-banner-texto {
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.recompensa-caixa-icone {
+  width: 92px;
+  height: 92px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fdf6e3, #e9dcb8);
+  border: 3px solid #caa94d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(255, 215, 100, 0.45);
+}
+
+.recompensa-icone {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.recompensa-texto-premio strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.recompensa-texto-premio p {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin: 0;
+}
+
+.recompensa-caixa-dialogo {
+  width: 100%;
+  background: linear-gradient(135deg, #6a3fd9, #9b2fc9);
+  border-radius: 14px;
+  padding: 16px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.recompensa-botao-avante {
+  margin-top: auto;
+  width: 100%;
+  max-width: 320px;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffd76a, #f5a623);
+  color: #3a2405;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.recompensa-botao-avante:active {
+  transform: translateY(1px);
+}

@@ -1,0 +1,20 @@
+# Segredos — nunca commitar. Use .env.example como modelo.
+.env
+.env.local
+
+# Dependências
+node_modules
+
+# Build/gerado
+dist
+build
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store

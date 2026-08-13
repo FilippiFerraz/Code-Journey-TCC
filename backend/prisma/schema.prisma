@@ -16,5 +16,139 @@ model Usuario {
   codigoExpiraEm    DateTime?
   criadoEm          DateTime  @default(now())
 
+  // Cache do XP total do jogador, pra não ter que somar Progresso.xpGanho
+  // toda vez que a tela de Perfil/Ranking precisar mostrar o total.
+  // Coluna nova (ADD COLUMN), não afeta as linhas existentes — todo mundo
+  // começa com 0.
+  xpTotal Int @default(0)
+
+  progresso  Progresso[]
+  personagem Personagem?
+
   @@map("usuarios")
+}
+
+model Desafio {
+  id Int @id @default(autoincrement())
+
+  mundoId     Int
+  // ids reais usados na rota (ver SelecionarDificuldade.jsx): "iniciante" | "guerreiro"
+  dificuldade String
+  // posição do desafio dentro da trilha (1 a 6) — é o :desafioId da URL,
+  // não o "id" (PK) deste model. Ver mundoId_dificuldade_numero abaixo.
+  numero      Int
+
+  titulo    String
+  enunciado String
+  dica      String?
+
+  // alternativas de múltipla escolha, no mesmo formato já usado em
+  // ResolverDesafio: [{ id: "a", texto: "...", correta: true }, ...]
+  alternativas Json
+
+  xpConcedido Int @default(10)
+
+  // recompensa concedida ao vencer (ver frontend/src/data/recompensas.js —
+  // esses 4 campos substituem aquele arquivo quando a API existir)
+  tipoRecompensa      String? // "insignia" | "item"
+  nomeRecompensa      String?
+  descricaoRecompensa String?
+  iconeRecompensa     String?
+
+  // quando tipoRecompensa = "item", este é o Item real que entra no
+  // inventário do personagem (via ItemPersonagem) na primeira vez que o
+  // jogador conclui o desafio. "insignia" não tem Item associado — é só
+  // um reconhecimento textual, não ocupa espaço no inventário.
+  itemRecompensaId Int?
+  itemRecompensa   Item? @relation(fields: [itemRecompensaId], references: [id])
+
+  criadoEm DateTime @default(now())
+
+  progresso Progresso[]
+
+  // não pode haver dois desafios na mesma posição da mesma trilha
+  @@unique([mundoId, dificuldade, numero])
+  @@map("desafios")
+}
+
+model Progresso {
+  id Int @id @default(autoincrement())
+
+  usuarioId Int
+  desafioId Int
+
+  concluido     Boolean   @default(false)
+  tentativas    Int       @default(0)
+  xpGanho       Int       @default(0)
+  dataConclusao DateTime?
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+  desafio Desafio @relation(fields: [desafioId], references: [id])
+
+  // cada usuário tem no máximo um registro de progresso por desafio
+  @@unique([usuarioId, desafioId])
+  @@map("progresso")
+}
+
+// ==== NOVO — a confirmar com a tela EditarPersonagem real ====
+
+model Personagem {
+  id Int @id @default(autoincrement())
+
+  usuarioId Int @unique
+
+  nome      String  @default("Guerreiro")
+  nivel     Int     @default(1)
+  vidaAtual Int     @default(100)
+  vidaMax   Int     @default(100)
+  imagemUrl String?
+
+  criadoEm DateTime @default(now())
+
+  usuario Usuario          @relation(fields: [usuarioId], references: [id])
+  itens   ItemPersonagem[]
+
+  @@map("personagens")
+}
+
+model Item {
+  id Int @id @default(autoincrement())
+
+  nome        String
+  // slot de equipamento — bate com os ids dos slots em EditarPersonagem.jsx:
+  // "capacete" | "peitoral" | "sapato" | "arma" | "costas" | "acessorios"
+  tipo        String
+  raridade    String  @default("comum") // "comum" | "raro" | "epico" | "lendario"
+  descricao   String?
+  // emoji mostrado em Perfil.jsx (itensDestaque) e nos slots de EditarPersonagem
+  // quando o item está equipado — hoje as duas telas usam emoji, não imagem.
+  icone       String?
+  imagemUrl   String?
+  bonusAtaque Int     @default(0)
+  bonusDefesa Int     @default(0)
+
+  personagens ItemPersonagem[]
+  desafios    Desafio[] // desafios que dão este item como recompensa ao concluir
+
+  @@map("itens")
+}
+
+model ItemPersonagem {
+  id Int @id @default(autoincrement())
+
+  personagemId Int
+  itemId       Int
+
+  quantidade Int      @default(1)
+  equipado   Boolean  @default(false)
+  obtidoEm   DateTime @default(now())
+
+  personagem Personagem @relation(fields: [personagemId], references: [id])
+  item       Item       @relation(fields: [itemId], references: [id])
+
+  @@unique([personagemId, itemId])
+  @@map("itens_personagem")
 }

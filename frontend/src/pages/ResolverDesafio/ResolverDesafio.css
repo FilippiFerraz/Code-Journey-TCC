@@ -210,6 +210,7 @@
   color: #f0d9ff;
   font-size: 0.9rem;
   text-align: center;
+  white-space: pre-line;
 }
 
 .lista-opcoes {

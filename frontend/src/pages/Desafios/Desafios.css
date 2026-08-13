@@ -16,11 +16,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 40px;   /* espaço entre mago e slime */
+  gap: 40px; /* espaço entre mago e slime */
 }
 
 .desafios-personagem-placeholder {
-  height: 140px;   /* a cena tem 200px — sobra respiro em cima e embaixo */
+  height: 140px; /* a cena tem 200px — sobra respiro em cima e embaixo */
   width: auto;
   image-rendering: pixelated;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
@@ -33,7 +33,7 @@
 
 .desafios-cena {
   height: 200px;
-  overflow: hidden;   /* ← acrescente esta linha */
+  overflow: hidden; /* ← acrescente esta linha */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,37 +103,121 @@
   gap: 14px;
 }
 
+/* ===== Botões estilo "START" pixel-art (moldura em degraus) =====
+   Técnica: o <button> (camada externa, cor da borda) e o miolo <span>
+   (camada interna, cor de preenchimento) usam o MESMO clip-path — um
+   polígono com cantos em "escada" de 4px em vez de curva suave. Como o
+   clip-path usa % relativo ao próprio elemento, o mesmo valor funciona
+   tanto na borda grossa quanto no miolo, não importa o tamanho do botão. */
+
 .desafios-botao {
+  --recorte-pixel: polygon(
+    0px 12px,
+    4px 12px,
+    4px 8px,
+    8px 8px,
+    8px 4px,
+    12px 4px,
+    12px 0px,
+    calc(100% - 12px) 0px,
+    calc(100% - 12px) 4px,
+    calc(100% - 8px) 4px,
+    calc(100% - 8px) 8px,
+    calc(100% - 4px) 8px,
+    calc(100% - 4px) 12px,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    12px calc(100% - 4px),
+    8px calc(100% - 4px),
+    8px calc(100% - 8px),
+    4px calc(100% - 8px),
+    4px calc(100% - 12px),
+    0px calc(100% - 12px)
+  );
+
   position: relative;
-  padding: 14px 8px;
-  border-radius: 999px;
-  border: 3px solid #6b3f1f;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  padding: 4px; /* espessura da "moldura" grossa */
+  border: none;
+  border-radius: 0;
   cursor: pointer;
+  clip-path: var(--recorte-pixel);
+  image-rendering: pixelated;
+}
+
+.desafios-botao-liberado {
+  background: #3a1530; /* roxo bem escuro, cor da moldura */
+}
+
+.desafios-botao-liberado:active {
+  transform: translateY(2px);
+}
+
+.desafios-botao-bloqueado {
+  background: #4a4a52;
+  cursor: not-allowed;
+}
+
+.desafios-botao-miolo {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-}
-
-.desafios-botao-liberado {
-  background: linear-gradient(180deg, #d43fc0, #a220a0);
+  padding: 12px 6px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
   color: #ffffff;
-  box-shadow: 0 6px 0 #7a1878, 0 8px 14px rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+  clip-path: var(--recorte-pixel);
 }
 
-.desafios-botao-liberado:hover {
-  transform: translateY(1px);
-  box-shadow: 0 5px 0 #7a1878, 0 6px 10px rgba(0, 0, 0, 0.3);
+/* faixas sólidas (sem gradiente suave) simulando luz em cima e sombra
+   embaixo, igual ao botão de referência */
+.desafios-botao-miolo-liberado {
+  background: linear-gradient(
+    to bottom,
+    #f27fd6 0%,
+    #f27fd6 16%,
+    #d43fc0 16%,
+    #d43fc0 78%,
+    #a220a0 78%,
+    #a220a0 100%
+  );
 }
 
-.desafios-botao-bloqueado {
-  background: #b9b9c2;
-  color: #6b6b75;
-  box-shadow: 0 6px 0 #8f8f99, 0 8px 14px rgba(0, 0, 0, 0.2);
-  cursor: not-allowed;
+.desafios-botao-miolo-bloqueado {
+  background: linear-gradient(
+    to bottom,
+    #c9c9d1 0%,
+    #c9c9d1 16%,
+    #9a9aa4 16%,
+    #9a9aa4 78%,
+    #78787f 78%,
+    #78787f 100%
+  );
+  color: #55555c;
+  text-shadow: none;
+}
+
+/* "brilho" pixelado no canto superior esquerdo */
+.desafios-botao-miolo-liberado::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 10px;
+  height: 8px;
+  background: #ffffff;
+  opacity: 0.9;
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 40% 40%, 40% 100%, 0 100%);
 }
 
 .desafios-cadeado {

@@ -1,11 +1,21 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../../services/api";
 import guerreiro from "../../assets/images/Guerreiro_simples.png";
+import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
+import goblinJS from "../../assets/images/GoblinJS.png";
 import fundoBatalha from "../../assets/images/Fundo_batalha.png";
+import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
 import "./ResolverDesafio.css";
 
 const VIDA_MAXIMA = 3;
+
+// Quanto tempo o GIF de ataque fica visível antes de voltar pro herói
+// parado. Ajuste esse valor pra bater com a duração real do
+// Guerreiro_ataque.gif (hoje está um pouco antes do golpe "conectar"
+// no slime, que acontece em 450ms — ver vencer()).
+const DURACAO_GIF_ATAQUE_MS = 600;
 
 // Enquanto a rota de desafios não existe no backend, o conteúdo fica aqui.
 // Depois é só trocar por um GET /desafios/:mundoId/:dificuldade/:desafioId
@@ -15,6 +25,8 @@ const DESAFIOS = {
     titulo: "Print de Dados",
     enunciado: "Qual comando mostra uma mensagem no console em JavaScript?",
     dica: "É o comando que todo programador usa para conferir se o código chegou até ali.",
+    inimigo: { imagem: slime, nome: "Slime" },
+    fundo: fundoBatalha,
     opcoes: [
       { id: "a", texto: 'console.log("Olá, mundo!")', correta: true },
       { id: "b", texto: 'print("Olá, mundo!")', correta: false },
@@ -22,17 +34,36 @@ const DESAFIOS = {
       { id: "d", texto: 'echo "Olá, mundo!"', correta: false },
     ],
   },
+  2: {
+    numero: 2,
+    titulo: "Tipos na Atribuição",
+    enunciado:
+      'Qual é o valor e o tipo de "x" depois de executar este código?\n\nlet x = "5";\nx = x + 1;',
+    dica: "Em JavaScript, o operador + entre uma string e um número concatena, não soma — o número é convertido para texto.",
+    inimigo: { imagem: goblinJS, nome: "GoblinJS" },
+    fundo: fundoBatalha2,
+    opcoes: [
+      { id: "a", texto: '"51" (string)', correta: true },
+      { id: "b", texto: "6 (number)", correta: false },
+      { id: "c", texto: "51 (number)", correta: false },
+      { id: "d", texto: "NaN (number)", correta: false },
+    ],
+  },
 };
 
 // Falas do golpe, em ordem de vida restante (2 -> 1 coração).
 // A intenção é dar o tom de "tomou dano" sem desanimar o jogador.
-const FALAS_GOLPE = [
-  "O slime avança e te acerta! Sacuda a poeira e tente de novo.",
-  "Mais um golpe! Respira, olha com calma — a resposta está aí.",
-];
+// Recebem o nome do inimigo do desafio atual pra bater com a imagem exibida.
+function falasGolpe(nomeInimigo) {
+  return [
+    `${nomeInimigo} avança e te acerta! Sacuda a poeira e tente de novo.`,
+    "Mais um golpe! Respira, olha com calma — a resposta está aí.",
+  ];
+}
 
-const FALA_DERROTA =
-  "O slime te derrubou desta vez... mas todo herói cai antes de aprender o golpe. Levante e tente novamente!";
+function falaDerrota(nomeInimigo) {
+  return `${nomeInimigo} te derrubou desta vez... mas todo herói cai antes de aprender o golpe. Levante e tente novamente!`;
+}
 
 function ResolverDesafio() {
   const { mundoId, dificuldade, desafioId } = useParams();
@@ -45,11 +76,21 @@ function ResolverDesafio() {
   const [resultado, setResultado] = useState(null);
   const [vida, setVida] = useState(VIDA_MAXIMA);
 
+  // Resposta de POST /api/progresso (xpGanho, itemGanho, ...), levada pra
+  // tela de recompensa. Fica null se a chamada ainda não voltou ou falhou —
+  // RecompensaDesafio cai de volta pro conteúdo hardcoded nesse caso.
+  const [recompensaApi, setRecompensaApi] = useState(null);
+
   // flags de animação da cena
   const [tomandoGolpe, setTomandoGolpe] = useState(false); // herói leva dano
-  const [golpeHeroi, setGolpeHeroi] = useState(false); // herói ataca
+  const [golpeHeroi, setGolpeHeroi] = useState(false); // herói ataca (GIF tocando)
   const [slimeMorrendo, setSlimeMorrendo] = useState(false); // slime dissolve
   const [focoSlime, setFocoSlime] = useState(false); // "câmera" foca no slime
+
+  // Incrementa a cada ataque pra forçar o <img> do GIF a remontar e
+  // reiniciar do primeiro quadro (senão, num segundo ataque, o GIF
+  // simplesmente não tocaria de novo — ficaria parado no último frame).
+  const [cicloAtaque, setCicloAtaque] = useState(0);
 
   const atacando = resultado === "acertando";
   const venceu = resultado === "vitoria";
@@ -69,12 +110,29 @@ function ResolverDesafio() {
     setTimeout(() => setTomandoGolpe(false), 600);
   }
 
-  function vencer() {
-    // 1) herói avança e desfere o golpe
-    setResultado("acertando");
-    setGolpeHeroi(true);
+  // Registra a vitória no backend (XP + item de recompensa, se o desafio
+  // tiver um) assim que a resposta certa é confirmada. Roda em paralelo com
+  // a animação de vencer() — se falhar (ex: offline), o jogo continua e a
+  // tela de recompensa usa o conteúdo hardcoded como reserva.
+  async function registrarVitoria(opcaoId) {
+    try {
+      const resposta = await api.post("/progresso", {
+        mundoId: Number(mundoId),
+        dificuldade,
+        numero: Number(desafioId),
+        opcaoId,
+      });
+      setRecompensaApi(resposta.data);
+    } catch (erro) {
+      console.error("Não foi possível registrar o progresso no servidor:", erro);
+    }
+  }
 
-    // TODO: registrar acerto/progresso no backend quando a rota existir
+  function vencer() {
+    // 1) herói avança e desfere o golpe — troca a imagem parada pelo GIF
+    setResultado("acertando");
+    setCicloAtaque((ciclo) => ciclo + 1);
+    setGolpeHeroi(true);
 
     // 2) golpe conecta -> slime começa a morrer e a câmera foca nele
     setTimeout(() => {
@@ -82,14 +140,20 @@ function ResolverDesafio() {
       setFocoSlime(true);
     }, 450);
 
-    // 3) slime desfeito -> painel de vitória (prepara XP/recompensa)
+    // 3) GIF de ataque termina -> volta o herói pra imagem parada
+    setTimeout(() => setGolpeHeroi(false), DURACAO_GIF_ATAQUE_MS);
+
+    // 4) slime desfeito -> painel de vitória (prepara XP/recompensa)
     setTimeout(() => setResultado("vitoria"), 1700);
   }
 
   function avancar() {
     if (venceu) {
-      // caminho para as futuras telas de XP / recompensa
-      navigate(`/desafios/${mundoId}/${dificuldade}`);
+      // vitória confirmada -> tela de recompensa (insígnia/item), que depois
+      // volta para a lista de desafios da trilha
+      navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
+        state: { resultado: recompensaApi },
+      });
       return;
     }
 
@@ -97,6 +161,7 @@ function ResolverDesafio() {
 
     const escolhida = desafio.opcoes.find((o) => o.id === opcaoSelecionada);
     if (escolhida.correta) {
+      registrarVitoria(escolhida.id);
       vencer();
     } else {
       sofrerGolpe(vida - 1);
@@ -108,6 +173,12 @@ function ResolverDesafio() {
     setResultado(null);
     setOpcaoSelecionada(null);
     setTomandoGolpe(false);
+    setRecompensaApi(null);
+    // reset das flags de animação da batalha anterior, senão uma nova
+    // tentativa pode começar com o slime já "morto" ou a câmera focada nele
+    setGolpeHeroi(false);
+    setSlimeMorrendo(false);
+    setFocoSlime(false);
   }
 
   function classeDaOpcao(opcao) {
@@ -122,7 +193,8 @@ function ResolverDesafio() {
     return classes.join(" ");
   }
 
-  const falaGolpe = FALAS_GOLPE[VIDA_MAXIMA - 1 - vida] || FALAS_GOLPE.at(-1);
+  const golpesInimigo = falasGolpe(desafio.inimigo.nome);
+  const falaGolpe = golpesInimigo[VIDA_MAXIMA - 1 - vida] || golpesInimigo.at(-1);
   const mostrarDica = vida <= 1;
 
   function renderPainel() {
@@ -130,7 +202,7 @@ function ResolverDesafio() {
       return (
         <div className="derrota">
           <h2 className="derrota-titulo">Você caiu!</h2>
-          <p className="derrota-fala">{FALA_DERROTA}</p>
+          <p className="derrota-fala">{falaDerrota(desafio.inimigo.nome)}</p>
           <button
             type="button"
             className="botao-avante botao-avante--roxo"
@@ -145,20 +217,13 @@ function ResolverDesafio() {
     if (venceu) {
       return (
         <div className="vitoria">
-          <h2 className="vitoria-titulo">Slime derrotado!</h2>
+          <h2 className="vitoria-titulo">{desafio.inimigo.nome} derrotado!</h2>
           <p className="vitoria-fala">
             Golpe certeiro! O caminho à frente está livre.
           </p>
 
-          {/* TODO: telas futuras — XP ganho, moedas/itens e barra de progresso
-              entram aqui. Este bloco é só o marcador visual do lugar. */}
-          <div className="vitoria-recompensa" aria-hidden="true">
-            <span className="vitoria-recompensa-rotulo">Recompensa</span>
-            <span className="vitoria-recompensa-valor">a caminho…</span>
-          </div>
-
           <button type="button" className="botao-avante" onClick={avancar}>
-            CONTINUAR
+            VER RECOMPENSA
           </button>
         </div>
       );
@@ -168,7 +233,7 @@ function ResolverDesafio() {
       return (
         <div className="acerto-banner">
           <h2 className="acerto-titulo">Acertou!</h2>
-          <p className="acerto-fala">Golpe certeiro no slime!</p>
+          <p className="acerto-fala">Golpe certeiro no {desafio.inimigo.nome}!</p>
         </div>
       );
     }
@@ -221,7 +286,7 @@ function ResolverDesafio() {
           focoSlime ? "cena--foco" : ""
         }`}
         style={{
-          backgroundImage: `url(${fundoBatalha})`,
+          backgroundImage: `url(${desafio.fundo})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -234,7 +299,10 @@ function ResolverDesafio() {
           <div className="cena-chao" style={{ background: "transparent" }} />
 
           <img
-            src={guerreiro}
+            // key muda a cada golpe pra forçar o navegador a reiniciar o
+            // GIF do quadro zero, e volta pra uma key fixa quando parado
+            key={golpeHeroi ? `heroi-ataque-${cicloAtaque}` : "heroi-parado"}
+            src={golpeHeroi ? guerreiroAtaque : guerreiro}
             alt="Guerreiro"
             className={`cena-heroi ${
               tomandoGolpe ? "cena-heroi--atingido" : ""
@@ -244,8 +312,8 @@ function ResolverDesafio() {
           />
 
           <img
-            src={slime}
-            alt="Slime"
+            src={desafio.inimigo.imagem}
+            alt={desafio.inimigo.nome}
             className={`cena-inimigo ${
               tomandoGolpe ? "cena-inimigo--atacando" : ""
             } ${slimeMorrendo ? "cena-inimigo--morrendo" : ""}`}

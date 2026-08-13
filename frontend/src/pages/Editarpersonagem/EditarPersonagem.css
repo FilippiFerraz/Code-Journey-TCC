@@ -1,7 +1,8 @@
 /* ============================================================
    EditarPersonagem.css — tela de edição/equipamento do personagem
    Renderiza dentro do MainLayout (área rolável .layout-conteudo).
-   Base visual do protótipo; equipar itens virá numa etapa futura.
+   Slots e grade de inventário vêm de GET /api/personagem; clicar num
+   item equipa/desequipa via POST /api/personagem/inventario/:id/...
    ============================================================ */
 
 .editar {
@@ -69,6 +70,19 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  cursor: default;
+}
+
+.editar-slot-ocupado {
+  cursor: pointer;
+}
+
+.editar-slot:disabled {
+  cursor: default;
 }
 
 .editar-slot-caixa {
@@ -81,11 +95,28 @@
   background: rgba(255, 255, 255, 0.08);
   border: 2px solid rgba(255, 255, 255, 0.25);
   box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.editar-slot-ocupado .editar-slot-caixa {
+  border-color: #ffd84d;
+  background: rgba(255, 216, 77, 0.12);
 }
 
 .editar-slot-icone {
   font-size: 24px;
   opacity: 0.55; /* vazio: mais apagado, indicando slot livre */
+}
+
+.editar-slot-icone-cheio {
+  opacity: 1;
+}
+
+.editar-slot-imagem {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 
 .editar-slot-nome {
@@ -148,11 +179,163 @@
 }
 
 .editar-celula {
+  position: relative;
   aspect-ratio: 1 / 1;
   border-radius: 5px;
   background: var(--madeira-celula);
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45),
     inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.editar-celula-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.editar-celula-item:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.editar-celula-equipado {
+  box-shadow: inset 0 0 0 2px #ffd84d, inset 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+.editar-celula-selecionado {
+  box-shadow: inset 0 0 0 2px #ffffff, inset 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+.editar-celula-icone {
+  font-size: 20px;
+}
+
+.editar-celula-imagem {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.editar-celula-quantidade {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  font-size: 9px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* ---------- Estados de carregamento/erro ---------- */
+.editar-estado {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--texto);
+  font-size: 15px;
+}
+
+.editar-estado-erro {
+  color: #c0392b;
+}
+
+.editar-inventario-erro {
+  margin: 0 0 10px;
+  color: #ffe1e1;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ---------- Painel de detalhe do item (clique único na grade) ---------- */
+.editar-item-detalhe {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 14px 34px 14px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  animation: editarDetalheSurgir 0.15s ease-out;
+}
+
+@keyframes editarDetalheSurgir {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.editar-item-detalhe-fechar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.editar-item-detalhe-fechar:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.editar-item-detalhe-imagem {
+  flex-shrink: 0;
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.4));
+}
+
+.editar-item-detalhe-icone {
+  flex-shrink: 0;
+  font-size: 38px;
+  line-height: 1;
+}
+
+.editar-item-detalhe-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.editar-item-detalhe-nome {
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.editar-item-detalhe-raridade {
+  color: #ffd84d;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.editar-item-detalhe-descricao {
+  margin: 6px 0 0;
+  color: #f0d9ff;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.editar-item-detalhe-dica {
+  margin: 6px 0 0;
+  color: #d8c2e8;
+  font-size: 11px;
+  font-style: italic;
 }
 
 /* ---------- Conquistas ---------- */

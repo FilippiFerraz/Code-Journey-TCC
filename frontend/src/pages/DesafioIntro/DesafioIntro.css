@@ -1,6 +1,6 @@
 /* ============================================================
    DesafioIntro.css — cena de introdução do desafio
-   Fundo escuro, slime em destaque flutuando no centro,
+   Fundo escuro, inimigo do desafio em destaque flutuando no centro,
    balão de fala embaixo e card de enunciado ao final.
    ============================================================ */
 
@@ -37,7 +37,7 @@
   background: rgba(30, 38, 66, 0.95);
 }
 
-/* ---------- Cena com o slime em destaque ---------- */
+/* ---------- Cena com o inimigo em destaque ---------- */
 .intro-cena {
   flex: 1;                    /* ocupa todo o espaço livre acima do balão */
   min-height: 60vh;
@@ -46,17 +46,17 @@
   justify-content: center;    /* centraliza na horizontal */
 }
 
-.intro-slime-destaque {
-  width: 200px;               /* tamanho do slime — ajuste à vontade */
+.intro-inimigo-destaque {
+  width: 200px;               /* tamanho do inimigo — ajuste à vontade */
   height: auto;
   image-rendering: pixelated;
   filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.45));
-  animation: flutuarSlime 1.8s ease-in-out infinite;
+  animation: flutuarInimigo 1.8s ease-in-out infinite;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-@keyframes flutuarSlime {
+@keyframes flutuarInimigo {
   0%   { transform: translateY(0); }
   50%  { transform: translateY(-16px); }  /* quanto sobe ao flutuar */
   100% { transform: translateY(0); }
@@ -222,5 +222,5 @@
 
 /* respeita quem prefere menos animação no sistema */
 @media (prefers-reduced-motion: reduce) {
-  .intro-slime-destaque { animation: none; }
+  .intro-inimigo-destaque { animation: none; }
 }
