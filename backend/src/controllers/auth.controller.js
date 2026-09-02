@@ -2,13 +2,13 @@ const authService = require("../services/auth.service");
 
 async function cadastrar(req, res, next) {
   try {
-    const { nome, email, senha } = req.body;
+    const { nome, email, senha, idade } = req.body;
 
-    if (!nome || !email || !senha) {
-      return res.status(400).json({ erro: "Nome, email e senha são obrigatórios." });
+    if (!nome || !email || !senha || idade === undefined || idade === null || idade === "") {
+      return res.status(400).json({ erro: "Nome, email, senha e idade são obrigatórios." });
     }
 
-    const resultado = await authService.cadastrar({ nome, email, senha });
+    const resultado = await authService.cadastrar({ nome, email, senha, idade });
     return res.status(201).json(resultado);
   } catch (erro) {
     next(erro);
@@ -27,6 +27,26 @@ async function login(req, res, next) {
     return res.status(200).json(resultado);
   } catch (erro) {
     next(erro);
+  }
+}
+
+async function verificarEmail(req, res, next) {
+  try {
+    const { email, codigo } = req.body;
+    const resultado = await authService.verificarEmailCadastro({ email, codigo });
+    return res.status(200).json(resultado);
+  } catch (erro) {
+    return next(erro);
+  }
+}
+
+async function reenviarVerificacao(req, res, next) {
+  try {
+    const { email } = req.body;
+    const resultado = await authService.reenviarVerificacaoEmail({ email });
+    return res.status(200).json(resultado);
+  } catch (erro) {
+    return next(erro);
   }
 }
 
@@ -60,14 +80,12 @@ async function esqueciSenha(req, res, next) {
   }
 }
 
-async function esqueciSenha(req, res, next) {
-  try {
-    const { email } = req.body;
-    const resultado = await authService.esqueciSenha({ email });
-    return res.status(200).json(resultado);
-  } catch (erro) {
-    return next(erro);
-  }
-}
-
-module.exports = { cadastrar, login, esqueciSenha, verificarCodigo, redefinirSenha };
+module.exports = {
+  cadastrar,
+  login,
+  verificarEmail,
+  reenviarVerificacao,
+  esqueciSenha,
+  verificarCodigo,
+  redefinirSenha,
+};

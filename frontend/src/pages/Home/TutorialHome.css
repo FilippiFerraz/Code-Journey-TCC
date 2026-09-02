@@ -1,0 +1,154 @@
+/* ============================================================
+   TutorialHome.css — tutorial guiado de primeiro login
+   Um "spotlight" fixo escurece a tela inteira menos o elemento
+   apontado (medido via getBoundingClientRect em TutorialHome.jsx),
+   com um balão de fala do guia (Mago) embaixo, no mesmo espírito
+   visual do balão de DesafioIntro.css.
+   ============================================================ */
+
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(10, 8, 20, 0.75);
+  cursor: pointer;
+  animation: tutorialSurgir 0.2s ease-out;
+}
+
+@keyframes tutorialSurgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* "buraco" no escurecido: retângulo transparente cujo box-shadow gigante
+   pinta o resto da tela — evita precisar de um overlay com clip-path/mask */
+.tutorial-spot {
+  position: fixed;
+  z-index: 1;
+  border-radius: 14px;
+  background: transparent;
+  box-shadow: 0 0 0 9999px rgba(10, 8, 20, 0.75), 0 0 0 3px #ffd84d,
+    0 0 18px 4px rgba(255, 216, 77, 0.55);
+  pointer-events: none;
+  transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
+}
+
+/* ---------- Balão do guia ---------- */
+.tutorial-balao {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  cursor: default;
+  animation: tutorialBalaoSurgir 0.25s ease-out;
+}
+
+@keyframes tutorialBalaoSurgir {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tutorial-guia {
+  flex-shrink: 0;
+  width: 64px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5));
+}
+
+.tutorial-balao-corpo {
+  position: relative;
+  flex: 1;
+  padding: 16px 18px 14px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* rabinho do balão apontando para o guia */
+.tutorial-balao-corpo::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  bottom: 18px;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 10px solid #ffffff;
+}
+
+.tutorial-balao-titulo {
+  display: block;
+  margin: 0 0 4px;
+  color: #6a3fd9;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.tutorial-balao-fala {
+  margin: 0 0 12px;
+  color: #22283a;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: tutorialFalaSurgir 0.25s ease-out;
+}
+
+@keyframes tutorialFalaSurgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tutorial-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* variante sem pontinhos de progresso — usada em AvisoPortalBloqueado.jsx,
+   um aviso de passo único, não uma sequência de passos */
+.tutorial-rodape--fim {
+  justify-content: flex-end;
+}
+
+.tutorial-pontos {
+  display: flex;
+  gap: 6px;
+}
+
+.tutorial-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d3d3dd;
+  transition: background 0.2s ease;
+}
+
+.tutorial-ponto-ativo {
+  background: #8b3fd9;
+}
+
+/* botão pixelado (ver BotaoPixel) */
+.tutorial-botao {
+  background: #2c7a3d;
+}
+
+.tutorial-botao-miolo {
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #55c46b, #3a9d50);
+  font-size: 13px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-overlay,
+  .tutorial-balao,
+  .tutorial-balao-fala {
+    animation: none;
+  }
+  .tutorial-spot {
+    transition: none;
+  }
+}

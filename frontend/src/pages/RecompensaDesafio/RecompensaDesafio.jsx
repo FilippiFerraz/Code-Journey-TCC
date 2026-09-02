@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../../layouts/MainLayout';
 import { getRecompensaPorDesafio } from '../../data/recompensas';
-import { marcarConcluido } from '../../data/progresso';
+import BotaoPixel from '../../components/BotaoPixel';
 import './RecompensaDesafio.css';
 
 // TODO: quando existir contexto de personagem/perfil, puxar o nome real
@@ -31,7 +30,7 @@ export default function RecompensaDesafio() {
   // (chamada falhou, offline, ou a tela foi aberta direto por essa URL),
   // cai pro conteúdo hardcoded de data/recompensas.js como reserva.
   const itemGanho = location.state?.resultado?.itemGanho;
-  const recompensaFallback = getRecompensaPorDesafio(idNumerico);
+  const recompensaFallback = getRecompensaPorDesafio(idNumerico, Number(mundoId));
   const recompensa = itemGanho
     ? {
         icone: itemGanho.icone ?? recompensaFallback.icone,
@@ -41,12 +40,10 @@ export default function RecompensaDesafio() {
     : recompensaFallback;
 
   // Chegar nesta tela já significa que o desafio foi vencido (ResolverDesafio
-  // só navega pra cá depois da vitória) — é aqui que o progresso é gravado,
-  // liberando o próximo desafio da trilha em Desafios.jsx.
-  useEffect(() => {
-    marcarConcluido(mundoId, dificuldade, idNumerico);
-  }, [mundoId, dificuldade, idNumerico]);
-
+  // só navega pra cá depois da vitória). O progresso em si já foi gravado no
+  // backend por ResolverDesafio (POST /api/progresso) antes de chegar aqui —
+  // é esse registro que libera o próximo desafio em Desafios.jsx, não esta
+  // tela.
   const nomePersonagem = NOME_PERSONAGEM_PADRAO;
   // TODO: nome do inimigo deveria vir dos dados do próprio desafio
   // (hoje ResolverDesafio também tem o inimigo hardcoded como slime).
@@ -107,13 +104,13 @@ export default function RecompensaDesafio() {
           <p>{textoMago}</p>
         </div>
 
-        <button
-          type="button"
+        <BotaoPixel
           className="recompensa-botao-avante"
+          classeMiolo="recompensa-botao-avante-miolo"
           onClick={handleAvante}
         >
           AVANTE!
-        </button>
+        </BotaoPixel>
       </div>
     </MainLayout>
   );

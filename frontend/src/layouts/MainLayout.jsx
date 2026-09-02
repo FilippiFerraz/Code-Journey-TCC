@@ -20,6 +20,7 @@ function MainLayout({ titulo, children }) {
       <nav className="layout-footer">
         <NavLink
           to="/ranking"
+          data-tutorial-alvo="ranking"
           className={({ isActive }) =>
             `layout-footer-item ${isActive ? "layout-footer-item-ativo" : ""}`
           }
@@ -37,6 +38,7 @@ function MainLayout({ titulo, children }) {
 
         <NavLink
           to="/perfil"
+          data-tutorial-alvo="perfil"
           className={({ isActive }) =>
             `layout-footer-item ${isActive ? "layout-footer-item-ativo" : ""}`
           }
@@ -78,6 +80,7 @@ function MainLayout({ titulo, children }) {
 
         <NavLink
           to="/configuracoes"
+          data-tutorial-alvo="configuracoes"
           className={({ isActive }) =>
             `layout-footer-item ${isActive ? "layout-footer-item-ativo" : ""}`
           }

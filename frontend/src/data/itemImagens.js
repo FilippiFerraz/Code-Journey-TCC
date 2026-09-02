@@ -4,9 +4,11 @@
 // não uma URL de verdade) pra imagem estática já empacotada pelo Vite.
 // Itens sem entrada aqui (ou sem imagemUrl) caem no emoji de Item.icone.
 import itemPeitoral from "../assets/images/Item_Peitoral.png";
+import chapeuGoblin from "../assets/images/chapeu_goblin.png";
 
 const IMAGENS_POR_ARQUIVO = {
   "Item_Peitoral.png": itemPeitoral,
+  "chapeu_goblin.png": chapeuGoblin,
 };
 
 export function resolverImagemItem(imagemUrl) {

@@ -1,5 +1,5 @@
 .layout-container {
-  height: 100vh; /* trava na altura da tela (antes era min-height, por isso a página inteira rolava) */
+  height: 100%; /* trava na altura da moldura (.app-frame), que por sua vez trava na tela — antes era min-height, por isso a página inteira rolava */
   width: 100%;
   display: flex;
   flex-direction: column;

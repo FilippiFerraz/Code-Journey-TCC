@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import logo from "../../assets/images/logo.png";
+import BotaoPixel from "../../components/BotaoPixel";
 import "../Login/Login.css";
 import "./EsqueciSenha.css";
 
@@ -123,9 +124,14 @@ function EsqueciSenha() {
 
             {erro && <p className="login-erro">{erro}</p>}
 
-            <button type="submit" className="login-button" disabled={carregando}>
+            <BotaoPixel
+              type="submit"
+              className="login-button"
+              classeMiolo="login-button-miolo"
+              disabled={carregando}
+            >
               {carregando ? "Enviando..." : "Enviar"}
-            </button>
+            </BotaoPixel>
           </form>
         )}
 
@@ -172,9 +178,14 @@ function EsqueciSenha() {
             {erro && <p className="login-erro">{erro}</p>}
             {sucesso && <p className="esqueci-sucesso">{sucesso}</p>}
 
-            <button type="submit" className="login-button" disabled={carregando}>
+            <BotaoPixel
+              type="submit"
+              className="login-button"
+              classeMiolo="login-button-miolo"
+              disabled={carregando}
+            >
               {carregando ? "Redefinindo..." : "Redefinir senha"}
-            </button>
+            </BotaoPixel>
 
             <button
               type="button"

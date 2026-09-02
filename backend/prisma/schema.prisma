@@ -12,15 +12,43 @@ model Usuario {
   nome              String
   email             String    @unique
   senha             String
+  // Opcional no banco pra não quebrar as contas já cadastradas antes desse
+  // campo existir — mas obrigatória no cadastro novo (ver auth.service.js).
+  idade             Int?
   codigoRecuperacao String?
   codigoExpiraEm    DateTime?
   criadoEm          DateTime  @default(now())
+
+  // Confirmação de e-mail no cadastro (campos separados dos de recuperação
+  // de senha acima, pra um fluxo nunca sobrescrever o código do outro).
+  // Login é bloqueado enquanto emailVerificado for false — ver auth.service.js.
+  emailVerificado           Boolean   @default(false)
+  codigoVerificacao         String?
+  codigoVerificacaoExpiraEm DateTime?
 
   // Cache do XP total do jogador, pra não ter que somar Progresso.xpGanho
   // toda vez que a tela de Perfil/Ranking precisar mostrar o total.
   // Coluna nova (ADD COLUMN), não afeta as linhas existentes — todo mundo
   // começa com 0.
   xpTotal Int @default(0)
+
+  // Marca se o jogador já viu o tutorial guiado da Home (portais, perfil,
+  // ranking, configurações). Ver TutorialHome.jsx / POST /api/perfil/tutorial-visto.
+  tutorialVisto Boolean @default(false)
+
+  // "jogador" | "administrador". Administradores acessam rotas protegidas
+  // por verificarAdmin (ver middlewares/admin.middleware.js) — dashboard de
+  // suporte, edição de desafios, etc. Hoje não existe UI pra promover um
+  // usuário; faça isso direto no banco (SQL Editor do Neon ou Prisma Studio):
+  // UPDATE usuarios SET role = 'administrador' WHERE email = '...';
+  role String @default("jogador")
+
+  // Soft delete: quando preenchido, o usuário está "excluído". A linha
+  // continua no banco (preserva Progresso/Personagem/Ranking já vinculados
+  // a ele em vez de quebrar essas relações), mas some das leituras normais
+  // — ver backend/src/config/prisma.js, que filtra deletedAt: null
+  // automaticamente em toda query de Usuario. Null = usuário ativo.
+  deletedAt DateTime?
 
   progresso  Progresso[]
   personagem Personagem?
@@ -42,8 +70,10 @@ model Desafio {
   enunciado String
   dica      String?
 
-  // alternativas de múltipla escolha, no mesmo formato já usado em
-  // ResolverDesafio: [{ id: "a", texto: "...", correta: true }, ...]
+  // Json livre, no mesmo formato já usado em ResolverDesafio.jsx — hoje
+  // guarda um de dois formatos, conforme o tipo do exercício:
+  // - múltipla escolha: [{ id: "a", texto: "...", correta: true }, ...]
+  // - ordenar blocos: { tipo: "ordenar_blocos", blocos: [{id, codigo}], ordemCorreta: [id, ...] }
   alternativas Json
 
   xpConcedido Int @default(10)

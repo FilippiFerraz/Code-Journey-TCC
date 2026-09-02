@@ -43,24 +43,29 @@
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 
+/* Botão "✕" de fechar — mesmo recorte pixelado do resto da tela (ver
+   BotaoPixel), pequeno o bastante pra caber no canto da placa. */
 .dif-fechar {
   position: absolute;
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: #6b3f1f;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
+  width: 34px;
+  background: #4a2c14;
 }
 
-.dif-fechar:hover {
-  background: #562f14;
+.dif-fechar-miolo {
+  padding: 8px;
+  font-size: 13px;
+  background: linear-gradient(
+    to bottom,
+    #e0862f 0%,
+    #e0862f 16%,
+    #c96a1a 16%,
+    #c96a1a 78%,
+    #96500f 78%,
+    #96500f 100%
+  );
 }
 
 /* Corpo de pergaminho quadriculado */
@@ -83,71 +88,18 @@
   gap: 14px;
 }
 
-/* ===== Botão estilo "START" pixel-art (moldura em degraus) =====
-   Mesma técnica usada em Desafios.css: o <button> é a camada externa
-   (cor da borda grossa) e o .dif-botao-miolo é a camada interna (cor de
-   preenchimento), os dois com o MESMO clip-path em "escada" de 4px. */
+/* ===== Botão "Iniciante"/"Guerreiro" — usa <BotaoPixel> (ver
+   src/components/BotaoPixel.jsx e src/styles/botaoPixel.css pra
+   geometria/mecânica); aqui só ficam as cores próprias desta tela. ===== */
 
 .dif-botao {
-  --recorte-pixel: polygon(
-    0px 12px,
-    4px 12px,
-    4px 8px,
-    8px 8px,
-    8px 4px,
-    12px 4px,
-    12px 0px,
-    calc(100% - 12px) 0px,
-    calc(100% - 12px) 4px,
-    calc(100% - 8px) 4px,
-    calc(100% - 8px) 8px,
-    calc(100% - 4px) 8px,
-    calc(100% - 4px) 12px,
-    100% 12px,
-    100% calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 4px),
-    calc(100% - 12px) calc(100% - 4px),
-    calc(100% - 12px) 100%,
-    12px 100%,
-    12px calc(100% - 4px),
-    8px calc(100% - 4px),
-    8px calc(100% - 8px),
-    4px calc(100% - 8px),
-    4px calc(100% - 12px),
-    0px calc(100% - 12px)
-  );
-
-  position: relative;
-  padding: 4px; /* espessura da "moldura" grossa */
-  border: none;
-  border-radius: 0;
   background: #3a1530; /* cor da moldura — mesma do padrão em Desafios */
-  cursor: pointer;
-  clip-path: var(--recorte-pixel);
-  image-rendering: pixelated;
-  transition: transform 0.05s ease;
-}
-
-.dif-botao:active {
-  transform: translateY(2px);
 }
 
 .dif-botao-miolo {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 16px 8px;
   font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
   text-transform: uppercase;
-  color: #ffffff;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
-  clip-path: var(--recorte-pixel);
   /* faixas sólidas (sem gradiente suave) simulando luz em cima e sombra
      embaixo, igual ao botão de referência */
   background: linear-gradient(
@@ -159,23 +111,6 @@
     #a220a0 78%,
     #a220a0 100%
   );
-}
-
-/* "brilho" pixelado no canto superior esquerdo */
-.dif-botao-miolo::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 8px;
-  width: 10px;
-  height: 8px;
-  background: #ffffff;
-  opacity: 0.9;
-  clip-path: polygon(0 0, 100% 0, 100% 40%, 40% 40%, 40% 100%, 0 100%);
-}
-
-.dif-botao-nome {
-  display: block;
 }
 
 /* Rótulo que aparece ao passar o mouse (fácil / difícil) */

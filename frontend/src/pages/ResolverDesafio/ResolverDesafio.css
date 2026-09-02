@@ -219,25 +219,14 @@
   gap: 10px;
 }
 
-.opcao {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border: 3px solid #5c1a73;
-  border-radius: 10px;
-  background: #45114f;
-  color: #7cff3f;
-  font-family: "Consolas", "Courier New", monospace;
-  font-size: 0.85rem;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
-}
+/* Alternativa de múltipla escolha — usa <BotaoPixel> (ver
+   src/components/BotaoPixel.jsx e src/styles/botaoPixel.css pra
+   geometria/mecânica); aqui só as cores/estados próprios desta tela. */
 
-.opcao:hover:not(:disabled) {
-  transform: translateX(3px);
+.opcao {
+  display: block;
+  width: 100%;
+  background: #5c1a73; /* moldura — cor da antiga borda */
 }
 
 .opcao:focus-visible {
@@ -245,8 +234,21 @@
   outline-offset: 2px;
 }
 
-.opcao:disabled {
-  cursor: default;
+.opcao-miolo {
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #45114f;
+  color: #7cff3f;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.85rem;
+  font-weight: normal;
+  letter-spacing: normal;
+  text-shadow: none;
+  text-align: left;
+}
+
+.opcao:disabled .opcao-miolo {
   opacity: 0.7;
 }
 
@@ -269,19 +271,202 @@
 }
 
 .opcao--selecionada {
-  border-color: #ffd84d;
+  background: #ffd84d;
+}
+
+.opcao-miolo--selecionada {
   background: #5a1a68;
 }
 
 .opcao--errada {
-  border-color: #ff5a5a;
-  background: #5a1414;
+  background: #ff5a5a;
   animation: tremer 0.3s;
+}
+
+.opcao-miolo--errada {
+  background: #5a1414;
 }
 
 @keyframes tremer {
   25% { transform: translateX(-5px); }
   75% { transform: translateX(5px); }
+}
+
+/* ---------- Resposta dissertativa (exercício "dissertativa") ---------- */
+
+.dissertativa-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.dissertativa-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  border: 3px solid #5c1a73;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #2c0a35;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease;
+}
+
+.dissertativa-textarea::placeholder {
+  color: #9a8aa8;
+}
+
+.dissertativa-textarea:focus {
+  outline: none;
+  border-color: #ffd84d;
+}
+
+.dissertativa-textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ---------- Montagem de blocos (exercício "ordenar_blocos") ---------- */
+
+.blocos-area {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.blocos-secao {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0; /* impede que os blocos de código estourem a largura do painel */
+}
+
+.blocos-rotulo {
+  color: #f0d9ff;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* bolsa de peças disponíveis: blocos soltos, lado a lado, que quebram linha */
+.blocos-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px;
+  border: 2px dashed #7a3f8f;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* área de resposta: peças empilhadas em sequência, como linhas de código */
+.blocos-resposta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 48px;
+  padding: 10px;
+  border: 3px solid #5c1a73;
+  border-radius: 10px;
+  background: #2c0a35;
+  transition: border-color 0.15s ease;
+}
+
+.blocos-resposta--erro {
+  border-color: #ff5a5a;
+  animation: tremer 0.3s;
+}
+
+.blocos-vazio {
+  padding: 4px 2px;
+  color: #c9a8d9;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
+.bloco-codigo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 3px solid #5c1a73;
+  border-radius: 8px;
+  background: #45114f;
+  color: #7cff3f;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: grab;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+
+.bloco-codigo code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.bloco-codigo:hover:not(:disabled) {
+  border-color: #ffd84d;
+}
+
+.bloco-codigo:active:not(:disabled) {
+  cursor: grabbing;
+}
+
+.bloco-codigo:focus-visible {
+  outline: 3px solid #ffd84d;
+  outline-offset: 2px;
+}
+
+.bloco-codigo:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* peça já colocada na resposta: ocupa a largura toda, como uma linha real */
+.bloco-codigo--colocado {
+  width: 100%;
+  justify-content: space-between;
+  cursor: default;
+}
+
+.bloco-controles {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.bloco-controles button {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 6px;
+  background: #6a3fd9;
+  color: #ffffff;
+  font-size: 0.7rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.bloco-controles button:hover:not(:disabled) {
+  background: #8257e6;
+}
+
+.bloco-controles button:disabled {
+  background: #4a3a5a;
+  color: #9a8aa8;
+  cursor: not-allowed;
 }
 
 /* ---------- Retorno de erro ---------- */
@@ -337,6 +522,37 @@
   margin: 0;
   color: #eaffe0;
   font-size: 0.9rem;
+}
+
+/* ---------- Avaliando (correção mockada da dissertativa) ---------- */
+
+.corrigindo-banner {
+  text-align: center;
+  padding: 12px 0;
+  animation: surgir 0.25s ease-out;
+}
+
+.corrigindo-titulo {
+  margin: 0 0 4px;
+  color: #ffe14d;
+  font-size: 1.3rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.corrigindo-fala {
+  margin: 0;
+  color: #f0d9ff;
+  font-size: 0.9rem;
+}
+
+.corrigindo-pontos {
+  display: inline-block;
+  animation: pulsar 1.2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
 }
 
 /* ---------- Vitória (prepara XP / recompensa) ---------- */
@@ -409,46 +625,40 @@
 }
 
 /* ---------- Botão ---------- */
+/* "AVANTE!"/"VERIFICAR"/"ATACAR"/"TENTAR NOVAMENTE" — usa <BotaoPixel>
+   (ver src/components/BotaoPixel.jsx e src/styles/botaoPixel.css pra
+   geometria/mecânica); aqui só as cores próprias desta tela. */
 
 .botao-avante {
   display: block;
   margin: 16px auto 4px;
-  padding: 10px 28px;
-  border: 3px solid #3f7a24;
-  border-radius: 999px;
-  background: #7ed957;
-  color: #14330a;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  font-weight: bold;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  box-shadow: 0 4px 0 #3f7a24;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
-}
-
-.botao-avante:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #3f7a24;
+  background: #3f7a24; /* moldura verde — cor da antiga borda */
 }
 
 .botao-avante:disabled {
+  background: #6f7568;
+}
+
+.botao-avante-miolo {
+  padding: 10px 28px;
+  background: #7ed957;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.botao-avante:disabled .botao-avante-miolo {
   background: #9aa38f;
-  border-color: #6f7568;
-  box-shadow: 0 4px 0 #6f7568;
   color: #3d4038;
-  cursor: not-allowed;
 }
 
 .botao-avante--roxo {
-  background: #6a3fd9;
-  border-color: #4a2a99;
-  box-shadow: 0 4px 0 #4a2a99;
-  color: #ffffff;
+  background: #4a2a99;
 }
 
-.botao-avante--roxo:active:not(:disabled) {
-  box-shadow: 0 0 0 #4a2a99;
+.botao-avante-miolo--roxo {
+  background: #6a3fd9;
+  color: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -462,15 +672,19 @@
   .cena--foco::after,
   .cena-flash,
   .opcao--errada,
+  .blocos-resposta--erro,
   .retorno--erro,
   .acerto-banner,
+  .corrigindo-banner,
+  .corrigindo-pontos,
   .vitoria,
   .derrota {
     animation: none;
   }
   .opcao,
   .botao-avante,
-  .coracao {
+  .coracao,
+  .dissertativa-textarea {
     transition: none;
   }
   /* sem animação, garante o estado final do foco/morte */

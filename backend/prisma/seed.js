@@ -6,11 +6,11 @@
 // (ou automaticamente depois de `prisma migrate dev`, via a config
 // "prisma.seed" no package.json).
 //
-// Só semeia os desafios que já têm conteúdo real (1 e 2, trilha
-// "iniciante" do mundo 1 — ver Home.jsx e SelecionarDificuldade.jsx pros
-// ids reais). Os desafios 3-6 ainda não têm enunciado definido em nenhum
-// lugar do projeto — quando existirem, adicione aqui em vez de inventar
-// conteúdo placeholder no banco.
+// Só semeia os desafios que já têm conteúdo real: 1 e 2 da trilha
+// "iniciante" do mundo 1, e 1 da trilha "iniciante" do mundo 2 (ver Home.jsx
+// e SelecionarDificuldade.jsx pros ids reais). Os demais ainda não têm
+// enunciado definido em nenhum lugar do projeto — quando existirem,
+// adicione aqui em vez de inventar conteúdo placeholder no banco.
 
 const { PrismaClient } = require("@prisma/client");
 
@@ -35,6 +35,16 @@ const itens = [
     imagemUrl: "Item_Peitoral.png",
     bonusDefesa: 5,
   },
+  {
+    nome: "Chapéu Goblin",
+    tipo: "capacete",
+    raridade: "comum",
+    descricao:
+      "Um chapéu esfarrapado tomado do Goblin derrotado — nem toda vitória vem com um troféu bonito, mas essa você ganhou.",
+    icone: "🎩",
+    imagemUrl: "chapeu_goblin.png",
+    bonusDefesa: 2,
+  },
 ];
 
 // Item não tem uma coluna @unique (só "id"), então o upsert por nome é
@@ -55,6 +65,7 @@ async function main() {
   }
 
   const peitoralDeFerro = itensSemeados["Peitoral de Ferro"];
+  const chapeuGoblin = itensSemeados["Chapéu Goblin"];
 
   const desafios = [
     {
@@ -92,11 +103,46 @@ async function main() {
         { id: "c", texto: "51 (number)", correta: false },
         { id: "d", texto: "NaN (number)", correta: false },
       ],
-      // ainda sem Item real associado — recompensa só textual por enquanto
+      // recompensa é um item real — entra no inventário (ItemPersonagem)
+      // na primeira vez que o jogador conclui este desafio
       tipoRecompensa: "item",
-      nomeRecompensa: "1 Item Raro: Um Pergaminho",
-      descricaoRecompensa: "Pergaminho com dicas secretas de código!",
-      iconeRecompensa: "📜",
+      nomeRecompensa: chapeuGoblin.nome,
+      descricaoRecompensa: chapeuGoblin.descricao,
+      iconeRecompensa: chapeuGoblin.icone,
+      itemRecompensaId: chapeuGoblin.id,
+    },
+    {
+      // Primeiro desafio do mundo 2 (portal "Acampamento Goblin" — ver
+      // Home.jsx). Exercício de "ordenar blocos": o jogador monta o
+      // programa arrastando/organizando os blocos na ordem certa, em vez
+      // de escolher entre alternativas — daí o formato diferente aqui em
+      // "alternativas" (ver comentário em schema.prisma).
+      mundoId: 2,
+      dificuldade: DIFICULDADE,
+      numero: 1,
+      titulo: "Desafio JavaScript",
+      enunciado:
+        'Você está desenvolvendo um sistema que verifica se uma pessoa pode acessar uma área restrita.\n\nO programa deve receber a idade de uma pessoa e verificar se ela possui 18 anos ou mais. Caso tenha, deve exibir "Acesso permitido". Caso contrário, deve exibir "Acesso negado".\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.',
+      dica: "o bloco if/else só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
+      alternativas: {
+        tipo: "ordenar_blocos",
+        blocos: [
+          { id: "b1", codigo: "let idade = 20;" },
+          { id: "b2", codigo: "if (idade >= 18) {" },
+          { id: "b3", codigo: 'console.log("Acesso permitido");', indent: 1 },
+          { id: "b4", codigo: "} else {" },
+          { id: "b5", codigo: 'console.log("Acesso negado");', indent: 1 },
+          { id: "b6", codigo: "}" },
+        ],
+        ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
+      },
+      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
+      // depende de nenhuma arte nova de item
+      tipoRecompensa: "insignia",
+      nomeRecompensa: "Guardião das Condicionais",
+      descricaoRecompensa:
+        "Uma insígnia concedida a quem provou domínio sobre if/else — a lógica que decide os rumos de qualquer programa.",
+      iconeRecompensa: "🏅",
     },
   ];
 

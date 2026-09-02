@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import "./Perfil.css";
-// Avatar provisório — troque pela arte real do personagem no futuro.
-import avatar from "../../assets/images/Guerreiro_simples.png";
+import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import IconeItem from "../../components/IconeItem";
+import BotaoPixel from "../../components/BotaoPixel";
 import fundoPersonagemPerfil from "../../assets/images/Fundo_Personagem_Perfil.png";
 
 // "2024-04-10..." -> "abril de 2024"
@@ -21,6 +22,7 @@ function Perfil() {
   const [perfil, setPerfil] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+  const avatar = usePersonagemAvatar();
 
   useEffect(() => {
     let ativo = true;
@@ -51,13 +53,13 @@ function Perfil() {
   return (
     <div className="perfil">
       {/* Voltar para a Home */}
-      <button
-        type="button"
+      <BotaoPixel
         className="perfil-voltar"
+        classeMiolo="perfil-voltar-miolo"
         onClick={() => navigate("/home")}
       >
         ← Voltar
-      </button>
+      </BotaoPixel>
 
       {/* Banner do personagem */}
       <div
@@ -108,13 +110,13 @@ function Perfil() {
       </section>
 
       {/* Personalização virá numa etapa futura */}
-      <button
-        type="button"
+      <BotaoPixel
         className="perfil-editar"
+        classeMiolo="perfil-editar-miolo"
         onClick={() => navigate("/editar-personagem")}
       >
         Editar personagem
-      </button>
+      </BotaoPixel>
 
       {/* Ranking mundial */}
       <section className="perfil-card">
@@ -143,7 +145,11 @@ function Perfil() {
           {itens.length > 0 ? (
             itens.map((item) => (
               <div className="perfil-item" key={item.id}>
-                <div className="perfil-item-icone">{item.icone ?? "🛡️"}</div>
+                <IconeItem
+                  item={item}
+                  classeImagem="perfil-item-imagem"
+                  classeEmoji="perfil-item-icone"
+                />
                 <span className="perfil-item-nome">{item.nome}</span>
               </div>
             ))

@@ -18,25 +18,19 @@
   position: relative; /* âncora do botão Voltar */
 }
 
-/* ---------- Botão Voltar ---------- */
+/* ---------- Botão Voltar (pixelado — ver BotaoPixel) ---------- */
 .perfil-voltar {
   position: absolute;
   top: 14px;
   left: 14px;
   z-index: 10;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 20px;
-  background: rgba(15, 20, 38, 0.85);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  background: rgba(10, 14, 26, 0.9);
 }
 
-.perfil-voltar:hover {
-  background: rgba(30, 38, 66, 0.95);
+.perfil-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
 }
 
 /* ---------- Banner do personagem ---------- */
@@ -118,24 +112,18 @@
   color: var(--texto-suave);
 }
 
-/* ---------- Botão editar personagem ---------- */
+/* ---------- Botão editar personagem (pixelado — ver BotaoPixel) ---------- */
 .perfil-editar {
   display: block;
   width: calc(100% - 40px);
   margin: 0 20px 20px;
-  padding: 13px 0;
-  border: none;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--teal), var(--teal-escuro));
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 5px 14px rgba(20, 126, 160, 0.35);
+  background: var(--teal-escuro);
 }
 
-.perfil-editar:hover {
-  filter: brightness(1.05);
+.perfil-editar-miolo {
+  padding: 13px 0;
+  background: linear-gradient(180deg, var(--teal), var(--teal-escuro));
+  font-size: 15px;
 }
 
 /* ---------- Cards (ranking e itens) ---------- */
@@ -207,6 +195,14 @@
 
 .perfil-item-icone {
   font-size: 34px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+}
+
+.perfil-item-imagem {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  image-rendering: pixelated;
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
 }
 

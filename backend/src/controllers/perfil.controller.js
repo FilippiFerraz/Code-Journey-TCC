@@ -1,4 +1,4 @@
-const { buscarPerfil } = require("../services/perfil.service.js");
+const { buscarPerfil, marcarTutorialVisto } = require("../services/perfil.service.js");
 
 async function getPerfil(req, res, next) {
   try {
@@ -13,4 +13,14 @@ async function getPerfil(req, res, next) {
   }
 }
 
-module.exports = { getPerfil };
+async function postTutorialVisto(req, res, next) {
+  try {
+    const usuarioId = req.usuario?.id ?? req.usuarioId;
+    await marcarTutorialVisto(usuarioId);
+    res.status(200).json({ tutorialVisto: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getPerfil, postTutorialVisto };

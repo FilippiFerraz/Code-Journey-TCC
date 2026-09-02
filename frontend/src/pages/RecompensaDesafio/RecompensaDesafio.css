@@ -99,22 +99,18 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
+/* botão "AVANTE!" pixelado (ver BotaoPixel) */
 .recompensa-botao-avante {
+  display: block;
   margin-top: auto;
   width: 100%;
   max-width: 320px;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ffd76a, #f5a623);
-  color: #3a2405;
-  font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  background: #a86a10;
 }
 
-.recompensa-botao-avante:active {
-  transform: translateY(1px);
+.recompensa-botao-avante-miolo {
+  padding: 14px;
+  background: linear-gradient(135deg, #ffd76a, #f5a623);
+  font-size: 1rem;
+  letter-spacing: 0.5px;
 }

@@ -3,7 +3,7 @@ const progressoService = require("../services/progresso.service");
 async function responderDesafio(req, res, next) {
   try {
     const usuarioId = req.usuario?.id ?? req.usuarioId;
-    const { mundoId, dificuldade, numero, opcaoId } = req.body;
+    const { mundoId, dificuldade, numero, opcaoId, ordem } = req.body;
 
     const resultado = await progressoService.responderDesafio({
       usuarioId,
@@ -11,6 +11,7 @@ async function responderDesafio(req, res, next) {
       dificuldade,
       numero,
       opcaoId,
+      ordem,
     });
 
     return res.status(200).json(resultado);

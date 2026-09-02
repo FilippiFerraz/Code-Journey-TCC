@@ -1,0 +1,104 @@
+/* ============================================================
+   botaoPixel.css — botão com moldura em "escada" pixelada (mesma técnica
+   criada em Desafios.css para o botão "DESAFIO N"), agora compartilhada
+   por qualquer tela que use o componente <BotaoPixel> (ver
+   src/components/BotaoPixel.jsx).
+
+   Estrutura de duas camadas, as duas com o MESMO clip-path:
+   - camada externa (.botao-pixel)       -> cor da moldura/borda grossa
+   - camada interna (.botao-pixel-miolo) -> cor de preenchimento/gradiente
+
+   Cada tela define as próprias cores por cima destas classes base (ex:
+   background da moldura, background do miolo) — só a geometria e o
+   comportamento de clique (recorte, brilho no canto, "afundar" ao
+   pressionar) ficam centralizados aqui.
+   ============================================================ */
+
+.botao-pixel {
+  --recorte-pixel: polygon(
+    0px 12px,
+    4px 12px,
+    4px 8px,
+    8px 8px,
+    8px 4px,
+    12px 4px,
+    12px 0px,
+    calc(100% - 12px) 0px,
+    calc(100% - 12px) 4px,
+    calc(100% - 8px) 4px,
+    calc(100% - 8px) 8px,
+    calc(100% - 4px) 8px,
+    calc(100% - 4px) 12px,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    12px calc(100% - 4px),
+    8px calc(100% - 4px),
+    8px calc(100% - 8px),
+    4px calc(100% - 8px),
+    4px calc(100% - 12px),
+    0px calc(100% - 12px)
+  );
+
+  position: relative;
+  display: inline-block;
+  padding: 4px; /* espessura da moldura grossa */
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  clip-path: var(--recorte-pixel);
+  image-rendering: pixelated;
+  font: inherit;
+  text-align: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.botao-pixel:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+.botao-pixel:disabled {
+  cursor: not-allowed;
+}
+
+.botao-pixel-miolo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  color: #ffffff; /* padrão — cada tela pode sobrescrever se precisar */
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+  text-decoration: none;
+  clip-path: var(--recorte-pixel);
+}
+
+/* brilho pixelado no canto superior esquerdo — mesmo "glow" do botão de
+   desafio original. Some sozinho quando o botão está desabilitado (ver
+   .botao-pixel:disabled .botao-pixel-miolo::before abaixo). */
+.botao-pixel-miolo::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 10px;
+  height: 8px;
+  background: #ffffff;
+  opacity: 0.9;
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 40% 40%, 40% 100%, 0 100%);
+}
+
+.botao-pixel:disabled .botao-pixel-miolo::before {
+  display: none;
+}

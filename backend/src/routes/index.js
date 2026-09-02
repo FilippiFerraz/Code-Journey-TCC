@@ -13,4 +13,10 @@ router.use("/progresso", progressoRoutes);
 const personagemRoutes = require("./personagem.routes.js");
 router.use("/personagem", personagemRoutes);
 
+const adminRoutes = require("./admin.routes.js");
+router.use("/admin", adminRoutes);
+
+const rankingRoutes = require("./ranking.routes.js");
+router.use("/ranking", rankingRoutes);
+
 module.exports = router;

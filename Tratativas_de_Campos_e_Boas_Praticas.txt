@@ -1,0 +1,71 @@
+TÍTULO: Tratativas de Campos e Boas Práticas de Dados
+SUBTÍTULO: Code Journey — Resumo técnico de validação de campos e exclusão lógica de dados
+
+=====================================================
+1. POR QUE VALIDAR OS CAMPOS DA APLICAÇÃO
+=====================================================
+
+Validar campos (login, cadastro, recuperação de senha etc.) evita que dados incompletos, mal formatados ou maliciosos cheguem ao banco de dados. Isso protege a aplicação de três formas principais:
+
+- Integridade: impede registros incompletos (ex.: usuário sem senha ou com idade inválida).
+- Segurança: reduz a superfície de ataque (injeção, campos forjados, contas duplicadas) e nunca confia apenas no que o navegador do usuário envia.
+- Experiência do usuário: erros são exibidos na hora, sem esperar uma resposta lenta do servidor para descobrir o que está errado.
+
+A regra seguida no projeto é validar nos dois lados: no frontend para dar retorno imediato, e no backend porque é a única camada que realmente garante a regra — o frontend pode ser contornado, o backend não deve ser.
+
+=====================================================
+2. TRATATIVAS JÁ EXISTENTES NO APLICATIVO
+=====================================================
+
+As telas de Login, Cadastro, Verificação de e-mail e Recuperação de senha já possuem validação dupla (frontend + backend). Resumo:
+
+REGRA: Campos obrigatórios (nome, e-mail, senha, idade)
+- Frontend: Bloqueia o envio e mostra a mensagem na hora
+- Backend: Revalida e recusa com HTTP 400 se algo faltar
+
+REGRA: Formato de senha (mín. 6 caracteres, 1 maiúscula, 1 caractere especial)
+- Frontend: Mesmo padrão exibido como dica ao usuário
+- Backend: Validação final antes de gerar o hash (bcrypt)
+
+REGRA: Confirmação de senha
+- Frontend: Compara os dois campos antes de enviar
+- Backend: — (só a senha final é enviada ao servidor)
+
+REGRA: Formato de e-mail
+- Frontend: Validação nativa do campo type="email"
+- Backend: Expressão regular própria antes de gravar
+
+REGRA: Idade (13 a 120 anos, número inteiro)
+- Frontend: Checa a faixa antes de enviar
+- Backend: Revalida a mesma faixa (defesa em profundidade)
+
+REGRA: E-mail duplicado / conta já existente
+- Frontend: —
+- Backend: Retorna HTTP 409 e não permite duplicidade
+
+REGRA: E-mail não confirmado ao tentar entrar
+- Frontend: Mostra atalho para reenviar o código
+- Backend: Bloqueia o login com HTTP 403
+
+REGRA: Código de verificação/recuperação incorreto ou expirado
+- Frontend: Exibe a mensagem específica retornada
+- Backend: Confere valor e prazo de validade (15 min)
+
+Pontos de atenção identificados (ainda não corrigidos): campos preenchidos só com espaços em branco não são bloqueados (checagem hoje é apenas "vazio ou não"), e o e-mail não é normalizado (trim) antes de salvar/comparar em duas rotas específicas do backend (cadastro e login) — itens simples de corrigir, mas ainda pendentes.
+
+=====================================================
+3. EXCLUSÃO LÓGICA DE DADOS NO BANCO (SOFT DELETE)
+=====================================================
+
+Por padrão, um DELETE no banco remove a linha de forma definitiva. Isso é arriscado quando o registro está referenciado por outras tabelas (no projeto, um Usuário está ligado a Progresso, Personagem e ao Ranking) — apagar de verdade quebraria esse histórico ou exigiria apagar tudo em cascata, perdendo dados que poderiam ser úteis (auditoria, recuperação de conta, métricas).
+
+A solução adotada foi a exclusão lógica ("soft delete"): em vez de apagar, a linha ganha uma marcação indicando que está excluída, mas continua fisicamente no banco.
+
+- Campo adicionado: Usuario.deletedAt (data/hora). Nulo = usuário ativo, preenchido = usuário excluído.
+- Toda leitura (login, ranking, perfil, etc.) passa a ignorar automaticamente quem está marcado como excluído.
+- Um "apagar" nunca remove a linha de fato — internamente vira apenas uma atualização desse campo.
+- Nenhum service precisou ser alterado individualmente: a regra foi centralizada em um único ponto (a camada de acesso ao banco, via uma extensão do Prisma Client), evitando o risco de alguém esquecer o filtro em uma consulta nova no futuro.
+
+Hoje essa é só a infraestrutura pronta — ainda não existe uma funcionalidade de "excluir conta" na interface. Quando ela for criada, poderá reutilizar essa mesma marcação sem precisar de nenhuma mudança estrutural.
+
+Observação técnica: como Usuario.email é único no banco, o soft delete não libera esse e-mail automaticamente para um novo cadastro (a linha antiga ainda "ocupa" o valor). Quando o fluxo de exclusão de conta for construído, provavelmente será necessário decidir o que fazer com o e-mail no momento da exclusão (ex.: anexar um sufixo) se for permitido recadastro com o mesmo e-mail depois.

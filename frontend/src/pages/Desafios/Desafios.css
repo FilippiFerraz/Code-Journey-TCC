@@ -69,20 +69,30 @@
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 
+/* Botão "✕" de fechar — mesmo recorte pixelado dos demais botões
+   (ver BotaoPixel), só que pequeno e redondo o bastante pra caber no
+   cantinho da placa de madeira. */
 .desafios-fechar {
   position: absolute;
   right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: none;
-  background: #6b3f1f;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 800;
-  cursor: pointer;
+  width: 34px;
+  background: #4a2c14;
+}
+
+.desafios-fechar-miolo {
+  padding: 8px;
+  font-size: 13px;
+  background: linear-gradient(
+    to bottom,
+    #e0862f 0%,
+    #e0862f 16%,
+    #c96a1a 16%,
+    #c96a1a 78%,
+    #96500f 78%,
+    #96500f 100%
+  );
 }
 
 .desafios-placa-corpo {
@@ -103,80 +113,20 @@
   gap: 14px;
 }
 
-/* ===== Botões estilo "START" pixel-art (moldura em degraus) =====
-   Técnica: o <button> (camada externa, cor da borda) e o miolo <span>
-   (camada interna, cor de preenchimento) usam o MESMO clip-path — um
-   polígono com cantos em "escada" de 4px em vez de curva suave. Como o
-   clip-path usa % relativo ao próprio elemento, o mesmo valor funciona
-   tanto na borda grossa quanto no miolo, não importa o tamanho do botão. */
-
-.desafios-botao {
-  --recorte-pixel: polygon(
-    0px 12px,
-    4px 12px,
-    4px 8px,
-    8px 8px,
-    8px 4px,
-    12px 4px,
-    12px 0px,
-    calc(100% - 12px) 0px,
-    calc(100% - 12px) 4px,
-    calc(100% - 8px) 4px,
-    calc(100% - 8px) 8px,
-    calc(100% - 4px) 8px,
-    calc(100% - 4px) 12px,
-    100% 12px,
-    100% calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 4px),
-    calc(100% - 12px) calc(100% - 4px),
-    calc(100% - 12px) 100%,
-    12px 100%,
-    12px calc(100% - 4px),
-    8px calc(100% - 4px),
-    8px calc(100% - 8px),
-    4px calc(100% - 8px),
-    4px calc(100% - 12px),
-    0px calc(100% - 12px)
-  );
-
-  position: relative;
-  padding: 4px; /* espessura da "moldura" grossa */
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  clip-path: var(--recorte-pixel);
-  image-rendering: pixelated;
-}
+/* ===== Botões "DESAFIO N" — usam <BotaoPixel> (ver src/components/
+   BotaoPixel.jsx e src/styles/botaoPixel.css pra geometria/mecânica); aqui
+   só ficam as cores próprias desta tela. ===== */
 
 .desafios-botao-liberado {
   background: #3a1530; /* roxo bem escuro, cor da moldura */
 }
 
-.desafios-botao-liberado:active {
-  transform: translateY(2px);
-}
-
 .desafios-botao-bloqueado {
   background: #4a4a52;
-  cursor: not-allowed;
 }
 
 .desafios-botao-miolo {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 6px;
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  color: #ffffff;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
-  clip-path: var(--recorte-pixel);
 }
 
 /* faixas sólidas (sem gradiente suave) simulando luz em cima e sombra
@@ -207,25 +157,16 @@
   text-shadow: none;
 }
 
-/* "brilho" pixelado no canto superior esquerdo */
-.desafios-botao-miolo-liberado::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 8px;
-  width: 10px;
-  height: 8px;
-  background: #ffffff;
-  opacity: 0.9;
-  clip-path: polygon(0 0, 100% 0, 100% 40%, 40% 40%, 40% 100%, 0 100%);
-}
-
 .desafios-cadeado {
   font-size: 12px;
 }
 
 .desafios-espadas {
-  text-align: center;
-  font-size: 28px;
-  margin-top: 20px;
+  display: block;
+  width: 25%;
+  max-width: 130px;
+  height: auto;
+  margin: 20px auto 0;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }

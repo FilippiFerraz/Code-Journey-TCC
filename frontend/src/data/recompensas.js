@@ -9,19 +9,51 @@
 // Tipos de recompensa suportados hoje: "insignia" (badge/conquista) e
 // "item" (item de inventário). Os dois usam a mesma tela visualmente,
 // só muda o texto e o ícone.
-
-const recompensas = {
+//
+// Organizado por mundoId -> numero do desafio: o numero se repete em cada
+// trilha/portal (desafio 1 do mundo 1 e desafio 1 do mundo 2 são coisas
+// diferentes), então uma chave só pelo numero colidiria entre portais.
+const recompensasPorMundo = {
   1: {
-    tipo: 'insignia',
-    nome: 'Insígnia "O Iniciado"',
-    descricao: 'Prova de seu primeiro feito.',
-    icone: '🏆',
+    1: {
+      tipo: 'item',
+      nome: 'Peitoral de Ferro',
+      descricao:
+        'Uma armadura simples, mas resistente — prova de que você sobreviveu ao seu primeiro combate de código.',
+      icone: '🛡️',
+    },
+    2: {
+      tipo: 'item',
+      nome: 'Chapéu Goblin',
+      descricao:
+        'Um chapéu esfarrapado tomado do Goblin derrotado — nem toda vitória vem com um troféu bonito, mas essa você ganhou.',
+      icone: '🎩',
+    },
   },
   2: {
-    tipo: 'item',
-    nome: '1 Item Raro: Um Pergaminho',
-    descricao: 'Pergaminho com dicas secretas de código!',
-    icone: '📜',
+    1: {
+      tipo: 'insignia',
+      nome: 'Guardião das Condicionais',
+      descricao:
+        'Uma insígnia concedida a quem provou domínio sobre if/else — a lógica que decide os rumos de qualquer programa.',
+      icone: '🏅',
+    },
+    2: {
+      tipo: 'insignia',
+      nome: 'Voz do Sábio',
+      descricao:
+        'Uma insígnia concedida a quem sabe não só escrever código, mas explicar o que ele faz — a marca de quem realmente entende.',
+      icone: '📜',
+    },
+  },
+  3: {
+    1: {
+      tipo: 'insignia',
+      nome: 'Mestre dos Laços',
+      descricao:
+        'Uma insígnia concedida a quem domina a repetição — a base de todo código que faz muito sem se repetir na hora de escrever.',
+      icone: '🔁',
+    },
   },
 };
 
@@ -35,8 +67,8 @@ const recompensaPadrao = {
   icone: '🎁',
 };
 
-export function getRecompensaPorDesafio(desafioId) {
-  return recompensas[desafioId] || recompensaPadrao;
+export function getRecompensaPorDesafio(desafioId, mundoId = 1) {
+  return recompensasPorMundo[mundoId]?.[desafioId] || recompensaPadrao;
 }
 
-export default recompensas;
+export default recompensasPorMundo;

@@ -1,0 +1,248 @@
+/* ============================================================
+   Ranking.css — ranking global por XP
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   Estética: placas de madeira penduradas na parede da masmorra do fundo
+   (fundo_ranking.jpg), com rebites nos cantos — mesma linguagem "jogo de
+   RPG pixelado" do resto do app.
+   ============================================================ */
+
+/* Fundo da tela — masmorra em pixel art. Estica -20px em todos os lados
+   pra cobrir o padding do MainLayout (.layout-conteudo) e ficar rente às
+   bordas; min-height compensa esse mesmo -20px pra não sobrar espaço sem
+   fundo quando o conteúdo é mais baixo que a tela. */
+.ranking-tela {
+  margin: -20px;
+  padding: 20px;
+  min-height: calc(100% + 40px);
+  background: url("../../assets/images/fundo_ranking.jpg") center / cover no-repeat;
+  image-rendering: pixelated;
+}
+
+/* ---------- Placa-título ("RANKING DAS LENDAS" + coroa) ---------- */
+
+.ranking-titulo-placa {
+  position: relative;
+  margin: 4px auto 30px;
+  padding: 14px 20px;
+  max-width: 320px;
+  text-align: center;
+  background: linear-gradient(180deg, #a0682f, #6b3f1f);
+  border: 3px solid #2e1a0d;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #2e1a0d, 0 8px 14px rgba(0, 0, 0, 0.45);
+}
+
+.ranking-titulo {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #ffe9b0;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* coroa pendurada na borda de baixo da placa, igual à referência */
+.ranking-titulo-coroa {
+  position: absolute;
+  left: 50%;
+  bottom: -16px;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  background: radial-gradient(circle at 35% 30%, #ffe9b0, #c9962a 70%);
+  border: 3px solid #2e1a0d;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 #2e1a0d;
+}
+
+/* ---------- Resumo do jogador logado ---------- */
+
+.ranking-eu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #3d6b8a, #24475e);
+  border: 3px solid #14283a;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #14283a, 0 6px 12px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+}
+
+.ranking-eu-avatar {
+  flex-shrink: 0;
+  height: 36px;
+  width: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+}
+
+.ranking-eu-nome {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.ranking-eu-posicao {
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffe9b0;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- Lista de placas ---------- */
+
+.ranking-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 12px;
+}
+
+/* Cada linha é uma "placa de madeira": borda grossa escura, cantos
+   arredondados e 4 rebites (pontinhos escuros) perto dos cantos, feitos só
+   com gradientes radiais no background — sem elementos extras no HTML. */
+.ranking-linha {
+  --cor-rebite: #2e1a0d;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 3px solid #2e1a0d;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle 3px at 12px 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at calc(100% - 12px) 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at 12px calc(100% - 12px), var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(
+      circle 3px at calc(100% - 12px) calc(100% - 12px),
+      var(--cor-rebite) 65%,
+      transparent 68%
+    ),
+    linear-gradient(180deg, #8a6f52, #5c4630);
+  box-shadow: 0 4px 0 #2e1a0d, 0 6px 10px rgba(0, 0, 0, 0.35);
+}
+
+.ranking-linha--ouro {
+  background:
+    radial-gradient(circle 3px at 12px 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at calc(100% - 12px) 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at 12px calc(100% - 12px), var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(
+      circle 3px at calc(100% - 12px) calc(100% - 12px),
+      var(--cor-rebite) 65%,
+      transparent 68%
+    ),
+    linear-gradient(180deg, #f7d774, #c9962a);
+}
+
+.ranking-linha--prata {
+  background:
+    radial-gradient(circle 3px at 12px 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at calc(100% - 12px) 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at 12px calc(100% - 12px), var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(
+      circle 3px at calc(100% - 12px) calc(100% - 12px),
+      var(--cor-rebite) 65%,
+      transparent 68%
+    ),
+    linear-gradient(180deg, #d7dbe6, #9098ab);
+}
+
+.ranking-linha--bronze {
+  background:
+    radial-gradient(circle 3px at 12px 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at calc(100% - 12px) 12px, var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(circle 3px at 12px calc(100% - 12px), var(--cor-rebite) 65%, transparent 68%),
+    radial-gradient(
+      circle 3px at calc(100% - 12px) calc(100% - 12px),
+      var(--cor-rebite) 65%,
+      transparent 68%
+    ),
+    linear-gradient(180deg, #d59a63, #8b5a2b);
+}
+
+.ranking-linha--eu {
+  outline: 3px solid #ffd84d;
+  outline-offset: 2px;
+}
+
+.ranking-posicao {
+  flex-shrink: 0;
+  min-width: 34px;
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff7e0;
+  -webkit-text-stroke: 1.5px #2e1a0d;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.ranking-icone {
+  flex-shrink: 0;
+  font-size: 18px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
+}
+
+.ranking-nome {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fffaf0;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranking-pontos {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fffaf0;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.ranking-pontos-rotulo {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.ranking-vazio {
+  padding: 24px 4px;
+  text-align: center;
+  color: #f0e8fa;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+}
+
+/* ---------- Estados de carregamento/erro ---------- */
+.ranking-estado {
+  padding: 60px 24px;
+  text-align: center;
+  color: #f0e8fa;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-size: 15px;
+}
+
+.ranking-estado--erro {
+  color: #ff6b6b;
+}

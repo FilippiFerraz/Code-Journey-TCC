@@ -44,4 +44,32 @@ async function enviarEmailRecuperacao(email, nome, codigo) {
   });
 }
 
-module.exports = { transporter, enviarEmailRecuperacao };
+// Código de confirmação enviado logo após o cadastro — sem ele, o login
+// fica bloqueado (ver Usuario.emailVerificado em auth.service.js).
+async function enviarEmailVerificacao(email, nome, codigo) {
+  await transporter.sendMail({
+    from: `Code Journey <${EMAIL_USER}>`,
+    to: email,
+    subject: "Confirme seu e-mail — Code Journey",
+    text:
+      `Olá, ${nome}!\n\n` +
+      `Seu código de confirmação é: ${codigo}\n\n` +
+      `Ele expira em 15 minutos. Se você não criou uma conta no Code Journey, ignore este e-mail.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color: #6a3fd9;">Confirme seu e-mail</h2>
+        <p>Olá, <strong>${nome}</strong>! Use o código abaixo pra confirmar sua conta no <strong>Code Journey</strong>:</p>
+        <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;
+                  color: #22283a; background: #f2effa; padding: 14px 0;
+                  text-align: center; border-radius: 10px;">
+          ${codigo}
+        </p>
+        <p style="color: #6b7280; font-size: 14px;">
+          O código expira em 15 minutos. Se você não criou essa conta, ignore este e-mail.
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { transporter, enviarEmailRecuperacao, enviarEmailVerificacao };

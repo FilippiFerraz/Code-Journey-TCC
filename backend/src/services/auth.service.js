@@ -1,12 +1,61 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
 const { gerarToken } = require("../utils/jwt");
-const { enviarEmailRecuperacao } = require("./email.service");
+const { enviarEmailRecuperacao, enviarEmailVerificacao } = require("./email.service");
 
 const SALT_ROUNDS = 10;
 const CODIGO_VALIDO_MINUTOS = 15;
 
-async function cadastrar({ nome, email, senha }) {
+function erroDeValidacao(mensagem) {
+  const erro = new Error(mensagem);
+  erro.status = 400;
+  return erro;
+}
+
+function gerarCodigo() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+// Mínimo 6 caracteres, pelo menos 1 letra maiúscula e pelo menos 1 caractere
+// especial (não letra/dígito/espaço).
+const SENHA_REGEX = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9\s]).{6,}$/;
+
+function validarSenha(senha) {
+  if (!SENHA_REGEX.test(senha || "")) {
+    throw erroDeValidacao(
+      "A senha precisa ter no mínimo 6 caracteres, com pelo menos uma letra maiúscula e um caractere especial."
+    );
+  }
+}
+
+// Formato básico — só pra rejeitar besteira antes de tentar enviar o
+// e-mail de verificação. Quem realmente confirma que a caixa existe é o
+// código enviado logo abaixo, não este regex.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validarFormatoEmail(email) {
+  if (!EMAIL_REGEX.test(String(email || "").trim())) {
+    throw erroDeValidacao("Informe um e-mail válido.");
+  }
+}
+
+// Obrigatória no cadastro (mesmo a coluna sendo opcional no banco, pra não
+// quebrar contas criadas antes desse campo existir).
+function validarIdade(idade) {
+  const numero = Number(idade);
+  if (idade === undefined || idade === null || idade === "" || !Number.isInteger(numero)) {
+    throw erroDeValidacao("Informe sua idade.");
+  }
+  if (numero < 13 || numero > 120) {
+    throw erroDeValidacao("Informe uma idade válida.");
+  }
+  return numero;
+}
+
+async function cadastrar({ nome, email, senha, idade }) {
+  validarFormatoEmail(email);
+  const idadeValidada = validarIdade(idade);
+
   const usuarioExistente = await prisma.usuario.findUnique({ where: { email } });
 
   if (usuarioExistente) {
@@ -15,24 +64,47 @@ async function cadastrar({ nome, email, senha }) {
     throw erro;
   }
 
+  validarSenha(senha);
+
   const senhaCriptografada = await bcrypt.hash(senha, SALT_ROUNDS);
+  const codigo = gerarCodigo();
+  const expiraEm = new Date(Date.now() + CODIGO_VALIDO_MINUTOS * 60 * 1000);
 
   const usuario = await prisma.usuario.create({
-    data: { nome, email, senha: senhaCriptografada },
+    data: {
+      nome,
+      email,
+      senha: senhaCriptografada,
+      idade: idadeValidada,
+      codigoVerificacao: codigo,
+      codigoVerificacaoExpiraEm: expiraEm,
+    },
   });
 
-  const token = gerarToken({ id: usuario.id });
+  await enviarEmailVerificacao(usuario.email, usuario.nome, codigo);
 
+  // Sem token aqui de propósito — a conta só fica utilizável depois de
+  // confirmar o e-mail em POST /auth/verificar-email.
   return {
-    usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
-    token,
+    mensagem: "Conta criada! Enviamos um código de confirmação para o seu e-mail.",
+    email: usuario.email,
   };
 }
 
 async function login({ email, senha }) {
+  // findUnique já filtra deletedAt: null automaticamente (extensão de soft
+  // delete em config/prisma.js), então um usuário excluído cai aqui como
+  // "não encontrado" — por isso a checagem extra abaixo, só pra dar uma
+  // mensagem melhor nesse caso específico.
   const usuario = await prisma.usuario.findUnique({ where: { email } });
 
   if (!usuario) {
+    if (await prisma.usuarioFoiExcluido(email)) {
+      const erro = new Error("Esta conta foi desativada.");
+      erro.status = 401;
+      throw erro;
+    }
+
     const erro = new Error("Email ou senha inválidos.");
     erro.status = 401;
     throw erro;
@@ -46,21 +118,89 @@ async function login({ email, senha }) {
     throw erro;
   }
 
+  if (!usuario.emailVerificado) {
+    const erro = new Error(
+      "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada ou peça um novo código."
+    );
+    erro.status = 403;
+    throw erro;
+  }
+
   const token = gerarToken({ id: usuario.id });
 
   return {
-    usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+    usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, role: usuario.role },
     token,
   };
 }
 
-// --- Recuperação de senha ---
+// --- Confirmação de e-mail no cadastro ---
 
-function erroDeValidacao(mensagem) {
-  const erro = new Error(mensagem);
-  erro.status = 400;
-  return erro;
+async function verificarEmailCadastro({ email, codigo }) {
+  const emailNormalizado = String(email || "").trim();
+  const codigoInformado = String(codigo || "").trim();
+
+  const usuario = await prisma.usuario.findUnique({ where: { email: emailNormalizado } });
+
+  if (!usuario || !usuario.codigoVerificacao || !usuario.codigoVerificacaoExpiraEm) {
+    throw erroDeValidacao("Código inválido. Peça um novo código.");
+  }
+
+  if (usuario.codigoVerificacao !== codigoInformado) {
+    throw erroDeValidacao("Código incorreto.");
+  }
+
+  if (new Date() > usuario.codigoVerificacaoExpiraEm) {
+    throw erroDeValidacao("Código expirado. Peça um novo código.");
+  }
+
+  const usuarioAtualizado = await prisma.usuario.update({
+    where: { id: usuario.id },
+    data: {
+      emailVerificado: true,
+      codigoVerificacao: null,
+      codigoVerificacaoExpiraEm: null,
+    },
+  });
+
+  const token = gerarToken({ id: usuarioAtualizado.id });
+
+  return {
+    usuario: {
+      id: usuarioAtualizado.id,
+      nome: usuarioAtualizado.nome,
+      email: usuarioAtualizado.email,
+      role: usuarioAtualizado.role,
+    },
+    token,
+  };
 }
+
+// Gera e reenvia um novo código pra quem ainda não confirmou o e-mail.
+// Resposta sempre igual (exista a conta ou já esteja verificada), pro mesmo
+// motivo de esqueciSenha: não revelar quais e-mails têm conta.
+async function reenviarVerificacaoEmail({ email }) {
+  const resposta = {
+    mensagem: "Se este e-mail tiver uma conta pendente de confirmação, reenviamos o código.",
+  };
+
+  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  if (!usuario || usuario.emailVerificado) return resposta;
+
+  const codigo = gerarCodigo();
+  const expiraEm = new Date(Date.now() + CODIGO_VALIDO_MINUTOS * 60 * 1000);
+
+  await prisma.usuario.update({
+    where: { id: usuario.id },
+    data: { codigoVerificacao: codigo, codigoVerificacaoExpiraEm: expiraEm },
+  });
+
+  await enviarEmailVerificacao(usuario.email, usuario.nome, codigo);
+
+  return resposta;
+}
+
+// --- Recuperação de senha ---
 
 // Gera um código de 6 dígitos, salva no banco com validade e envia por email
 async function esqueciSenha({ email }) {
@@ -73,7 +213,7 @@ async function esqueciSenha({ email }) {
 
   if (!usuario) return resposta;
 
-  const codigo = String(Math.floor(100000 + Math.random() * 900000));
+  const codigo = gerarCodigo();
   const expiraEm = new Date(Date.now() + CODIGO_VALIDO_MINUTOS * 60 * 1000);
 
   await prisma.usuario.update({
@@ -116,9 +256,7 @@ async function verificarCodigo({ email, codigo }) {
 }
 
 async function redefinirSenha({ email, codigo, novaSenha }) {
-  if (!novaSenha || novaSenha.length < 6) {
-    throw erroDeValidacao("A nova senha precisa ter pelo menos 6 caracteres.");
-  }
+  validarSenha(novaSenha);
 
   const usuario = await validarCodigoRecuperacao(email, codigo);
   const senhaHash = await bcrypt.hash(novaSenha, SALT_ROUNDS);
@@ -139,6 +277,8 @@ async function redefinirSenha({ email, codigo, novaSenha }) {
 module.exports = {
   cadastrar,
   login,
+  verificarEmailCadastro,
+  reenviarVerificacaoEmail,
   esqueciSenha,
   verificarCodigo,
   redefinirSenha,

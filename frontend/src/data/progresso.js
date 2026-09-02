@@ -1,50 +1,46 @@
 // src/data/progresso.js
 //
-// Controla quais desafios de uma trilha (mundo + dificuldade) o jogador já
-// concluiu. Regra do jogo: o desafio N só libera depois que o desafio N-1
-// foi concluído com sucesso; o desafio 1 sempre começa liberado.
-//
-// Por enquanto isso fica salvo no localStorage do navegador, seguindo o
-// mesmo padrão "hardcoded/local no frontend" já usado em recompensas.js e
-// em ResolverDesafio. O model Progresso já existe no schema do Prisma
-// (backend/prisma/schema.prisma), mas ainda não tem rota exposta — quando
-// existir (ex: POST /api/progresso), estas funções devem ser trocadas por
-// chamadas à API em vez de localStorage.
+// Regras de desbloqueio de desafios e portais. O progresso em si vem sempre
+// de GET /api/progresso (ver services/api.js) — cada tela busca a lista de
+// progresso do usuário logado e passa pra essas funções, que só decidem
+// "liberado ou não" a partir dela. Nada aqui lê localStorage: progresso
+// salvo no navegador não é por usuário, então dois logins diferentes no
+// mesmo navegador vazariam desbloqueios um pro outro — o bug que fazia
+// portais e desafios aparecerem liberados pra usuários novos.
 
-const PREFIXO_CHAVE = "codejourney:progresso";
+// Trilha usada pra checar o progresso entre mundos — hoje é a única com
+// conteúdo real (ver SelecionarDificuldade.jsx).
+const DIFICULDADE_PADRAO = "iniciante";
 
-function chave(mundoId, dificuldade) {
-  return `${PREFIXO_CHAVE}:${mundoId}:${dificuldade}`;
-}
-
-export function obterConcluidos(mundoId, dificuldade) {
-  try {
-    const bruto = localStorage.getItem(chave(mundoId, dificuldade));
-    const lista = bruto ? JSON.parse(bruto) : [];
-    return new Set(lista);
-  } catch {
-    // localStorage indisponível (modo privado, SSR, etc.) ou dado corrompido
-    return new Set();
-  }
-}
-
-export function marcarConcluido(mundoId, dificuldade, desafioId) {
-  try {
-    const concluidos = obterConcluidos(mundoId, dificuldade);
-    concluidos.add(Number(desafioId));
-    localStorage.setItem(
-      chave(mundoId, dificuldade),
-      JSON.stringify([...concluidos])
-    );
-  } catch {
-    // sem localStorage não tem como persistir; a trilha simplesmente não
-    // lembra o progresso nesta sessão
-  }
-}
-
-// Desafio 1 sempre liberado; os demais exigem o anterior concluído.
-export function desafioLiberado(mundoId, dificuldade, desafioId) {
+// Desafio 1 de uma trilha sempre começa liberado; os demais só liberam
+// depois que o desafio anterior aparecer como concluído no progresso vindo
+// da API (GET /api/progresso?mundoId=&dificuldade=).
+export function desafioLiberado(progresso, mundoId, dificuldade, desafioId) {
   const numero = Number(desafioId);
   if (numero <= 1) return true;
-  return obterConcluidos(mundoId, dificuldade).has(numero - 1);
+
+  return progresso.some(
+    (p) =>
+      Number(p.mundoId) === Number(mundoId) &&
+      p.dificuldade === dificuldade &&
+      p.numero === numero - 1 &&
+      p.concluido
+  );
+}
+
+// Portal do mundo 1 sempre liberado (ponto de partida); os demais só abrem
+// depois que TODOS os desafios cadastrados do mundo anterior (trilha
+// padrão) estiverem concluídos — é a "chave" que o personagem menciona
+// quando o portal está trancado. Se o mundo anterior ainda não tiver nenhum
+// desafio cadastrado, também conta como bloqueado (não tem o que concluir).
+export function mundoLiberado(progresso, mundoId) {
+  const numero = Number(mundoId);
+  if (numero <= 1) return true;
+
+  const desafiosMundoAnterior = progresso.filter(
+    (p) => Number(p.mundoId) === numero - 1 && p.dificuldade === DIFICULDADE_PADRAO
+  );
+  if (desafiosMundoAnterior.length === 0) return false;
+
+  return desafiosMundoAnterior.every((p) => p.concluido);
 }

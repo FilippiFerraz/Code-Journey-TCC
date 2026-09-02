@@ -1,24 +1,51 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
+import BotaoPixel from "../../components/BotaoPixel";
 import "./Desafios.css";
 import magoImagem from "../../assets/images/mago.png";
-import guerreiro from "../../assets/images/Guerreiro_simples.png";
 import fundoPersonagem from "../../assets/images/Fundo_personagem.png";
+import detalheDesafios from "../../assets/images/Detalhe_desafios.png";
+import api from "../../services/api";
 import { desafioLiberado } from "../../data/progresso";
+import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 
 // Ids dos desafios da trilha. Quem está liberado ou não é calculado a partir
-// do progresso salvo (ver desafioLiberado em data/progresso.js): o desafio 1
-// sempre começa aberto, e cada próximo só libera depois que o anterior for
-// concluído com sucesso.
+// do progresso REAL do usuário (GET /api/progresso — ver desafioLiberado em
+// data/progresso.js): o desafio 1 sempre começa aberto, e cada próximo só
+// libera depois que o anterior aparecer como concluído no progresso vindo
+// da API.
 const IDS_DESAFIOS = [1, 2, 3, 4, 5, 6];
 
 function Desafios() {
   const { mundoId, dificuldade } = useParams();
   const navigate = useNavigate();
+  const guerreiro = usePersonagemAvatar();
+  // Começa vazio — enquanto não chega (ou se a chamada falhar), só o
+  // desafio 1 aparece liberado, nunca o contrário.
+  const [progresso, setProgresso] = useState([]);
+
+  useEffect(() => {
+    let ativo = true;
+
+    api
+      .get("/progresso", { params: { mundoId, dificuldade } })
+      .then((res) => {
+        if (ativo) setProgresso(res.data);
+      })
+      .catch(() => {
+        // sem progresso carregado (ex: offline) — mantém os desafios além
+        // do 1 bloqueados em vez de liberar por engano
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [mundoId, dificuldade]);
 
   const desafios = IDS_DESAFIOS.map((id) => ({
     id,
-    bloqueado: !desafioLiberado(mundoId, dificuldade, id),
+    bloqueado: !desafioLiberado(progresso, mundoId, dificuldade, id),
   }));
 
   function handleAbrirDesafio(desafio) {
@@ -46,48 +73,43 @@ function Desafios() {
         <div className="desafios-placa">
           <div className="desafios-placa-topo">
             <h2 className="desafios-placa-titulo">DESAFIOS</h2>
-            <button
-              type="button"
+            <BotaoPixel
               className="desafios-fechar"
+              classeMiolo="desafios-fechar-miolo"
               onClick={() => navigate(-1)}
               aria-label="Voltar"
             >
               ✕
-            </button>
+            </BotaoPixel>
           </div>
 
           <div className="desafios-placa-corpo">
             <div className="desafios-grid">
               {desafios.map((desafio) => (
-                <button
+                <BotaoPixel
                   key={desafio.id}
-                  type="button"
-                  className={`desafios-botao ${
-                    desafio.bloqueado ? "desafios-botao-bloqueado" : "desafios-botao-liberado"
-                  }`}
+                  className={desafio.bloqueado ? "desafios-botao-bloqueado" : "desafios-botao-liberado"}
+                  classeMiolo={
+                    desafio.bloqueado
+                      ? "desafios-botao-miolo-bloqueado"
+                      : "desafios-botao-miolo-liberado"
+                  }
                   onClick={() => handleAbrirDesafio(desafio)}
                   disabled={desafio.bloqueado}
                 >
-                  {/* miolo = camada interna, separada só pra poder ter o
-                      mesmo recorte pixelado da borda externa, criando o
-                      efeito de "moldura" em degraus */}
-                  <span
-                    className={`desafios-botao-miolo ${
-                      desafio.bloqueado
-                        ? "desafios-botao-miolo-bloqueado"
-                        : "desafios-botao-miolo-liberado"
-                    }`}
-                  >
-                    {desafio.bloqueado && (
-                      <span className="desafios-cadeado">🔒</span>
-                    )}
-                    DESAFIO {desafio.id}
-                  </span>
-                </button>
+                  {desafio.bloqueado && <span className="desafios-cadeado">🔒</span>}
+                  DESAFIO {desafio.id}
+                </BotaoPixel>
               ))}
             </div>
 
-            <div className="desafios-espadas">⚔️</div>
+            <img
+              src={detalheDesafios}
+              alt=""
+              aria-hidden="true"
+              className="desafios-espadas"
+              draggable={false}
+            />
           </div>
         </div>
       </div>

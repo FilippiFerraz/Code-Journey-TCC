@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 import api from "../../services/api";
+import BotaoPixel from "../../components/BotaoPixel";
 import "./Login.css";
 
 function Login() {
@@ -9,12 +10,16 @@ function Login() {
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
+  // true quando o backend recusou o login por e-mail ainda não confirmado
+  // (403) — mostra um atalho pra tela de verificação em vez de só o erro.
+  const [emailNaoVerificado, setEmailNaoVerificado] = useState(false);
 
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setErro("");
+    setEmailNaoVerificado(false);
 
     if (!email || !senha) {
       setErro("Preencha e-mail e senha.");
@@ -31,6 +36,7 @@ function Login() {
     } catch (err) {
       const mensagem = err.response?.data?.erro || "Não foi possível entrar. Verifique seus dados.";
       setErro(mensagem);
+      setEmailNaoVerificado(err.response?.status === 403);
     } finally {
       setCarregando(false);
     }
@@ -91,10 +97,25 @@ function Login() {
           </button>
 
           {erro && <p className="login-erro">{erro}</p>}
+          {emailNaoVerificado && (
+            <button
+              type="button"
+              className="login-forgot"
+              onClick={() => navigate("/verificar-email", { state: { email } })}
+            >
+              Confirmar e-mail agora
+            </button>
+          )}
 
-          <button type="submit" className="login-button" disabled={carregando}>
+          <BotaoPixel
+            as="button"
+            type="submit"
+            className="login-button"
+            classeMiolo="login-button-miolo"
+            disabled={carregando}
+          >
             {carregando ? "Entrando..." : "ENTRAR E COMEÇAR"}
-          </button>
+          </BotaoPixel>
         </form>
       </div>
 
@@ -105,14 +126,14 @@ function Login() {
         </div>
 
         <div className="login-social-buttons">
-          <button type="button" className="login-social-btn login-social-google">
+          <BotaoPixel className="login-social-btn" classeMiolo="login-social-miolo">
             <span className="login-social-icon">G</span>
             Google
-          </button>
-          <button type="button" className="login-social-btn login-social-facebook">
+          </BotaoPixel>
+          <BotaoPixel className="login-social-btn" classeMiolo="login-social-miolo">
             <span className="login-social-icon">f</span>
             Facebook
-          </button>
+          </BotaoPixel>
         </div>
       </div>
 

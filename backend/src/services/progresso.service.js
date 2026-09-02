@@ -7,23 +7,46 @@ function erroDeValidacao(mensagem) {
   return erro;
 }
 
-// Confere a alternativa escolhida contra o gabarito de Desafio.alternativas
-// (nunca confia num "correta: true" vindo do cliente) e grava o resultado em
-// Progresso. O XP só é somado em Usuario.xpTotal na primeira vez que o
-// jogador acerta esse desafio — tentativas repetidas depois de já ter
-// concluído não geram XP de novo.
+// Desafio.alternativas é Json livre e hoje guarda um de dois formatos (ver
+// ResolverDesafio.jsx no frontend):
+// - múltipla escolha: array [{ id, texto, correta }] -> valida opcaoId
+// - ordenar blocos: objeto { tipo: "ordenar_blocos", blocos, ordemCorreta } -> valida ordem
+function avaliarMultiplaEscolha(alternativas, opcaoId) {
+  const escolhida = alternativas.find((alt) => alt.id === opcaoId);
+  if (!escolhida) {
+    throw erroDeValidacao("Alternativa inválida para este desafio.");
+  }
+  return escolhida.correta === true;
+}
+
+function avaliarOrdenacaoDeBlocos(alternativas, ordem) {
+  const ordemCorreta = alternativas?.ordemCorreta;
+  if (!Array.isArray(ordemCorreta)) {
+    throw erroDeValidacao("Este desafio não aceita esse formato de resposta.");
+  }
+  if (!Array.isArray(ordem) || ordem.length !== ordemCorreta.length) {
+    return false;
+  }
+  return ordem.every((id, i) => id === ordemCorreta[i]);
+}
+
+// Confere a resposta contra o gabarito de Desafio.alternativas (nunca confia
+// num "correta: true" vindo do cliente) e grava o resultado em Progresso. O
+// XP só é somado em Usuario.xpTotal na primeira vez que o jogador acerta
+// esse desafio — tentativas repetidas depois de já ter concluído não geram
+// XP de novo.
 //
 // Identifica o desafio por (mundoId, dificuldade, numero) — o mesmo trio que
 // já vem nos :params da URL no frontend (ex: /codigo/1/iniciante/2) — e não
 // pelo "id" (PK) do banco, que o frontend nunca chega a conhecer.
-async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcaoId }) {
+async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcaoId, ordem }) {
   const numeroDesafio = Number(numero);
 
   if (!mundoId || !dificuldade || !Number.isInteger(numeroDesafio)) {
     throw erroDeValidacao("Informe o desafio respondido (mundoId, dificuldade e numero).");
   }
-  if (!opcaoId) {
-    throw erroDeValidacao("Informe a alternativa escolhida.");
+  if (!opcaoId && !Array.isArray(ordem)) {
+    throw erroDeValidacao("Informe a alternativa escolhida ou a ordem dos blocos.");
   }
 
   const desafio = await prisma.desafio.findUnique({
@@ -45,14 +68,9 @@ async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcao
 
   const idDesafio = desafio.id;
 
-  const alternativas = Array.isArray(desafio.alternativas) ? desafio.alternativas : [];
-  const escolhida = alternativas.find((alt) => alt.id === opcaoId);
-
-  if (!escolhida) {
-    throw erroDeValidacao("Alternativa inválida para este desafio.");
-  }
-
-  const correta = escolhida.correta === true;
+  const correta = Array.isArray(desafio.alternativas)
+    ? avaliarMultiplaEscolha(desafio.alternativas, opcaoId)
+    : avaliarOrdenacaoDeBlocos(desafio.alternativas, ordem);
 
   const progressoAnterior = await prisma.progresso.findUnique({
     where: { usuarioId_desafioId: { usuarioId, desafioId: idDesafio } },
@@ -87,12 +105,16 @@ async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcao
     });
   }
 
-  // Recompensa em item só é concedida (uma vez) na primeira conclusão, e só
-  // quando o desafio tem um Item real associado — "insignia" ou desafios
-  // ainda sem itemRecompensaId não mexem no inventário.
+  // Recompensa em item só é concedida (some ao inventário) na primeira
+  // conclusão — mas o item continua sendo informado em respostas seguintes
+  // (rejogar um desafio já vencido), só que sem mexer no inventário de novo.
+  // Sem isso, a tela de recompensa não tinha como saber qual é o item certo
+  // numa segunda tentativa e caía no conteúdo antigo hardcoded do frontend.
   let itemGanho = null;
-  if (primeiraVezConcluindo && desafio.itemRecompensaId) {
-    itemGanho = await concederItemAoPersonagem(usuarioId, desafio.itemRecompensa);
+  if (correta && desafio.itemRecompensaId) {
+    itemGanho = primeiraVezConcluindo
+      ? await concederItemAoPersonagem(usuarioId, desafio.itemRecompensa)
+      : formatarItem(desafio.itemRecompensa);
   }
 
   return {
@@ -102,6 +124,18 @@ async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcao
     xpGanho: progresso.xpGanho,
     xpConcedidoAgora: primeiraVezConcluindo ? desafio.xpConcedido : 0,
     itemGanho,
+  };
+}
+
+function formatarItem(item, quantidade) {
+  return {
+    id: item.id,
+    nome: item.nome,
+    tipo: item.tipo,
+    raridade: item.raridade,
+    descricao: item.descricao,
+    icone: item.icone,
+    ...(quantidade !== undefined ? { quantidade } : {}),
   };
 }
 
@@ -124,15 +158,7 @@ async function concederItemAoPersonagem(usuarioId, item) {
         data: { personagemId: personagem.id, itemId: item.id },
       });
 
-  return {
-    id: item.id,
-    nome: item.nome,
-    tipo: item.tipo,
-    raridade: item.raridade,
-    descricao: item.descricao,
-    icone: item.icone,
-    quantidade: itemPersonagem.quantidade,
-  };
+  return formatarItem(item, itemPersonagem.quantidade);
 }
 
 // Progresso do usuário cruzado com os desafios cadastrados — é a fonte de

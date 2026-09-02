@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import BotaoPixel from "../../components/BotaoPixel";
 import "./SelecionarDificuldade.css";
 
 // Duas dificuldades do jogo. O "rotulo" aparece ao passar o mouse.
@@ -20,35 +21,28 @@ function SelecionarDificuldade() {
       <div className="dif-placa">
         <div className="dif-placa-topo">
           <h1 className="dif-placa-titulo">DIFICULDADE</h1>
-          <button
-            type="button"
+          <BotaoPixel
             className="dif-fechar"
+            classeMiolo="dif-fechar-miolo"
             onClick={() => navigate(-1)}
             aria-label="Fechar"
           >
             ✕
-          </button>
+          </BotaoPixel>
         </div>
 
         <div className="dif-placa-corpo">
           <div className="dif-grid">
             {DIFICULDADES.map((d) => (
-              <button
+              <BotaoPixel
                 key={d.id}
-                type="button"
                 className="dif-botao"
+                classeMiolo="dif-botao-miolo"
                 onClick={() => selecionar(d.id)}
+                extra={<span className="dif-tooltip">{d.rotulo}</span>}
               >
-                {/* miolo = camada interna com o mesmo recorte pixelado da
-                    borda externa (mesma técnica usada em Desafios.css) */}
-                <span className="dif-botao-miolo">
-                  <span className="dif-botao-nome">{d.nome}</span>
-                </span>
-
-                {/* tooltip fica fora do recorte, senão o balão também
-                    ficaria cortado em degraus junto com o botão */}
-                <span className="dif-tooltip">{d.rotulo}</span>
-              </button>
+                {d.nome}
+              </BotaoPixel>
             ))}
           </div>
 

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
-import { resolverImagemItem } from "../../data/itemImagens";
-// Avatar provisório — troque pela arte real do personagem no futuro.
-import avatar from "../../assets/images/Guerreiro_simples.png";
+import { resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
+import IconeItem from "../../components/IconeItem";
+import BotaoPixel from "../../components/BotaoPixel";
 
 // Slots de equipamento ao redor do personagem. Os ids batem com Item.tipo
 // no backend (ver schema.prisma) — é assim que um item entra no slot certo.
@@ -47,14 +47,6 @@ const CONQUISTAS = [
   },
 ];
 
-function IconeItem({ item, classeImagem, classeEmoji }) {
-  const imagem = resolverImagemItem(item?.imagemUrl);
-  if (imagem) {
-    return <img src={imagem} alt="" className={classeImagem} draggable={false} />;
-  }
-  return <span className={classeEmoji}>{item?.icone ?? "❔"}</span>;
-}
-
 function Slot({ slot, itemPersonagem, ocupado, onClicar }) {
   const item = itemPersonagem?.item;
 
@@ -82,26 +74,25 @@ function Slot({ slot, itemPersonagem, ocupado, onClicar }) {
   );
 }
 
-// Clique único seleciona o item (mostra a descrição no painel de detalhe);
-// duplo clique equipa/desequipa. Evita equipar sem querer num toque só.
-function CelulaInventario({ itemPersonagem, ocupado, selecionado, onSelecionar, onEquipar }) {
+// Clique seleciona o item e mostra o painel de detalhe, com um botão
+// Equipar/Desequipar explícito — mais fácil que depender de duplo clique,
+// que não é um gesto confiável em telas de toque.
+function CelulaInventario({ itemPersonagem, ocupado, selecionado, onSelecionar }) {
   if (!itemPersonagem) {
     return <div className="editar-celula" />;
   }
 
-  const { item, quantidade, equipado } = itemPersonagem;
-  const acao = equipado ? "desequipar" : "equipar";
+  const { item, quantidade } = itemPersonagem;
 
   return (
     <button
       type="button"
-      className={`editar-celula editar-celula-item ${equipado ? "editar-celula-equipado" : ""} ${
+      className={`editar-celula editar-celula-item ${itemPersonagem.equipado ? "editar-celula-equipado" : ""} ${
         selecionado ? "editar-celula-selecionado" : ""
       }`}
       onClick={onSelecionar}
-      onDoubleClick={onEquipar}
       disabled={ocupado}
-      title={`${item.nome}${quantidade > 1 ? ` x${quantidade}` : ""} — clique para ver detalhes, duplo clique para ${acao}`}
+      title={`${item.nome}${quantidade > 1 ? ` x${quantidade}` : ""} — toque para ver detalhes`}
     >
       <IconeItem item={item} classeImagem="editar-celula-imagem" classeEmoji="editar-celula-icone" />
       {quantidade > 1 && <span className="editar-celula-quantidade">{quantidade}</span>}
@@ -164,6 +155,7 @@ function EditarPersonagem() {
 
   const itens = personagem.itens ?? [];
   const itemDoSlot = (slotId) => itens.find((ip) => ip.equipado && ip.item.tipo === slotId);
+  const avatar = resolverAvatarPersonagem(itens);
 
   // itens reais primeiro, depois células vazias até completar a grade
   // (ou além dela, se o jogador tiver mais itens do que SLOTS_INVENTARIO)
@@ -172,13 +164,13 @@ function EditarPersonagem() {
 
   return (
     <div className="editar">
-      <button
-        type="button"
+      <BotaoPixel
         className="editar-voltar"
+        classeMiolo="editar-voltar-miolo"
         onClick={() => navigate("/perfil")}
       >
         ← Voltar
-      </button>
+      </BotaoPixel>
 
       {/* Cena de equipamento: personagem no centro, slots em volta */}
       <section className="editar-cena">
@@ -235,7 +227,6 @@ function EditarPersonagem() {
                   ocupado={itemEmAcao === itemPersonagem?.id}
                   selecionado={itemSelecionado?.id === itemPersonagem?.id}
                   onSelecionar={() => itemPersonagem && setItemSelecionado(itemPersonagem)}
-                  onEquipar={() => itemPersonagem && alternarEquipamento(itemPersonagem)}
                 />
               ))}
             </div>
@@ -243,14 +234,14 @@ function EditarPersonagem() {
 
           {itemSelecionado && (
             <div className="editar-item-detalhe">
-              <button
-                type="button"
+              <BotaoPixel
                 className="editar-item-detalhe-fechar"
+                classeMiolo="editar-item-detalhe-fechar-miolo"
                 onClick={() => setItemSelecionado(null)}
                 aria-label="Fechar detalhes do item"
               >
                 ✕
-              </button>
+              </BotaoPixel>
 
               <IconeItem
                 item={itemSelecionado.item}
@@ -270,9 +261,23 @@ function EditarPersonagem() {
                 <p className="editar-item-detalhe-descricao">
                   {itemSelecionado.item.descricao ?? "Sem descrição."}
                 </p>
-                <p className="editar-item-detalhe-dica">
-                  Toque duas vezes no item pra {itemSelecionado.equipado ? "desequipar" : "equipar"}.
-                </p>
+
+                <BotaoPixel
+                  className={`editar-item-detalhe-botao ${
+                    itemSelecionado.equipado ? "editar-item-detalhe-botao--desequipar" : ""
+                  }`}
+                  classeMiolo={`editar-item-detalhe-botao-miolo ${
+                    itemSelecionado.equipado ? "editar-item-detalhe-botao-miolo--desequipar" : ""
+                  }`}
+                  onClick={() => alternarEquipamento(itemSelecionado)}
+                  disabled={itemEmAcao === itemSelecionado.id}
+                >
+                  {itemEmAcao === itemSelecionado.id
+                    ? "Aguarde..."
+                    : itemSelecionado.equipado
+                      ? "Desequipar"
+                      : "Equipar"}
+                </BotaoPixel>
               </div>
             </div>
           )}

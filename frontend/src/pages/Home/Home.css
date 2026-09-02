@@ -50,3 +50,23 @@
 .home-portal:hover .home-portal-gif {
   filter: drop-shadow(0 0 18px rgba(155, 47, 201, 0.9));
 }
+
+/* Portal ainda não liberado: arte apagada + cadeado por cima */
+.home-portal--bloqueado .home-portal-gif {
+  filter: grayscale(0.7) brightness(0.65);
+}
+
+.home-portal--bloqueado:hover .home-portal-gif {
+  filter: grayscale(0.7) brightness(0.65);
+}
+
+.home-portal-cadeado {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+  pointer-events: none; /* clique continua indo pro <button> pai */
+}
