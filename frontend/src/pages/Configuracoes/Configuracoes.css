@@ -1,0 +1,155 @@
+/* ============================================================
+   Configuracoes.css — página de configurações do usuário
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   Estética: seguindo o padrão roxo/teal do app com botões pixelados.
+   ============================================================ */
+
+.configuracoes {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --roxo-suave: #c77fc4;
+  --teal: #1b9ec9;
+  --teal-escuro: #147ea0;
+  --texto: #22283a;
+  --texto-suave: #6b7280;
+  --branco: #ffffff;
+  --fundo-danger: #d64545;
+  --fundo-danger-escuro: #b83535;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--branco);
+}
+
+/* ---------- Seção ---------- */
+.configuracoes-secao {
+  margin-bottom: 32px;
+}
+
+.configuracoes-secao--acoes {
+  margin-top: auto;
+  margin-bottom: 16px;
+  padding-top: 20px;
+  border-top: 2px solid #e5e7eb;
+}
+
+.configuracoes-secao-titulo {
+  margin: 0 0 18px 0;
+  padding: 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--roxo-forte);
+  text-transform: uppercase;
+}
+
+/* ---------- Botões ---------- */
+.configuracoes-botao {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  background: var(--roxo);
+  border: 3px solid var(--roxo-forte);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.configuracoes-botao:last-child {
+  margin-bottom: 0;
+}
+
+.configuracoes-botao:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--roxo-forte);
+}
+
+.configuracoes-botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.configuracoes-botao-miolo {
+  display: block;
+  padding: 18px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--roxo-suave), var(--roxo));
+  color: var(--branco);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.configuracoes-icone {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+
+/* Variação para o botão de deletar */
+.configuracoes-botao--deletar {
+  background: var(--fundo-danger);
+  border-color: var(--fundo-danger-escuro);
+}
+
+.configuracoes-botao--deletar .configuracoes-botao-miolo {
+  background: linear-gradient(180deg, #e86464, var(--fundo-danger));
+  color: var(--branco);
+}
+
+.configuracoes-botao--deletar:active {
+  box-shadow: 0 2px 0 var(--fundo-danger-escuro);
+}
+
+/* Variação para o botão Sair */
+.configuracoes-botao--sair {
+  background: var(--teal);
+  border-color: var(--teal-escuro);
+}
+
+.configuracoes-botao--sair .configuracoes-botao-miolo {
+  background: linear-gradient(180deg, #3db5d8, var(--teal));
+  color: var(--branco);
+}
+
+.configuracoes-botao--sair:active {
+  box-shadow: 0 2px 0 var(--teal-escuro);
+}
+
+/* Variação para o botão Notificações */
+.configuracoes-botao--notificacoes {
+  background: var(--roxo);
+  border-color: var(--roxo-forte);
+}
+
+/* Variação para o botão Conta */
+.configuracoes-botao--conta {
+  background: var(--roxo);
+  border-color: var(--roxo-forte);
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .configuracoes-secao-titulo {
+    font-size: 14px;
+  }
+
+  .configuracoes-botao-miolo {
+    padding: 16px 20px;
+    font-size: 15px;
+  }
+}

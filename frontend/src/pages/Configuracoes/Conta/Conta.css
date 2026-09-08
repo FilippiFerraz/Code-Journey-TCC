@@ -1,0 +1,227 @@
+/* ============================================================
+   Conta.css — página de edição de conta do usuário
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   Estética: seguindo o padrão roxo/teal do app com campos de form.
+   ============================================================ */
+
+.conta {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --roxo-suave: #c77fc4;
+  --teal: #1b9ec9;
+  --teal-escuro: #147ea0;
+  --texto: #22283a;
+  --texto-suave: #6b7280;
+  --branco: #ffffff;
+  --verde: #22c55e;
+  --vermelho: #ef4444;
+  --borda: #e5e7eb;
+
+  background: var(--branco);
+  min-height: 100%;
+  padding-bottom: 20px;
+}
+
+.conta-estado {
+  padding: 20px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 16px;
+}
+
+/* ---------- Botão Voltar ---------- */
+.conta-voltar {
+  margin-bottom: 20px;
+  background: rgba(10, 14, 26, 0.9);
+}
+
+.conta-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
+}
+
+/* ---------- Mensagens de Status ---------- */
+.conta-erro {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: #fee2e2;
+  border-left: 4px solid var(--vermelho);
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.conta-sucesso {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: #dcfce7;
+  border-left: 4px solid var(--verde);
+  border-radius: 6px;
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ---------- Formulário ---------- */
+.conta-form {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 20px;
+}
+
+/* ---------- Fieldset ---------- */
+.conta-fieldset {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border: none;
+  border-bottom: 2px solid var(--borda);
+}
+
+.conta-fieldset:last-of-type {
+  border-bottom: none;
+}
+
+.conta-fieldset-titulo {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--roxo-forte);
+  text-transform: uppercase;
+}
+
+/* ---------- Campo de Entrada ---------- */
+.conta-campo {
+  margin-bottom: 12px;
+}
+
+.conta-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.conta-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--roxo);
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--texto);
+  background: var(--branco);
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.conta-input:focus {
+  outline: none;
+  border-color: var(--roxo-forte);
+  box-shadow: 0 0 0 3px rgba(138, 47, 184, 0.1);
+}
+
+.conta-input:disabled {
+  background: #f3f4f6;
+  color: var(--texto-suave);
+  cursor: not-allowed;
+}
+
+/* ---------- Informações Auxiliares ---------- */
+.conta-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-left: 3px solid var(--roxo);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+
+.conta-info-icone {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.conta-info-icone-img {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  image-rendering: pixelated;
+}
+
+.conta-info-texto {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.conta-info-texto strong {
+  color: var(--roxo-forte);
+  font-weight: 700;
+}
+
+/* ---------- Botão Salvar ---------- */
+.conta-salvar {
+  display: block;
+  width: 100%;
+  margin-top: 32px;
+  background: var(--roxo);
+  border: 3px solid var(--roxo-forte);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.conta-salvar:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.conta-salvar:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--roxo-forte);
+}
+
+.conta-salvar-miolo {
+  display: block;
+  padding: 18px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-align: center;
+  background: linear-gradient(180deg, var(--roxo-suave), var(--roxo));
+  color: var(--branco);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  clip-path: polygon(
+    0 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .conta-fieldset-titulo {
+    font-size: 14px;
+  }
+
+  .conta-input {
+    font-size: 16px; /* evita zoom automático no iOS */
+  }
+
+  .conta-salvar-miolo {
+    padding: 16px 20px;
+    font-size: 15px;
+  }
+}
