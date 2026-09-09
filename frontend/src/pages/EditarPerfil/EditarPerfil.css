@@ -1,0 +1,337 @@
+/* ============================================================
+   EditarPerfil.css — tela de edição de perfil (nome, idade,
+   visibilidade no ranking e itens em destaque)
+   Mesma linguagem visual de Perfil.css / EditarPersonagem.css.
+   ============================================================ */
+
+.editarperfil {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --teal: #1b9ec9;
+  --teal-escuro: #147ea0;
+  --texto: #22283a;
+  --texto-suave: #6b7280;
+  --divisor: #e5e7eb;
+
+  position: relative;
+  background: #ffffff;
+  min-height: 100%;
+  padding: 62px 20px 32px;
+  box-sizing: border-box;
+}
+
+/* ---------- Botão Voltar (pixelado — ver BotaoPixel) ---------- */
+.editarperfil-voltar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  background: rgba(10, 14, 26, 0.9);
+}
+
+.editarperfil-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
+}
+
+.editarperfil-titulo {
+  margin: 0 0 18px;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--texto);
+  text-align: center;
+}
+
+.editarperfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- Cards ---------- */
+.editarperfil-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid #eeeeee;
+  background: #ffffff;
+}
+
+.editarperfil-card-topo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, var(--roxo), var(--roxo-forte));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.editarperfil-contador {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.editarperfil-card-corpo {
+  padding: 18px 16px;
+}
+
+/* primeiro card (nome/idade/ranking) usa o mesmo padding do corpo, mas
+   sem o cabeçalho roxo — os campos abrem direto */
+.editarperfil-card:first-child {
+  padding: 20px 18px 8px;
+}
+
+/* ---------- Campos de formulário ---------- */
+.editarperfil-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.editarperfil-input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e2ea;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texto);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.editarperfil-input:focus {
+  border-color: var(--roxo);
+}
+
+/* ---------- Toggle de visibilidade no ranking ---------- */
+.editarperfil-toggle-linha {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 20px;
+  border-top: 1px solid var(--divisor);
+}
+
+.editarperfil-toggle-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.editarperfil-toggle-titulo {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.editarperfil-toggle-descricao {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--texto-suave);
+}
+
+.editarperfil-switch {
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  padding: 3px;
+  border: none;
+  border-radius: 999px;
+  background: #d6d3db;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.editarperfil-switch--ativo {
+  background: linear-gradient(90deg, var(--teal), var(--teal-escuro));
+}
+
+.editarperfil-switch-bola {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.editarperfil-switch--ativo .editarperfil-switch-bola {
+  transform: translateX(20px);
+}
+
+/* ---------- Cor de fundo do perfil ---------- */
+.editarperfil-fundos-dica {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.editarperfil-fundos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.editarperfil-fundo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 2px solid var(--divisor);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.editarperfil-fundo:hover {
+  transform: translateY(-1px);
+}
+
+.editarperfil-fundo--selecionado {
+  border-color: var(--texto);
+  box-shadow: 0 0 0 2px rgba(34, 40, 58, 0.15);
+}
+
+/* badge sólido (não texto sobre o gradiente) — funciona igual em qualquer
+   cor de fundo escolhida, inclusive o "Padrão" branco */
+.editarperfil-fundo-marca {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--texto);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+/* ---------- Grade de itens em destaque ---------- */
+.editarperfil-itens-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.editarperfil-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 6px;
+  border-radius: 12px;
+  border: 2px solid var(--divisor);
+  background: #f7f7fa;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.editarperfil-item--selecionado {
+  border-color: var(--roxo);
+  background: rgba(138, 47, 184, 0.08);
+}
+
+.editarperfil-item-icone {
+  font-size: 30px;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.editarperfil-item-imagem {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.editarperfil-item-nome {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+  text-align: center;
+}
+
+.editarperfil-item-marca {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--roxo);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.editarperfil-vazio {
+  margin: 0;
+  padding: 6px 4px;
+  font-size: 13px;
+  color: var(--texto-suave);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ---------- Botão salvar (pixelado — ver BotaoPixel) ---------- */
+.editarperfil-salvar {
+  display: block;
+  width: 100%;
+  background: var(--teal-escuro);
+}
+
+.editarperfil-salvar:disabled {
+  background: #b9c4c8;
+}
+
+.editarperfil-salvar-miolo {
+  padding: 13px 0;
+  background: linear-gradient(180deg, var(--teal), var(--teal-escuro));
+  font-size: 15px;
+}
+
+.editarperfil-salvar:disabled .editarperfil-salvar-miolo {
+  background: #cfd6d8;
+  color: #8a8a95;
+}
+
+/* ---------- Erros / estados ---------- */
+.editarperfil-erro {
+  margin: -6px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #c0392b;
+  text-align: center;
+}
+
+.editarperfil-estado {
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 15px;
+}
+
+.editarperfil-estado--erro {
+  color: #c0392b;
+}
