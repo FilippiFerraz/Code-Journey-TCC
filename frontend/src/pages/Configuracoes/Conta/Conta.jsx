@@ -223,7 +223,13 @@ function Conta() {
             classeMiolo="conta-salvar-miolo"
             disabled={salvando}
           >
-            {salvando ? "Salvando…" : "💾 Salvar Alterações"}
+            {salvando ? (
+              "Salvando…"
+            ) : (
+              <>
+                <i className="hn hn-save" aria-hidden="true"></i> Salvar Alterações
+              </>
+            )}
           </BotaoPixel>
         </form>
       </div>

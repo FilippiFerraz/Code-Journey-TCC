@@ -1,0 +1,230 @@
+/* ============================================================
+   AdminDashboard.css — dashboards de métricas (painel admin)
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+
+   Todos os gráficos aqui comparam magnitude (contagem, %, xp) com uma
+   única série, então usam UMA cor só (sequencial) — nunca uma paleta
+   categórica, que serviria pra identidade, não pra "o quanto". Cada
+   marca tem rótulo direto (poucos itens por gráfico), então não há
+   eixo/gridlines: o rótulo já carrega o valor exato.
+   ============================================================ */
+
+.admin-dashboard {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --teal: #1b9ec9;
+  --teal-escuro: #147ea0;
+  --teal-trilha: rgba(27, 158, 201, 0.14);
+  --texto: #22283a;
+  --texto-suave: #6b7280;
+  --divisor: #e5e7eb;
+  --vermelho: #b93a3a;
+}
+
+.admin-dashboard-voltar {
+  display: inline-block;
+  margin-bottom: 14px;
+  background: #1e2642;
+}
+
+.admin-dashboard-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: #2b345a;
+}
+
+.admin-dashboard-mensagem {
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.admin-dashboard-mensagem--erro {
+  color: var(--vermelho);
+}
+
+.admin-dashboard-vazio {
+  margin: 0;
+  padding: 10px 4px;
+  font-size: 13px;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+/* ---------- KPIs (stat tiles) ---------- */
+.dash-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.dash-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--divisor);
+  background: #ffffff;
+}
+
+.dash-stat-valor {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.dash-stat-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+/* ---------- Cards ---------- */
+.admin-dashboard-card {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--divisor);
+  background: #ffffff;
+}
+
+.admin-dashboard-card-topo {
+  padding: 12px 16px;
+  background: linear-gradient(180deg, var(--roxo), var(--roxo-forte));
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-dashboard-card-corpo {
+  padding: 16px;
+}
+
+/* ---------- Meter ---------- */
+.dash-meter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-meter-trilha {
+  flex: 1;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--teal-trilha);
+  overflow: hidden;
+}
+
+.dash-meter-preenchimento {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--teal);
+  transition: width 0.3s ease;
+}
+
+.dash-meter-valor {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--texto);
+  min-width: 42px;
+  text-align: right;
+}
+
+/* ---------- Barras horizontais ---------- */
+.dash-barras-h {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-barra-h-linha {
+  display: grid;
+  grid-template-columns: 88px 1fr 52px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-barra-h-rotulo {
+  font-size: 12px;
+  color: var(--texto-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-barra-h-trilha {
+  height: 18px; /* <= 24px, spec de espessura de barra */
+  border-radius: 4px;
+  background: var(--teal-trilha);
+  overflow: hidden;
+}
+
+.dash-barra-h-preenchimento {
+  height: 100%;
+  min-width: 3px;
+  border-radius: 0 4px 4px 0; /* ponta arredondada, esquadro na base (eixo) */
+  background: var(--teal);
+  transition: width 0.3s ease;
+}
+
+.dash-barra-h-valor {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto);
+  text-align: right;
+}
+
+/* ---------- Barras verticais (colunas) ---------- */
+.dash-barras-v {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 6px;
+  height: 160px;
+}
+
+.dash-barra-v-coluna {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 100%;
+}
+
+.dash-barra-v-valor {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.dash-barra-v-trilha {
+  width: 100%;
+  max-width: 24px; /* <= 24px, spec de espessura de barra */
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 4px 4px 0 0;
+  background: var(--teal-trilha);
+  overflow: hidden;
+}
+
+.dash-barra-v-preenchimento {
+  width: 100%;
+  min-height: 3px;
+  border-radius: 4px 4px 0 0; /* ponta arredondada, esquadro na base */
+  background: var(--teal);
+  transition: height 0.3s ease;
+}
+
+.dash-barra-v-rotulo {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--texto-suave);
+  text-align: center;
+  overflow-wrap: break-word;
+}

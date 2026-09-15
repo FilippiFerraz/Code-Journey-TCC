@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import { useCronometro } from "../../hooks/useCronometro";
+import { formatarTempo } from "../../utils/tempo";
 import BotaoPixel from "../../components/BotaoPixel";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
@@ -210,6 +212,14 @@ function ResolverDesafio() {
   const perdeu = resultado === "derrota";
   const travado = atacando || venceu || perdeu || tomandoGolpe || corrigindo;
 
+  // Cronômetro do desafio: conta enquanto o jogador está de fato pensando
+  // ou tentando de novo depois de um erro, e pausa durante animações/espera
+  // (acerto, vitória, derrota, correção da IA) — esse tempo pausado não deve
+  // contar contra a pontuação. Usado pro bônus de velocidade no backend (ver
+  // registrarVitoria) e mostrado ao vivo na cena (ver HUD abaixo).
+  const cronometroAtivo = resultado === null || resultado === "erro";
+  const [segundosDecorridos, reiniciarCronometro] = useCronometro(cronometroAtivo);
+
   function selecionarOpcao(id) {
     if (travado) return;
     setOpcaoSelecionada(id);
@@ -233,6 +243,7 @@ function ResolverDesafio() {
         mundoId: Number(mundoId),
         dificuldade,
         numero: Number(desafioId),
+        tempoSegundos: segundosDecorridos,
         ...respostaExtra,
       });
       setRecompensaApi(resposta.data);
@@ -395,6 +406,7 @@ function ResolverDesafio() {
     setOpcaoSelecionada(null);
     setTomandoGolpe(false);
     setRecompensaApi(null);
+    reiniciarCronometro();
     // reset das flags de animação da batalha anterior, senão uma nova
     // tentativa pode começar com o slime já "morto" ou a câmera focada nele
     setGolpeHeroi(false);
@@ -447,6 +459,19 @@ function ResolverDesafio() {
           <p className="vitoria-fala">
             Golpe certeiro! O caminho à frente está livre.
           </p>
+
+          {/* Só aparece quando o backend realmente concedeu XP agora (não
+              conta em replays de um desafio já concluído antes) — ver
+              xpConcedidoAgora em progresso.service.js. */}
+          {recompensaApi?.xpConcedidoAgora > 0 && (
+            <div className="vitoria-recompensa">
+              <span className="vitoria-recompensa-rotulo">XP ganho</span>
+              <span className="vitoria-recompensa-valor">
+                +{recompensaApi.xpConcedidoAgora} XP • Tempo: {formatarTempo(recompensaApi.tempoSegundos ?? segundosDecorridos)}
+                {recompensaApi.acertouDePrimeira ? " • Acertou de primeira!" : ""}
+              </span>
+            </div>
+          )}
 
           <BotaoPixel
             className="botao-avante"
@@ -709,7 +734,7 @@ function ResolverDesafio() {
           />
         </div>
 
-        {/* HUD de vida fica fora do zoom */}
+        {/* HUD de vida e cronômetro ficam fora do zoom */}
         <div className="cena-vida" aria-label={`Vida: ${vida} de ${VIDA_MAXIMA}`}>
           {Array.from({ length: VIDA_MAXIMA }).map((_, i) => (
             <span
@@ -720,6 +745,10 @@ function ResolverDesafio() {
               {i < vida ? "❤️" : "🖤"}
             </span>
           ))}
+        </div>
+
+        <div className="cena-cronometro" aria-label={`Tempo decorrido: ${formatarTempo(segundosDecorridos)}`}>
+          ⏱ {formatarTempo(segundosDecorridos)}
         </div>
 
         {tomandoGolpe && <div className="cena-flash" />}

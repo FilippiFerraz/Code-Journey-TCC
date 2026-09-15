@@ -1,0 +1,221 @@
+/* ============================================================
+   AdminUsuarios.css — tabela de usuários cadastrados (painel admin)
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   ============================================================ */
+
+.admin-usuarios {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --texto: #22283a;
+  --texto-suave: #6b7280;
+  --divisor: #e5e7eb;
+  --verde: #2c7a3d;
+  --vermelho: #b93a3a;
+  --laranja: #b86a1a;
+}
+
+.admin-usuarios-voltar {
+  display: inline-block;
+  margin-bottom: 14px;
+  background: #1e2642;
+}
+
+.admin-usuarios-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: #2b345a;
+}
+
+.admin-usuarios-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-usuarios-busca {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e2ea;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texto);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-usuarios-busca:focus {
+  border-color: var(--roxo);
+}
+
+.admin-usuarios-exportar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--roxo);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-usuarios-exportar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-usuarios-mensagem {
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.admin-usuarios-mensagem--erro {
+  color: var(--vermelho);
+}
+
+/* ---------- Tabela ---------- */
+.admin-usuarios-tabela-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--divisor);
+}
+
+.admin-usuarios-tabela {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-usuarios-tabela th,
+.admin-usuarios-tabela td {
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-usuarios-tabela th {
+  background: #f7f5fb;
+  color: var(--roxo-forte);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--divisor);
+}
+
+.admin-usuarios-tabela tbody tr {
+  border-bottom: 1px solid var(--divisor);
+}
+
+.admin-usuarios-tabela tbody tr:last-child {
+  border-bottom: none;
+}
+
+.admin-usuarios-linha--inativo {
+  background: #fafafa;
+  color: var(--texto-suave);
+}
+
+/* ---------- Selos (papel / status) ---------- */
+.admin-usuarios-selo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e9e7ec;
+  color: var(--texto);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-usuarios-selo--admin {
+  background: rgba(138, 47, 184, 0.15);
+  color: var(--roxo-forte);
+}
+
+.admin-usuarios-selo--ativo {
+  background: rgba(44, 122, 61, 0.15);
+  color: var(--verde);
+}
+
+.admin-usuarios-selo--inativo {
+  background: rgba(185, 58, 58, 0.15);
+  color: var(--vermelho);
+}
+
+/* ---------- Ações ---------- */
+.admin-usuarios-acoes {
+  display: flex;
+  gap: 6px;
+}
+
+.admin-usuarios-acao {
+  padding: 6px 10px;
+  border: 1px solid var(--roxo);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--roxo-forte);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-usuarios-acao:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-usuarios-acao--perigo {
+  border-color: var(--vermelho);
+  color: var(--vermelho);
+}
+
+/* ação bem mais destrutiva (reiniciar progresso) — cor própria pra não se
+   confundir visualmente com "Desativar" (perigo, vermelho) */
+.admin-usuarios-acao--aviso {
+  border-color: var(--laranja);
+  color: var(--laranja);
+}
+
+/* ---------- Paginação ---------- */
+.admin-usuarios-paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-usuarios-pagina-botao {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--roxo);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-usuarios-pagina-botao:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-usuarios-pagina-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+  text-align: center;
+  flex: 1;
+}

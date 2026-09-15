@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import logo from "../../assets/images/logo.png";
 import BotaoPixel from "../../components/BotaoPixel";
+import CampoSenha from "../../components/CampoSenha";
 import "../Login/Login.css";
 import "./EsqueciSenha.css";
 
@@ -154,9 +155,8 @@ function EsqueciSenha() {
             <label className="login-label" htmlFor="novaSenha">
               Nova senha:
             </label>
-            <input
+            <CampoSenha
               id="novaSenha"
-              type="password"
               className="login-input"
               placeholder="Mínimo de 6 caracteres"
               value={novaSenha}
@@ -166,9 +166,8 @@ function EsqueciSenha() {
             <label className="login-label" htmlFor="confirmarSenha">
               Confirmar nova senha:
             </label>
-            <input
+            <CampoSenha
               id="confirmarSenha"
-              type="password"
               className="login-input"
               placeholder="Repita a nova senha"
               value={confirmarSenha}

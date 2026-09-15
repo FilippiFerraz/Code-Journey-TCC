@@ -1,0 +1,182 @@
+/* ============================================================
+   AdminLoginHistorico.css — histórico de tentativas de login (painel admin)
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   Mesmas variáveis/classes de estilo já usadas em AdminUsuarios.css e
+   AdminLogs.css, pra manter a identidade visual do painel.
+   ============================================================ */
+
+.admin-login-hist {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --texto: #22283a;
+  --texto-suave: #6b7280;
+  --divisor: #e5e7eb;
+  --verde: #2c7a3d;
+  --vermelho: #b93a3a;
+}
+
+.admin-login-hist-voltar {
+  display: inline-block;
+  margin-bottom: 14px;
+  background: #1e2642;
+}
+
+.admin-login-hist-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: #2b345a;
+}
+
+.admin-login-hist-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-login-hist-busca {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e2ea;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texto);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-login-hist-busca:focus {
+  border-color: var(--roxo);
+}
+
+.admin-login-hist-filtro {
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1.5px solid #e2e2ea;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--texto);
+  outline: none;
+}
+
+.admin-login-hist-filtro:focus {
+  border-color: var(--roxo);
+}
+
+.admin-login-hist-mensagem {
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.admin-login-hist-mensagem--erro {
+  color: var(--vermelho);
+}
+
+/* ---------- Tabela ---------- */
+.admin-login-hist-tabela-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--divisor);
+}
+
+.admin-login-hist-tabela {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-login-hist-tabela th,
+.admin-login-hist-tabela td {
+  padding: 10px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-login-hist-tabela th {
+  background: #f7f5fb;
+  color: var(--roxo-forte);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--divisor);
+}
+
+.admin-login-hist-tabela tbody tr {
+  border-bottom: 1px solid var(--divisor);
+}
+
+.admin-login-hist-tabela tbody tr:last-child {
+  border-bottom: none;
+}
+
+.admin-login-hist-usuario {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-login-hist-email {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+/* ---------- Selo (sucesso/falha) ---------- */
+.admin-login-hist-selo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e9e7ec;
+  color: var(--texto);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-login-hist-selo--sucesso {
+  background: rgba(44, 122, 61, 0.15);
+  color: var(--verde);
+}
+
+.admin-login-hist-selo--falha {
+  background: rgba(185, 58, 58, 0.15);
+  color: var(--vermelho);
+}
+
+/* ---------- Paginação ---------- */
+.admin-login-hist-paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-login-hist-pagina-botao {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--roxo);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-login-hist-pagina-botao:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-login-hist-pagina-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+  text-align: center;
+  flex: 1;
+}

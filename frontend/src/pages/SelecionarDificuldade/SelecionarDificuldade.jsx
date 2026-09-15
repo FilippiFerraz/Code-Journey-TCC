@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { Swords } from "lucide-react";
 import BotaoPixel from "../../components/BotaoPixel";
 import "./SelecionarDificuldade.css";
 
@@ -27,7 +28,7 @@ function SelecionarDificuldade() {
             onClick={() => navigate(-1)}
             aria-label="Fechar"
           >
-            ✕
+            <i className="hn hn-times" aria-hidden="true"></i>
           </BotaoPixel>
         </div>
 
@@ -46,8 +47,10 @@ function SelecionarDificuldade() {
             ))}
           </div>
 
+          {/* Sem equivalente na biblioteca pixelada — usa o Swords do
+              lucide-react (ver EditarPersonagem.jsx pro mesmo caso). */}
           <div className="dif-espadas" aria-hidden="true">
-            ⚔️
+            <Swords size={28} />
           </div>
         </div>
       </div>

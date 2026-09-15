@@ -9,12 +9,20 @@ import SelecionarDificuldade from "./pages/SelecionarDificuldade/SelecionarDific
 import Desafios from "./pages/Desafios/Desafios";
 import DesafioIntro from "./pages/DesafioIntro/DesafioIntro";
 import ResolverDesafio from "./pages/ResolverDesafio/ResolverDesafio";
+import DesafioChefe from "./pages/DesafioChefe/DesafioChefe";
 import Perfil from "./pages/Perfil/Perfil";
 import Ranking from "./pages/Ranking/Ranking";
 import EditarPersonagem from "./pages/EditarPersonagem/EditarPersonagem";
 import RecompensaDesafio from './pages/RecompensaDesafio/RecompensaDesafio';
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
 import Conta from "./pages/Configuracoes/Conta/Conta";
+import Admin from "./pages/Admin/Admin";
+import AdminUsuarios from "./pages/Admin/Usuarios/AdminUsuarios";
+import AdminDesafios from "./pages/Admin/Desafios/AdminDesafios";
+import EditarDesafioAdmin from "./pages/Admin/Desafios/EditarDesafioAdmin";
+import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
+import AdminLogs from "./pages/Admin/Logs/AdminLogs";
+import AdminLoginHistorico from "./pages/Admin/LoginHistorico/AdminLoginHistorico";
 
 
 
@@ -34,12 +42,21 @@ function App() {
           <Route path="/desafios/:mundoId/:dificuldade" element={<Desafios />} />
           <Route path="/desafio/:mundoId/:dificuldade/:desafioId" element={<DesafioIntro />} />
           <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<ResolverDesafio />} />
+          <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<DesafioChefe />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/perfil/:usuarioId" element={<Perfil />} />
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/editar-personagem" element={<EditarPersonagem />} />
           <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RecompensaDesafio />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/conta" element={<Conta />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+          <Route path="/admin/desafios" element={<AdminDesafios />} />
+          <Route path="/admin/desafios/:desafioId" element={<EditarDesafioAdmin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/logs" element={<AdminLogs />} />
+          <Route path="/admin/login-historico" element={<AdminLoginHistorico />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -27,6 +27,10 @@ function Home() {
   // quais portais estão liberados. Começa vazio — enquanto não chega (ou se
   // a chamada falhar), só o portal 1 aparece liberado, nunca o contrário.
   const [progresso, setProgresso] = useState([]);
+  // Barra de pesquisa de jogadores (GET /api/perfil/buscar?nome=).
+  const [termoBusca, setTermoBusca] = useState("");
+  const [resultadosBusca, setResultadosBusca] = useState([]);
+  const [buscando, setBuscando] = useState(false);
 
   // Só mostra o tutorial guiado se o perfil confirmar que o usuário ainda
   // não viu (Usuario.tutorialVisto). Se a chamada falhar (ex: offline), não
@@ -66,6 +70,39 @@ function Home() {
     };
   }, []);
 
+  // Busca jogadores pelo nome com um pequeno debounce, pra não disparar uma
+  // requisição a cada tecla digitada.
+  useEffect(() => {
+    const termo = termoBusca.trim();
+    if (!termo) {
+      setResultadosBusca([]);
+      setBuscando(false);
+      return;
+    }
+
+    let ativo = true;
+    setBuscando(true);
+
+    const timer = setTimeout(() => {
+      api
+        .get("/perfil/buscar", { params: { nome: termo } })
+        .then((res) => ativo && setResultadosBusca(res.data))
+        .catch(() => ativo && setResultadosBusca([]))
+        .finally(() => ativo && setBuscando(false));
+    }, 350);
+
+    return () => {
+      ativo = false;
+      clearTimeout(timer);
+    };
+  }, [termoBusca]);
+
+  function abrirPerfilBuscado(usuario) {
+    setTermoBusca("");
+    setResultadosBusca([]);
+    navigate(`/perfil/${usuario.id}`);
+  }
+
   function handlePortalClick(portal) {
     if (!mundoLiberado(progresso, portal.id)) {
       setPortalBloqueado(portal);
@@ -81,6 +118,54 @@ function Home() {
 
   return (
     <MainLayout titulo="HOME">
+      <div className="home-busca">
+        <div className="home-busca-campo">
+          <span className="home-busca-icone" aria-hidden="true">
+            <i className="hn hn-search"></i>
+          </span>
+          <input
+            type="text"
+            className="home-busca-input"
+            placeholder="Buscar jogador pelo nome…"
+            value={termoBusca}
+            onChange={(e) => setTermoBusca(e.target.value)}
+            aria-label="Buscar jogador pelo nome"
+          />
+          {termoBusca && (
+            <button
+              type="button"
+              className="home-busca-limpar"
+              aria-label="Limpar busca"
+              onClick={() => setTermoBusca("")}
+            >
+              <i className="hn hn-times" aria-hidden="true"></i>
+            </button>
+          )}
+        </div>
+
+        {termoBusca.trim() && (
+          <div className="home-busca-resultados">
+            {buscando ? (
+              <p className="home-busca-mensagem">Buscando…</p>
+            ) : resultadosBusca.length > 0 ? (
+              resultadosBusca.map((usuario) => (
+                <button
+                  key={usuario.id}
+                  type="button"
+                  className="home-busca-resultado"
+                  onClick={() => abrirPerfilBuscado(usuario)}
+                >
+                  <span className="home-busca-resultado-nome">{usuario.nome}</span>
+                  <span className="home-busca-resultado-handle">@{usuario.nomeUsuario}</span>
+                </button>
+              ))
+            ) : (
+              <p className="home-busca-mensagem">Nenhum jogador encontrado.</p>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="home-mapa">
         <img src={mapa} alt="Mapa da jornada" className="home-mapa-imagem" />
 

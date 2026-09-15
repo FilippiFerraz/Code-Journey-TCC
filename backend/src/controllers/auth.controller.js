@@ -15,6 +15,15 @@ async function cadastrar(req, res, next) {
   }
 }
 
+// Prioriza X-Forwarded-For (quem chega primeiro na cadeia de proxies, ex:
+// atrás de um load balancer/CDN em produção) e cai pro req.ip do Express
+// como fallback (ex: em dev, direto sem proxy).
+function ipDaRequisicao(req) {
+  const encaminhado = req.headers["x-forwarded-for"];
+  if (encaminhado) return encaminhado.split(",")[0].trim();
+  return req.ip;
+}
+
 async function login(req, res, next) {
   try {
     const { email, senha } = req.body;
@@ -23,7 +32,12 @@ async function login(req, res, next) {
       return res.status(400).json({ erro: "Email e senha são obrigatórios." });
     }
 
-    const resultado = await authService.login({ email, senha });
+    const resultado = await authService.login({
+      email,
+      senha,
+      ip: ipDaRequisicao(req),
+      userAgent: req.headers["user-agent"] || null,
+    });
     return res.status(200).json(resultado);
   } catch (erro) {
     next(erro);

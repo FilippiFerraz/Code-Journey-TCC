@@ -99,6 +99,8 @@
 
 .editar-slot-icone {
   font-size: 24px;
+  color: #ffffff; /* a cena tem fundo escuro — sem isso o ícone herdaria o
+                     texto escuro padrão da página e ficaria invisível */
   opacity: 0.55; /* vazio: mais apagado, indicando slot livre */
 }
 
@@ -372,6 +374,20 @@
   font-size: 28px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.15);
+}
+
+/* cor própria por conquista — sem isso, os 3 ícones (todos brancos, por
+   herdar a cor do texto do card) ficariam indistinguíveis entre si */
+.editar-conquista:nth-child(1) .editar-conquista-icone svg {
+  color: #d9d9e0;
+}
+
+.editar-conquista:nth-child(2) .editar-conquista-icone svg {
+  color: #ffd84d;
+}
+
+.editar-conquista:nth-child(3) .editar-conquista-icone svg {
+  color: #ff8a5c;
 }
 
 .editar-conquista-texto {

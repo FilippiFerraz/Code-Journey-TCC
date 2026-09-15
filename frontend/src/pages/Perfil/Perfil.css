@@ -101,6 +101,20 @@
   font-size: 20px;
 }
 
+/* cor própria por ícone — sem isso, o glifo da fonte pixelada herdaria o
+   cinza do texto padrão, perdendo o destaque colorido que o emoji tinha */
+.perfil-stat-icone .hn-trophy {
+  color: #e0a72c;
+}
+
+.perfil-stat-icone .hn-check-circle {
+  color: #2c7a3d;
+}
+
+.perfil-stat-icone .hn-fire {
+  color: #e2572c;
+}
+
 .perfil-stat-numero {
   font-size: 18px;
   font-weight: 800;

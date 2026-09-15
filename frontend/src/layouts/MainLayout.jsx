@@ -1,8 +1,11 @@
 import { NavLink } from "react-router-dom";
 import logo from "../assets/images/logo.png";
+import { useEhAdministrador } from "../hooks/useEhAdministrador";
 import "./MainLayout.css";
 
 function MainLayout({ titulo, children }) {
+  const ehAdministrador = useEhAdministrador();
+
   return (
     <div className="layout-container">
       {/* Cabeçalho */}
@@ -96,6 +99,32 @@ function MainLayout({ titulo, children }) {
             />
           </svg>
         </NavLink>
+
+        {ehAdministrador && (
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              `layout-footer-item ${isActive ? "layout-footer-item-ativo" : ""}`
+            }
+          >
+            <svg viewBox="0 0 24 24" fill="none" className="layout-footer-icon">
+              <path
+                d="M12 3l7 3v5c0 5-3.2 8.4-7 10-3.8-1.6-7-5-7-10V6l7-3Z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M9.5 12l1.8 1.8L14.5 10"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </NavLink>
+        )}
       </nav>
     </div>
   );

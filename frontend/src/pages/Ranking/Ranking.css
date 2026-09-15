@@ -53,6 +53,7 @@
   display: grid;
   place-items: center;
   font-size: 16px;
+  color: #2e1a0d;
   background: radial-gradient(circle at 35% 30%, #ffe9b0, #c9962a 70%);
   border: 3px solid #2e1a0d;
   border-radius: 50%;
@@ -191,6 +192,7 @@
 .ranking-icone {
   flex-shrink: 0;
   font-size: 18px;
+  color: #2e1a0d;
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
 }
 

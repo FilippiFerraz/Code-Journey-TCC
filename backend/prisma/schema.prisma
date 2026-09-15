@@ -43,6 +43,17 @@ model Usuario {
   // UPDATE usuarios SET role = 'administrador' WHERE email = '...';
   role String @default("jogador")
 
+  // Controla se a posição do jogador aparece na lista pública do ranking
+  // (Ranking.jsx / GET /api/ranking). true = aparece pra todo mundo. Ele
+  // sempre vê a própria posição real no Perfil, independente disso — só
+  // afeta a visibilidade pros outros.
+  rankingVisivel Boolean @default(true)
+
+  // Id do gradiente de fundo escolhido pra tela de Perfil (ver
+  // FUNDOS_PERFIL em frontend/src/data/fundosPerfil.js). "padrao" = fundo
+  // branco padrão.
+  fundoPerfil String @default("padrao")
+
   // Soft delete: quando preenchido, o usuário está "excluído". A linha
   // continua no banco (preserva Progresso/Personagem/Ranking já vinculados
   // a ele em vez de quebrar essas relações), mas some das leituras normais
@@ -50,10 +61,81 @@ model Usuario {
   // automaticamente em toda query de Usuario. Null = usuário ativo.
   deletedAt DateTime?
 
-  progresso  Progresso[]
-  personagem Personagem?
+  progresso      Progresso[]
+  personagem     Personagem?
+  bausMundo      BauMundo[]
+  logsAdmin      LogAdmin[]
+  loginHistorico LoginHistorico[]
 
   @@map("usuarios")
+}
+
+// Histórico de tentativas de login (sucesso e falha), pra auditoria de
+// segurança no painel administrativo — ver auth.service.js::login (grava
+// uma linha a cada tentativa, sucesso ou não) e
+// loginHistorico.service.js::listarLoginHistorico (listagem com busca e
+// paginação).
+model LoginHistorico {
+  id Int @id @default(autoincrement())
+
+  // Nulo quando a tentativa falha com um e-mail que não corresponde a
+  // nenhuma conta — não há usuário pra vincular, mas emailTentado guarda o
+  // texto digitado mesmo assim, pra dar pra pesquisar.
+  usuarioId Int?
+  // "Retrato" do momento da tentativa (não um join) — mesmo motivo do
+  // LogAdmin: se o usuário for renomeado depois, o histórico continua
+  // mostrando o nome de então. Fica null quando o e-mail não bate com
+  // nenhuma conta.
+  nomeUsuario  String?
+  emailTentado String
+
+  sucesso Boolean
+  // Motivo da falha (ex: "Senha incorreta", "E-mail não cadastrado",
+  // "Conta desativada", "E-mail não verificado") — null quando sucesso = true.
+  motivoFalha String?
+  ip          String?
+  userAgent   String?
+
+  criadoEm DateTime @default(now())
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([emailTentado])
+  @@map("login_historico")
+}
+
+// Auditoria de toda alteração feita pelo painel de administração (editar
+// desafio/recompensa, promover/remover admin, ativar/desativar conta) —
+// ver log.service.js::registrarLog, chamado no fim de cada operação de
+// escrita dos services de admin. Nunca é escrito nem lido pelo fluxo normal
+// do jogo, só pelo painel.
+model LogAdmin {
+  id Int @id @default(autoincrement())
+
+  // Quem fez a alteração. Nome e papel são um "retrato" do momento da ação
+  // (não um join) — se o admin for renomeado ou rebaixado depois, o log
+  // antigo continua contando a história como ela realmente aconteceu.
+  usuarioId   Int
+  nomeUsuario String
+  role        String
+
+  // Categoria da ação (ex: "desafio.atualizar", "usuario.role",
+  // "usuario.ativo") e o registro afetado, pra poder filtrar o histórico.
+  acao       String
+  entidade   String
+  entidadeId Int?
+
+  // Texto pronto pra exibir na tela de logs, e o diff campo a campo (json
+  // { campo: { de, para } }) pra quem quiser o detalhe exato.
+  descricao  String?
+  alteracoes Json?
+
+  criadoEm DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@map("logs_admin")
 }
 
 model Desafio {
@@ -111,6 +193,11 @@ model Progresso {
   tentativas    Int       @default(0)
   xpGanho       Int       @default(0)
   dataConclusao DateTime?
+  // Tempo (em segundos) que o jogador levou até acertar, gravado só na
+  // conclusão (igual dataConclusao) — usado pro bônus de velocidade em
+  // xpGanho (ver progresso.service.js::responderDesafio). Null em desafios
+  // concluídos antes desse campo existir.
+  tempoSegundos Int?
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -162,8 +249,32 @@ model Item {
 
   personagens ItemPersonagem[]
   desafios    Desafio[] // desafios que dão este item como recompensa ao concluir
+  baus        BauMundo[] // baús de fim de mundo que já sortearam este item
 
   @@map("itens")
+}
+
+// Baú de fim de mundo, liberado no mapa da Home quando o jogador conclui
+// TODOS os desafios cadastrados de uma trilha. A existência da linha aqui
+// É o "já abri esse baú" — trava um segundo sorteio pra mesma trilha.
+model BauMundo {
+  id Int @id @default(autoincrement())
+
+  usuarioId   Int
+  mundoId     Int
+  dificuldade String
+
+  // item sorteado na roleta e já creditado no inventário (ItemPersonagem)
+  // no momento da abertura.
+  itemGanhoId Int
+  abertoEm    DateTime @default(now())
+
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  itemGanho Item    @relation(fields: [itemGanhoId], references: [id])
+
+  // um usuário só abre o baú de cada trilha uma vez
+  @@unique([usuarioId, mundoId, dificuldade])
+  @@map("baus_mundo")
 }
 
 model ItemPersonagem {
@@ -174,6 +285,9 @@ model ItemPersonagem {
 
   quantidade Int      @default(1)
   equipado   Boolean  @default(false)
+  // Selecionado pelo jogador pra aparecer na seção "Itens em destaque" do
+  // Perfil, independente de estar equipado ou não.
+  destaque   Boolean  @default(false)
   obtidoEm   DateTime @default(now())
 
   personagem Personagem @relation(fields: [personagemId], references: [id])

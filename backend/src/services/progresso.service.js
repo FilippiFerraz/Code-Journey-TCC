@@ -7,6 +7,35 @@ function erroDeValidacao(mensagem) {
   return erro;
 }
 
+// ---- Pontuação por tempo e acerto de primeira ----
+//
+// Até este tempo (segundos), o jogador ganha o bônus de velocidade cheio;
+// a partir do tempo "lento", não ganha bônus nenhum — entre os dois, o
+// bônus cai linearmente. Pensado pra respostas de múltipla escolha e
+// ordenar blocos; numa dissertativa (que já tem uma correção de ~1,5s
+// simulada no frontend) o jogador tende a demorar um pouco mais mesmo
+// sabendo a resposta, mas a mesma régua serve como incentivo a não deixar
+// o desafio "pausado" na tela por muito tempo.
+const TEMPO_BONUS_MAXIMO_SEGUNDOS = 20;
+const TEMPO_BONUS_MINIMO_SEGUNDOS = 90;
+const BONUS_VELOCIDADE_MAXIMO = 5;
+
+// Bônus fixo por acertar já na primeira tentativa (nenhuma resposta errada
+// registrada antes desta em Progresso.tentativas) — incentiva pensar antes
+// de responder, não só responder rápido.
+const BONUS_PRIMEIRA_TENTATIVA = 5;
+
+function calcularBonusVelocidade(tempoSegundos) {
+  if (!Number.isFinite(tempoSegundos) || tempoSegundos < 0) return 0;
+  if (tempoSegundos <= TEMPO_BONUS_MAXIMO_SEGUNDOS) return BONUS_VELOCIDADE_MAXIMO;
+  if (tempoSegundos >= TEMPO_BONUS_MINIMO_SEGUNDOS) return 0;
+
+  const fracaoRestante =
+    (TEMPO_BONUS_MINIMO_SEGUNDOS - tempoSegundos) /
+    (TEMPO_BONUS_MINIMO_SEGUNDOS - TEMPO_BONUS_MAXIMO_SEGUNDOS);
+  return Math.round(BONUS_VELOCIDADE_MAXIMO * fracaoRestante);
+}
+
 // Desafio.alternativas é Json livre e hoje guarda um de dois formatos (ver
 // ResolverDesafio.jsx no frontend):
 // - múltipla escolha: array [{ id, texto, correta }] -> valida opcaoId
@@ -39,7 +68,15 @@ function avaliarOrdenacaoDeBlocos(alternativas, ordem) {
 // Identifica o desafio por (mundoId, dificuldade, numero) — o mesmo trio que
 // já vem nos :params da URL no frontend (ex: /codigo/1/iniciante/2) — e não
 // pelo "id" (PK) do banco, que o frontend nunca chega a conhecer.
-async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcaoId, ordem }) {
+async function responderDesafio({
+  usuarioId,
+  mundoId,
+  dificuldade,
+  numero,
+  opcaoId,
+  ordem,
+  tempoSegundos,
+}) {
   const numeroDesafio = Number(numero);
 
   if (!mundoId || !dificuldade || !Number.isInteger(numeroDesafio)) {
@@ -78,15 +115,31 @@ async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcao
 
   const jaEstavaConcluido = progressoAnterior?.concluido ?? false;
   const primeiraVezConcluindo = correta && !jaEstavaConcluido;
+  // Sem registro anterior nenhum = esta é a primeira submissão de todas pra
+  // este desafio, não só a primeira que acertou (alguém pode ter errado
+  // antes e voltado depois) — só conta bônus de "primeira tentativa" nesse
+  // caso mais estrito.
+  const acertouDePrimeira = correta && !progressoAnterior;
 
   const dados = {
     tentativas: (progressoAnterior?.tentativas ?? 0) + 1,
     concluido: jaEstavaConcluido || correta,
   };
 
+  let xpBase = 0;
+  let bonusVelocidade = 0;
+  let bonusPrimeiraTentativa = 0;
+
   if (primeiraVezConcluindo) {
-    dados.xpGanho = desafio.xpConcedido;
+    xpBase = desafio.xpConcedido;
+    bonusVelocidade = calcularBonusVelocidade(Number(tempoSegundos));
+    bonusPrimeiraTentativa = acertouDePrimeira ? BONUS_PRIMEIRA_TENTATIVA : 0;
+
+    dados.xpGanho = xpBase + bonusVelocidade + bonusPrimeiraTentativa;
     dados.dataConclusao = new Date();
+    dados.tempoSegundos = Number.isFinite(Number(tempoSegundos))
+      ? Math.max(0, Math.round(Number(tempoSegundos)))
+      : null;
   }
 
   const progresso = progressoAnterior
@@ -101,7 +154,7 @@ async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcao
   if (primeiraVezConcluindo) {
     await prisma.usuario.update({
       where: { id: usuarioId },
-      data: { xpTotal: { increment: desafio.xpConcedido } },
+      data: { xpTotal: { increment: dados.xpGanho } },
     });
   }
 
@@ -122,7 +175,14 @@ async function responderDesafio({ usuarioId, mundoId, dificuldade, numero, opcao
     concluido: progresso.concluido,
     tentativas: progresso.tentativas,
     xpGanho: progresso.xpGanho,
-    xpConcedidoAgora: primeiraVezConcluindo ? desafio.xpConcedido : 0,
+    xpConcedidoAgora: dados.xpGanho ?? 0,
+    // Detalhamento de como xpConcedidoAgora foi calculado — só faz sentido
+    // quando essa resposta concedeu XP de fato (fora disso vem tudo zerado).
+    xpBase,
+    bonusVelocidade,
+    bonusPrimeiraTentativa,
+    acertouDePrimeira: primeiraVezConcluindo ? acertouDePrimeira : false,
+    tempoSegundos: progresso.tempoSegundos,
     itemGanho,
   };
 }

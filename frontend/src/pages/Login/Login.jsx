@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
+import CampoSenha from "../../components/CampoSenha";
 import "./Login.css";
 
 function Login() {
@@ -79,9 +80,8 @@ function Login() {
           <label className="login-label" htmlFor="senha">
             Senha:
           </label>
-          <input
+          <CampoSenha
             id="senha"
-            type="password"
             className="login-input"
             placeholder="••••••••••••"
             value={senha}

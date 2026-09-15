@@ -17,6 +17,14 @@ import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 // da API.
 const IDS_DESAFIOS = [1, 2, 3, 4, 5, 6];
 
+// O último desafio de toda trilha é a batalha de chefe (ver
+// src/pages/DesafioChefe) — segue as mesmas regras de bloqueio/desbloqueio
+// dos demais, só muda a rota de destino.
+// TODO: quando a API de desafios existir, isso deveria vir marcado nos
+// próprios dados do desafio (ex: desafio.tipo === "chefe"), em vez de fixo
+// na posição da trilha.
+const ID_DESAFIO_CHEFE = IDS_DESAFIOS[IDS_DESAFIOS.length - 1];
+
 function Desafios() {
   const { mundoId, dificuldade } = useParams();
   const navigate = useNavigate();
@@ -50,7 +58,11 @@ function Desafios() {
 
   function handleAbrirDesafio(desafio) {
     if (desafio.bloqueado) return;
-    navigate(`/desafio/${mundoId}/${dificuldade}/${desafio.id}`);
+    if (desafio.id === ID_DESAFIO_CHEFE) {
+      navigate(`/desafio-chefe/${mundoId}/${dificuldade}/${desafio.id}`);
+    } else {
+      navigate(`/desafio/${mundoId}/${dificuldade}/${desafio.id}`);
+    }
   }
 
   return (
@@ -98,6 +110,9 @@ function Desafios() {
                   disabled={desafio.bloqueado}
                 >
                   {desafio.bloqueado && <span className="desafios-cadeado">🔒</span>}
+                  {!desafio.bloqueado && desafio.id === ID_DESAFIO_CHEFE && (
+                    <span className="desafios-coroa" aria-hidden="true">👑</span>
+                  )}
                   DESAFIO {desafio.id}
                 </BotaoPixel>
               ))}

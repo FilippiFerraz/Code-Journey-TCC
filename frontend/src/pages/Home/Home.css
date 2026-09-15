@@ -1,3 +1,105 @@
+/* ---------- Busca de jogadores ---------- */
+.home-busca {
+  position: relative;
+  margin-bottom: 14px;
+  z-index: 5; /* fica acima do mapa, que vem logo depois no fluxo */
+}
+
+.home-busca-campo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.home-busca-icone {
+  font-size: 15px;
+  opacity: 0.6;
+}
+
+.home-busca-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 14px;
+  font-family: inherit;
+  color: #22283a;
+}
+
+.home-busca-limpar {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: #efeff3;
+  color: #6b7280;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.home-busca-resultados {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+}
+
+.home-busca-resultado {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid #eeeeee;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-busca-resultado:last-child {
+  border-bottom: none;
+}
+
+.home-busca-resultado:hover,
+.home-busca-resultado:focus-visible {
+  background: #f7f5fb;
+}
+
+.home-busca-resultado-nome {
+  font-size: 14px;
+  font-weight: 700;
+  color: #22283a;
+}
+
+.home-busca-resultado-handle {
+  font-size: 12px;
+  color: #8a8a95;
+}
+
+.home-busca-mensagem {
+  margin: 0;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #8a8a95;
+  text-align: center;
+}
+
 .home-mapa {
   position: relative;
   width: calc(100% + 40px);

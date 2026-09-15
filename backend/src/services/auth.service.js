@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
 const { gerarToken } = require("../utils/jwt");
 const { enviarEmailRecuperacao, enviarEmailVerificacao } = require("./email.service");
+const { registrarTentativaLogin } = require("./loginHistorico.service");
 
 const SALT_ROUNDS = 10;
 const CODIGO_VALIDO_MINUTOS = 15;
@@ -91,7 +92,26 @@ async function cadastrar({ nome, email, senha, idade }) {
   };
 }
 
-async function login({ email, senha }) {
+// Grava a tentativa no histórico de login (ver loginHistorico.service.js) —
+// nunca deixa uma falha na gravação derrubar o login em si (ex: banco fora
+// do ar): a auditoria é "melhor esforço", não parte crítica do fluxo.
+async function registrarTentativa({ usuarioId, nomeUsuario, emailTentado, sucesso, motivoFalha, ip, userAgent }) {
+  try {
+    await registrarTentativaLogin({
+      usuarioId: usuarioId ?? null,
+      nomeUsuario: nomeUsuario ?? null,
+      emailTentado,
+      sucesso,
+      motivoFalha: motivoFalha ?? null,
+      ip,
+      userAgent,
+    });
+  } catch (erroLog) {
+    console.error("Não foi possível registrar o histórico de login:", erroLog);
+  }
+}
+
+async function login({ email, senha, ip, userAgent }) {
   // findUnique já filtra deletedAt: null automaticamente (extensão de soft
   // delete em config/prisma.js), então um usuário excluído cai aqui como
   // "não encontrado" — por isso a checagem extra abaixo, só pra dar uma
@@ -99,12 +119,33 @@ async function login({ email, senha }) {
   const usuario = await prisma.usuario.findUnique({ where: { email } });
 
   if (!usuario) {
-    if (await prisma.usuarioFoiExcluido(email)) {
+    // Busca sem o filtro de soft delete só pra saber se é uma conta
+    // desativada (pra vincular usuarioId/nomeUsuario no histórico mesmo
+    // nesse caso) — não muda a mensagem de erro nem o comportamento do login.
+    const usuarioExcluido = await prisma.semFiltro.usuario.findUnique({ where: { email } });
+
+    if (usuarioExcluido?.deletedAt) {
+      await registrarTentativa({
+        usuarioId: usuarioExcluido.id,
+        nomeUsuario: usuarioExcluido.nome,
+        emailTentado: email,
+        sucesso: false,
+        motivoFalha: "Conta desativada",
+        ip,
+        userAgent,
+      });
       const erro = new Error("Esta conta foi desativada.");
       erro.status = 401;
       throw erro;
     }
 
+    await registrarTentativa({
+      emailTentado: email,
+      sucesso: false,
+      motivoFalha: "E-mail não cadastrado",
+      ip,
+      userAgent,
+    });
     const erro = new Error("Email ou senha inválidos.");
     erro.status = 401;
     throw erro;
@@ -113,12 +154,30 @@ async function login({ email, senha }) {
   const senhaValida = await bcrypt.compare(senha, usuario.senha);
 
   if (!senhaValida) {
+    await registrarTentativa({
+      usuarioId: usuario.id,
+      nomeUsuario: usuario.nome,
+      emailTentado: email,
+      sucesso: false,
+      motivoFalha: "Senha incorreta",
+      ip,
+      userAgent,
+    });
     const erro = new Error("Email ou senha inválidos.");
     erro.status = 401;
     throw erro;
   }
 
   if (!usuario.emailVerificado) {
+    await registrarTentativa({
+      usuarioId: usuario.id,
+      nomeUsuario: usuario.nome,
+      emailTentado: email,
+      sucesso: false,
+      motivoFalha: "E-mail não verificado",
+      ip,
+      userAgent,
+    });
     const erro = new Error(
       "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada ou peça um novo código."
     );
@@ -127,6 +186,15 @@ async function login({ email, senha }) {
   }
 
   const token = gerarToken({ id: usuario.id });
+
+  await registrarTentativa({
+    usuarioId: usuario.id,
+    nomeUsuario: usuario.nome,
+    emailTentado: email,
+    sucesso: true,
+    ip,
+    userAgent,
+  });
 
   return {
     usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, role: usuario.role },

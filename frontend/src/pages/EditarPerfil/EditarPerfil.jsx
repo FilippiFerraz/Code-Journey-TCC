@@ -179,7 +179,9 @@ function EditarPerfil() {
         </section>
 
         <section className="editarperfil-card">
-          <header className="editarperfil-card-topo">Cor de fundo do perfil 🎨</header>
+          <header className="editarperfil-card-topo">
+            Cor de fundo do perfil <i className="hn hn-paint-brush" aria-hidden="true"></i>
+          </header>
 
           <div className="editarperfil-card-corpo">
             <p className="editarperfil-fundos-dica">
@@ -201,7 +203,9 @@ function EditarPerfil() {
                   aria-pressed={fundoPerfil === fundo.id}
                 >
                   {fundoPerfil === fundo.id && (
-                    <span className="editarperfil-fundo-marca">✓</span>
+                    <span className="editarperfil-fundo-marca">
+                      <i className="hn hn-check" aria-hidden="true"></i>
+                    </span>
                   )}
                 </button>
               ))}
@@ -211,7 +215,7 @@ function EditarPerfil() {
 
         <section className="editarperfil-card">
           <header className="editarperfil-card-topo">
-            Itens em destaque 🎒
+            Itens em destaque <i className="hn hn-briefcase" aria-hidden="true"></i>
             <span className="editarperfil-contador">
               {destaque.length}/{LIMITE_ITENS_DESTAQUE}
             </span>
@@ -235,7 +239,9 @@ function EditarPerfil() {
                     title={itemPersonagem.item.nome}
                   >
                     {destaque.includes(itemPersonagem.id) && (
-                      <span className="editarperfil-item-marca">✓</span>
+                      <span className="editarperfil-item-marca">
+                        <i className="hn hn-check" aria-hidden="true"></i>
+                      </span>
                     )}
                     <IconeItem
                       item={itemPersonagem.item}

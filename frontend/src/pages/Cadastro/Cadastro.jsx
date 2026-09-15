@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.png";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
+import CampoSenha from "../../components/CampoSenha";
 import "./Cadastro.css";
 
 // Mesma regra aplicada no backend (auth.service.js) — validar aqui também
@@ -126,9 +127,8 @@ function Cadastro() {
           <label className="login-label" htmlFor="senha">
             Senha:
           </label>
-          <input
+          <CampoSenha
             id="senha"
-            type="password"
             className="login-input"
             placeholder="••••••••••••"
             value={senha}
@@ -139,9 +139,8 @@ function Cadastro() {
           <label className="login-label" htmlFor="confirmarSenha">
             Confirmar senha:
           </label>
-          <input
+          <CampoSenha
             id="confirmarSenha"
-            type="password"
             className="login-input"
             placeholder="••••••••••••"
             value={confirmarSenha}

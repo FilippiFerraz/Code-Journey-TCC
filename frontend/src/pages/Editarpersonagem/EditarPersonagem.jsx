@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { HardHat, Shield, Footprints, Sword, Shirt, Gem, Medal, Award, Flame } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
 import { resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
@@ -8,16 +9,19 @@ import BotaoPixel from "../../components/BotaoPixel";
 
 // Slots de equipamento ao redor do personagem. Os ids batem com Item.tipo
 // no backend (ver schema.prisma) — é assim que um item entra no slot certo.
+// "icone" é o componente do lucide-react (não uma instância) — a biblioteca
+// pixelada do resto do app não tem ícones de fantasia (capacete, peitoral,
+// espada...), então esses slots usam lucide-react só nesses casos.
 const SLOTS_ESQUERDA = [
-  { id: "capacete", nome: "Capacete", icone: "🪖" },
-  { id: "peitoral", nome: "Peitoral", icone: "🛡️" },
-  { id: "sapato", nome: "Sapato", icone: "🥾" },
+  { id: "capacete", nome: "Capacete", icone: HardHat },
+  { id: "peitoral", nome: "Peitoral", icone: Shield },
+  { id: "sapato", nome: "Sapato", icone: Footprints },
 ];
 
 const SLOTS_DIREITA = [
-  { id: "arma", nome: "Arma", icone: "⚔️" },
-  { id: "costas", nome: "Costas", icone: "🧥" },
-  { id: "acessorios", nome: "Acessórios", icone: "💍" },
+  { id: "arma", nome: "Arma", icone: Sword },
+  { id: "costas", nome: "Costas", icone: Shirt },
+  { id: "acessorios", nome: "Acessórios", icone: Gem },
 ];
 
 // Quantidade de espaços do inventário (visual) — cresce se o jogador tiver
@@ -26,22 +30,24 @@ const SLOTS_INVENTARIO = 24;
 
 // Conquistas de exemplo, no espírito do protótipo.
 // TODO: substituir por GET no backend quando o sistema de conquistas existir.
+// Mesmo caso dos slots acima: sem medalha/dragão na biblioteca pixelada, usa
+// lucide-react (Flame como substituto evocativo pro troféu do dragão).
 const CONQUISTAS = [
   {
     id: 1,
-    icone: "🥈",
+    icone: Medal,
     texto:
       "50 perguntas respondidas com sucesso. Esta conquista mostra o quanto você evoluiu e domina os desafios do jogo.",
   },
   {
     id: 2,
-    icone: "🥇",
+    icone: Award,
     texto:
       "Você conquistou a Trilha da Sabedoria ao responder 100 perguntas com sucesso. Sua jornada está só começando!",
   },
   {
     id: 3,
-    icone: "🐉",
+    icone: Flame,
     texto:
       "A Cabeça do Dragão é sua recompensa por vencer 200 perguntas com precisão.",
   },
@@ -66,7 +72,9 @@ function Slot({ slot, itemPersonagem, ocupado, onClicar }) {
             classeEmoji="editar-slot-icone editar-slot-icone-cheio"
           />
         ) : (
-          <span className="editar-slot-icone">{slot.icone}</span>
+          <span className="editar-slot-icone">
+            <slot.icone size={24} />
+          </span>
         )}
       </div>
       <span className="editar-slot-nome">{slot.nome}</span>
@@ -215,7 +223,9 @@ function EditarPersonagem() {
       {/* Inventário */}
       <h2 className="editar-titulo">Seus itens</h2>
       <section className="editar-card">
-        <header className="editar-card-topo">Inventário 🎒</header>
+        <header className="editar-card-topo">
+          Inventário <i className="hn hn-briefcase" aria-hidden="true"></i>
+        </header>
         <div className="editar-inventario">
           {erro && <p className="editar-inventario-erro">{erro}</p>}
           <div className="editar-madeira">
@@ -240,7 +250,7 @@ function EditarPersonagem() {
                 onClick={() => setItemSelecionado(null)}
                 aria-label="Fechar detalhes do item"
               >
-                ✕
+                <i className="hn hn-times" aria-hidden="true"></i>
               </BotaoPixel>
 
               <IconeItem
@@ -289,7 +299,9 @@ function EditarPersonagem() {
       <section className="editar-conquistas">
         {CONQUISTAS.map((c) => (
           <div className="editar-conquista" key={c.id}>
-            <div className="editar-conquista-icone">{c.icone}</div>
+            <div className="editar-conquista-icone">
+              <c.icone size={26} />
+            </div>
             <p className="editar-conquista-texto">{c.texto}</p>
           </div>
         ))}

@@ -1,0 +1,43 @@
+/* ============================================================
+   campoSenha.css — wrapper do botão de "olho" (ver CampoSenha.jsx)
+   O input em si mantém a classe/estilo que cada tela já usava
+   (ex: .login-input) — aqui só o posicionamento do botão por cima.
+   ============================================================ */
+
+.campo-senha-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* especificidade por combinador (não por classe) de propósito: assim bate
+   qualquer classe de input que a tela passe (.login-input, ...) sem
+   precisar depender da ordem de import dos CSS pra vencer o cascade. */
+.campo-senha-wrapper input {
+  width: 100%;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+
+.campo-senha-toggle {
+  position: absolute;
+  top: 0;
+  bottom: 16px; /* alinhado à margin-bottom padrão dos campos (.login-input) */
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #6b7280;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.campo-senha-toggle:hover,
+.campo-senha-toggle:focus-visible {
+  opacity: 1;
+  color: #a23fd0;
+}

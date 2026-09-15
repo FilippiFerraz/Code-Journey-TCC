@@ -1,0 +1,531 @@
+/* ============================================================
+   DesafioChefe.css — batalha de chefe estilo Pokémon
+   Tela cheia dividida em: arena (cima) + painel de ação (baixo).
+   Reaproveita a mesma identidade visual (gradiente roxo/azul/magenta)
+   e as mesmas técnicas de animação já usadas em ResolverDesafio.css
+   e DesafioIntro.css.
+   ============================================================ */
+
+.chefe-tela {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: linear-gradient(180deg, #2f6fed, #6a3fd9 45%, #9b2fc9 100%);
+}
+
+/* ---------- Cena de introdução (curta, no estilo de DesafioIntro) ---------- */
+
+.chefe-intro {
+  position: relative;
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #26325a 0%, #151d33 60%, #0f1626 100%);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chefe-intro-cena {
+  flex: 1;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chefe-intro-sprite {
+  width: 220px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.45));
+  animation: chefe-flutuar-intro 1.8s ease-in-out infinite;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@keyframes chefe-flutuar-intro {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16px); }
+}
+
+.chefe-intro-balao {
+  position: relative;
+  margin: 0 16px 20px;
+  padding: 20px 22px 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  z-index: 5;
+  animation: chefe-surgir 0.25s ease-out;
+}
+
+.chefe-intro-balao::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 28px;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 12px solid #ffffff;
+}
+
+.chefe-intro-fala {
+  margin: 0 0 14px;
+  color: #22283a;
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  animation: chefe-aparecer 0.3s ease-out;
+}
+
+.chefe-intro-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chefe-intro-pontos {
+  display: flex;
+  gap: 6px;
+}
+
+.chefe-intro-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d3d3dd;
+  transition: background 0.2s;
+}
+
+.chefe-intro-ponto--ativo {
+  background: #8b3fd9;
+}
+
+.chefe-intro-continuar {
+  color: #c23fb8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ---------- Arena de batalha ---------- */
+
+.chefe-arena {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.chefe-card {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  min-width: 150px;
+  border-radius: 12px;
+  background: rgba(15, 10, 26, 0.75);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+.chefe-card-topo {
+  top: 12px;
+  left: 12px;
+}
+
+.chefe-card-jogador {
+  right: 12px;
+  bottom: 12px;
+  align-items: flex-end;
+}
+
+.chefe-card-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chefe-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ff5a5a;
+  color: #ffffff;
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.chefe-nome,
+.chefe-jogador-nome {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* barra de vida do chefe em 3 segmentos (uma pergunta = uma vida) */
+.chefe-vida-barra {
+  display: flex;
+  gap: 4px;
+}
+
+.chefe-vida-segmento {
+  flex: 1;
+  height: 10px;
+  min-width: 20px;
+  border-radius: 4px;
+  background: #ff5a5a;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.chefe-vida-segmento--vazio {
+  background: #3a2a4d;
+  opacity: 0.7;
+}
+
+/* cronômetro da batalha — canto superior direito da arena, fora dos cards */
+.chefe-cronometro {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(15, 10, 26, 0.75);
+  color: #ffffff;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* barra de HP/XP do jogador — decorativa nesta primeira versão */
+.chefe-jogador-barra-hp {
+  width: 90px;
+  height: 8px;
+  border-radius: 4px;
+  background: #3a2a4d;
+  overflow: hidden;
+}
+
+.chefe-jogador-barra-hp-preenchimento {
+  width: 100%;
+  height: 100%;
+  background: #7cff3f;
+}
+
+/* palco: personagens sobre o cenário */
+.chefe-palco {
+  position: absolute;
+  inset: 0;
+}
+
+.chefe-sprite-heroi,
+.chefe-sprite-chefe {
+  position: absolute;
+  bottom: 14%;
+  filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.3));
+}
+
+/* de costas, olhando pro chefe — igual às batalhas de treinador Pokémon */
+.chefe-sprite-heroi {
+  left: 14%;
+  width: 96px;
+  transform: scaleX(-1);
+}
+
+.chefe-sprite-chefe {
+  right: 14%;
+  width: 130px;
+  animation: chefe-flutuar 1.6s ease-in-out infinite;
+}
+
+@keyframes chefe-flutuar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ---------- Golpe certeiro (jogador acerta o chefe) ---------- */
+
+.chefe-sprite-chefe--atingido {
+  animation: chefe-levar-dano 0.5s ease-in-out;
+}
+
+@keyframes chefe-levar-dano {
+  0% { transform: translate(0, 0); filter: brightness(1); }
+  20% { transform: translate(-8px, 4px); filter: brightness(3) saturate(0); }
+  40% { transform: translate(8px, -4px); filter: brightness(1); }
+  60% { transform: translate(-6px, 3px); }
+  80% { transform: translate(6px, -3px); }
+  100% { transform: translate(0, 0); }
+}
+
+.chefe-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: rgba(255, 40, 40, 0.35);
+  pointer-events: none;
+  animation: chefe-sumir-flash 0.5s ease-out forwards;
+}
+
+@keyframes chefe-sumir-flash {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- Erro (chefe se esquiva) ---------- */
+
+.chefe-sprite-chefe--esquivando {
+  animation: chefe-esquivar 0.5s ease-in-out;
+}
+
+@keyframes chefe-esquivar {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(28px) scale(0.95); }
+  60% { transform: translateX(-10px); }
+}
+
+/* ---------- Derrota do chefe (última vida) ---------- */
+
+.chefe-sprite-chefe--derrotado {
+  animation: chefe-morrer 1.1s ease-in forwards;
+}
+
+@keyframes chefe-morrer {
+  0% { transform: translateY(0) scale(1); filter: brightness(1); opacity: 1; }
+  10% { transform: translateY(0) scale(1.2); filter: brightness(4) saturate(0); }
+  40% { transform: translateY(6px) scale(1.1, 0.75) rotate(6deg); opacity: 1; }
+  70% { transform: translateY(18px) scale(0.7, 0.5) rotate(-10deg); opacity: 0.7; }
+  100% { transform: translateY(40px) scale(0.15) rotate(-20deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chefe-sprite-chefe,
+  .chefe-sprite-chefe--atingido,
+  .chefe-sprite-chefe--esquivando,
+  .chefe-sprite-chefe--derrotado,
+  .chefe-flash,
+  .chefe-intro-sprite {
+    animation: none;
+  }
+  .chefe-sprite-chefe--derrotado {
+    opacity: 0;
+  }
+}
+
+/* ---------- Painel de ação ---------- */
+
+.chefe-painel {
+  flex: 1;
+  margin: 12px;
+  padding: 16px;
+  border: 4px solid #5c1a73;
+  border-radius: 14px;
+  background: #8b2fb0;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+/* estados de resultado (acerto/erro/vitória) ocupam o painel inteiro */
+.chefe-banner,
+.chefe-vitoria {
+  grid-column: 1 / -1;
+  text-align: center;
+  align-self: center;
+  animation: chefe-surgir 0.25s ease-out;
+}
+
+.chefe-banner-titulo {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.chefe-banner--acerto .chefe-banner-titulo {
+  color: #b6ff8f;
+}
+
+.chefe-banner--erro .chefe-banner-titulo {
+  color: #ffc2c2;
+}
+
+.chefe-banner-fala {
+  margin: 0;
+  color: #f0d9ff;
+  font-size: 0.9rem;
+}
+
+.chefe-vitoria-titulo {
+  margin: 0 0 8px;
+  color: #ffe14d;
+  font-size: 1.4rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.chefe-vitoria-fala {
+  margin: 0 0 12px;
+  color: #f0d9ff;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* XP ganho nesta vitória (com tempo e bônus de primeira tentativa) — mesmas
+   classes/estilo de ResolverDesafio.css, repetidas aqui porque cada tela de
+   desafio carrega sua própria folha de estilos. */
+.vitoria-recompensa {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 auto 12px;
+  padding: 10px 14px;
+  max-width: 260px;
+  border: 2px dashed #ffd84d;
+  border-radius: 12px;
+  background: rgba(255, 216, 77, 0.12);
+}
+
+.vitoria-recompensa-rotulo {
+  color: #ffe14d;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.vitoria-recompensa-valor {
+  color: #f6e7b0;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+@keyframes chefe-surgir {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chefe-aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- Coluna esquerda: caixa de diálogo ---------- */
+
+.chefe-caixa-dialogo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 3px solid #5c1a73;
+  border-radius: 10px;
+  background: #2c0a35;
+  min-width: 0;
+}
+
+.chefe-dialogo-pergunta {
+  margin: 0;
+  color: #ffe14d;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.chefe-dialogo-enunciado {
+  margin: 0;
+  color: #f0d9ff;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
+/* ---------- Coluna direita: menu de ataques (2x2) ---------- */
+
+.chefe-menu-ataques {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Ataques = alternativas da pergunta, no estilo do menu de batalha Pokémon
+   (usa <BotaoPixel> pra geometria/mecânica — ver BotaoPixel.jsx). O cursor
+   ▶ vem do slot `extra`, fora do recorte pixelado, pra não ser cortado. */
+.chefe-ataque {
+  position: relative;
+  width: 100%;
+  background: #5c1a73;
+}
+
+.chefe-ataque-miolo {
+  padding: 8px 10px;
+  background: #45114f;
+  color: #ffffff;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.78rem;
+  font-weight: normal;
+  letter-spacing: normal;
+  text-shadow: none;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.chefe-ataque:disabled .chefe-ataque-miolo {
+  opacity: 0.7;
+}
+
+.chefe-ataque:focus-visible {
+  outline: 3px solid #ffd84d;
+  outline-offset: 2px;
+}
+
+.chefe-cursor {
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translate(-100%, -50%);
+  color: #ffd84d;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+
+.chefe-ataque:hover:not(:disabled) .chefe-cursor,
+.chefe-ataque:focus-visible .chefe-cursor {
+  opacity: 1;
+}
+
+/* ---------- Botão "VER RECOMPENSA" ---------- */
+/* mesmas cores usadas em ResolverDesafio.css pro botão de avançar */
+
+.botao-avante {
+  display: block;
+  margin: 16px auto 4px;
+  background: #3f7a24;
+}
+
+.botao-avante-miolo {
+  padding: 10px 28px;
+  background: #7ed957;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- Responsivo: telas bem estreitas ---------- */
+
+@media (max-width: 360px) {
+  .chefe-painel {
+    grid-template-columns: 1fr;
+  }
+}
