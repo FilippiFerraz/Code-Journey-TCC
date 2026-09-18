@@ -5,6 +5,7 @@ import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
 import BotaoPixel from "../../components/BotaoPixel";
+import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import goblinJS from "../../assets/images/GoblinJS.png";
 import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
 import "./DesafioChefe.css";
@@ -123,6 +124,11 @@ function DesafioChefe() {
   // padrão de ResolverDesafio.jsx.
   const [recompensaApi, setRecompensaApi] = useState(null);
 
+  // Popup de confirmação do botão "Voltar" — mesmo padrão de
+  // ResolverDesafio.jsx: sair no meio da batalha descarta a vida do chefe
+  // e a pergunta atual, que não são persistidas em nenhum lugar.
+  const [mostrarConfirmarSair, setMostrarConfirmarSair] = useState(false);
+
   // flags de animação da arena
   const [heroiAtacando, setHeroiAtacando] = useState(false);
   const [chefeSofrendoGolpe, setChefeSofrendoGolpe] = useState(false);
@@ -173,6 +179,18 @@ function DesafioChefe() {
     navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
       state: { resultado: recompensaApi },
     });
+  }
+
+  function abrirConfirmarSair() {
+    setMostrarConfirmarSair(true);
+  }
+
+  function fecharConfirmarSair() {
+    setMostrarConfirmarSair(false);
+  }
+
+  function confirmarSairDesafio() {
+    navigate("/home");
   }
 
   // Acerto: herói golpeia, chefe leva o hit e perde uma vida. Na última
@@ -231,6 +249,11 @@ function DesafioChefe() {
     return (
       <div className="chefe-intro" onClick={avancarIntro}>
         <div className="chefe-intro-cena">
+          <div className="chefe-intro-anuncio">
+            <p className="chefe-intro-aviso">O chefe da trilha apareceu! Você vai precisar derrotá-lo.</p>
+            <h2 className="chefe-intro-nome">{chefe.nome}</h2>
+          </div>
+
           <img
             src={chefe.imagem}
             alt={chefe.nome}
@@ -419,6 +442,21 @@ function DesafioChefe() {
 
   return (
     <div className="chefe-tela">
+      <BotaoPixel
+        className="chefe-voltar"
+        classeMiolo="chefe-voltar-miolo"
+        onClick={abrirConfirmarSair}
+      >
+        ← Voltar
+      </BotaoPixel>
+
+      {mostrarConfirmarSair && (
+        <ConfirmarSairDesafio
+          onManterDesafio={fecharConfirmarSair}
+          onSairDesafio={confirmarSairDesafio}
+        />
+      )}
+
       {fase === "intro" ? (
         renderIntro()
       ) : (

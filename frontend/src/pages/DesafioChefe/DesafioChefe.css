@@ -7,10 +7,31 @@
    ============================================================ */
 
 .chefe-tela {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100%;
   background: linear-gradient(180deg, #2f6fed, #6a3fd9 45%, #9b2fc9 100%);
+}
+
+/* Botão "Voltar" no canto superior esquerdo — mesmo padrão do
+   .intro-voltar em DesafioIntro.css e .desafio-voltar em
+   ResolverDesafio.css. Abre o popup de confirmação em vez de navegar
+   direto, pra não perder a batalha em andamento sem querer. Fica abaixo
+   do card de status do chefe (.chefe-card-topo, top: 12px) pra não
+   cobrí-lo durante a batalha. */
+.chefe-voltar {
+  position: absolute;
+  top: 84px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(10, 14, 26, 0.9);
+}
+
+.chefe-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
 }
 
 /* ---------- Cena de introdução (curta, no estilo de DesafioIntro) ---------- */
@@ -31,8 +52,36 @@
   flex: 1;
   min-height: 60vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 14px;
+}
+
+/* Anúncio do confronto — aviso + nome do chefe, acima do sprite (mesmo
+   padrão de .intro-inimigo-anuncio em DesafioIntro.css) */
+.chefe-intro-anuncio {
+  padding: 0 24px;
+  text-align: center;
+  animation: chefe-aparecer 0.4s ease-out;
+}
+
+.chefe-intro-aviso {
+  margin: 0 0 6px;
+  color: #ffd84d;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.chefe-intro-nome {
+  margin: 0;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
 }
 
 .chefe-intro-sprite {
@@ -312,7 +361,8 @@
   .chefe-sprite-chefe--esquivando,
   .chefe-sprite-chefe--derrotado,
   .chefe-flash,
-  .chefe-intro-sprite {
+  .chefe-intro-sprite,
+  .chefe-intro-anuncio {
     animation: none;
   }
   .chefe-sprite-chefe--derrotado {

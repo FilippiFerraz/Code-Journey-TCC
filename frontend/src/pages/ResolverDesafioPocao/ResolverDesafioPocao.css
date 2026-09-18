@@ -1,0 +1,295 @@
+/* ============================================================
+   ResolverDesafioPocao.css — desafio "Monte a Poção": arrastar
+   ingredientes de código até o caldeirão, na ordem certa. Reaproveita a
+   paleta e os cartões já estabelecidos em ResolverDesafio.css, mas sem
+   cena de batalha — este desafio não é uma luta contra inimigo.
+   ============================================================ */
+
+.pocao-tela {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 64px 16px 24px;
+  background: linear-gradient(180deg, #2f6fed, #6a3fd9 45%, #9b2fc9 75%, #b229c4 100%);
+  box-sizing: border-box;
+}
+
+/* Botão "Voltar" no canto superior esquerdo — mesmo padrão de
+   .desafio-voltar em ResolverDesafio.css. Abre o popup de confirmação
+   (ConfirmarSairDesafio) em vez de navegar direto. */
+.pocao-voltar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(10, 14, 26, 0.9);
+}
+
+.pocao-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
+}
+
+.pocao-cronometro {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 10, 26, 0.55);
+  color: #ffffff;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- Cabeçalho: título, enunciado, progresso ---------- */
+
+.pocao-cabecalho {
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.pocao-titulo {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.pocao-enunciado {
+  margin: 0 0 10px;
+  color: #f0d9ff;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.pocao-progresso {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  color: #ffe14d;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ---------- Caldeirão ---------- */
+
+.pocao-caldeirao-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 0 20px;
+}
+
+.pocao-caldeirao {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.18) 70%);
+  border: 3px dashed rgba(255, 255, 255, 0.4);
+}
+
+.pocao-caldeirao-imagem {
+  width: 120px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.35));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pocao-caldeirao-burst {
+  position: absolute;
+  font-size: 48px;
+  pointer-events: none;
+}
+
+.pocao-caldeirao-dica {
+  margin: 10px 0 0;
+  color: #f0d9ff;
+  font-size: 0.75rem;
+  font-style: italic;
+  text-align: center;
+}
+
+/* ---------- Monte de ingredientes ---------- */
+
+.pocao-ingredientes-pool {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 16px;
+  border: 4px solid #5c1a73;
+  border-radius: 14px;
+  background: #8b2fb0;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+}
+
+.pocao-ingredientes-vazio {
+  padding: 8px;
+  color: #f0d9ff;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Ingrediente = "pílula" arrastável com um trecho de código dentro.
+   touch-action: none impede o navegador de tentar rolar a página durante
+   o arraste no toque, já que o gesto é tratado inteiramente via Pointer
+   Events (ver iniciarArrasteIngrediente em ResolverDesafioPocao.jsx). */
+.pocao-ingrediente {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #45114f;
+  color: #7cff3f;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.8rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.pocao-ingrediente code {
+  white-space: pre;
+}
+
+/* Ingrediente original durante o arraste — some visualmente (o "fantasma"
+   flutuante abaixo é quem representa ele na tela), mas continua ocupando
+   o espaço dele no monte, pra não pular o layout dos vizinhos. */
+.pocao-ingrediente--fantasma {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Cópia flutuante que segue o ponteiro durante o arraste — absolute
+   relativo a .pocao-tela (não fixed com coordenadas cruas do ponteiro),
+   ver comentário em ResolverDesafioPocao.jsx sobre o containing block
+   criado pelo transform de .app-frame em telas largas de desktop. */
+.pocao-ingrediente--arrastando {
+  position: absolute;
+  z-index: 40;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Tela de sucesso ---------- */
+
+.pocao-sucesso {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  padding: 24px 16px;
+}
+
+.pocao-sucesso-caldeirao {
+  position: relative;
+  width: 150px;
+  margin: 0 auto 12px;
+}
+
+.pocao-sucesso-caldeirao-img {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.4));
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.pocao-sucesso-brilho {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 60px;
+  pointer-events: none;
+}
+
+.pocao-sucesso-titulo {
+  margin: 0 0 8px;
+  color: #ffe14d;
+  font-size: 1.5rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.pocao-sucesso-fala {
+  margin: 0 0 16px;
+  color: #f0d9ff;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-width: 320px;
+}
+
+.pocao-sucesso-recompensa {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  max-width: 220px;
+  border: 2px dashed #ffd84d;
+  border-radius: 12px;
+  background: rgba(255, 216, 77, 0.12);
+}
+
+.pocao-sucesso-recompensa-rotulo {
+  color: #ffe14d;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pocao-sucesso-recompensa-valor {
+  color: #f6e7b0;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Botão "VER RECOMPENSA" — mesmas cores usadas em ResolverDesafio.css */
+.botao-avante {
+  display: block;
+  margin: 4px auto 0;
+  background: #3f7a24;
+}
+
+.botao-avante-miolo {
+  padding: 10px 28px;
+  background: #7ed957;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 360px) {
+  .pocao-caldeirao {
+    width: 140px;
+    height: 140px;
+  }
+  .pocao-caldeirao-imagem {
+    width: 96px;
+  }
+}

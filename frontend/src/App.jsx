@@ -10,6 +10,8 @@ import Desafios from "./pages/Desafios/Desafios";
 import DesafioIntro from "./pages/DesafioIntro/DesafioIntro";
 import ResolverDesafio from "./pages/ResolverDesafio/ResolverDesafio";
 import DesafioChefe from "./pages/DesafioChefe/DesafioChefe";
+import DesafioIntroPocao from "./pages/DesafioIntroPocao/DesafioIntroPocao";
+import ResolverDesafioPocao from "./pages/ResolverDesafioPocao/ResolverDesafioPocao";
 import Perfil from "./pages/Perfil/Perfil";
 import Ranking from "./pages/Ranking/Ranking";
 import EditarPersonagem from "./pages/EditarPersonagem/EditarPersonagem";
@@ -30,7 +32,11 @@ function App() {
   return (
     <BrowserRouter>
       {/* Todo o design é pensado pra celular — essa moldura limita a
-          largura numa tela de computador em vez de esticar tudo. */}
+          largura numa tela de computador em vez de esticar tudo.
+          Exceção: telas com MainLayout em modo desktop (sidebar + coluna
+          direita, ver layouts/MainLayout.jsx) usam a largura cheia — a
+          moldura estreita ali causava o "aplicativo bugado" com barras
+          laterais enormes (ver .app-frame:has(...) em App.css). */}
       <div className="app-frame">
         <Routes>
           <Route path="/" element={<Login />} />
@@ -43,6 +49,8 @@ function App() {
           <Route path="/desafio/:mundoId/:dificuldade/:desafioId" element={<DesafioIntro />} />
           <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<ResolverDesafio />} />
           <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<DesafioChefe />} />
+          <Route path="/desafio-pocao/:mundoId/:dificuldade/:desafioId" element={<DesafioIntroPocao />} />
+          <Route path="/pocao/:mundoId/:dificuldade/:desafioId" element={<ResolverDesafioPocao />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/:usuarioId" element={<Perfil />} />
           <Route path="/ranking" element={<Ranking />} />

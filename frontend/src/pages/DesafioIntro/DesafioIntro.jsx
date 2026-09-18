@@ -4,6 +4,8 @@ import BotaoPixel from "../../components/BotaoPixel";
 import "./DesafioIntro.css";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
+import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.png";
+import mercadorInimigo from "../../assets/images/mercador_inimigo.png";
 
 // Enquanto a rota de desafios não existe no backend, o conteúdo fica aqui,
 // espelhando os desafios definidos em ResolverDesafio.jsx (mesmo mundo,
@@ -42,29 +44,41 @@ const INTROS = {
         "Descubra o valor e o tipo de uma variável em JavaScript depois que ela é reatribuída.",
       dica: "o operador `+` entre uma string e um número concatena os valores, não soma — o número é convertido para texto.",
     },
-  },
-  2: {
-    1: {
-      // Reaproveitando a arte do GoblinJS — o portal 2 ainda não tem
-      // inimigo próprio desenhado.
-      inimigo: { imagem: goblinJS, nome: "Goblin Guardião" },
+    3: {
+      inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto Contador" },
       falas: [
-        "Você chegou ao Acampamento Goblin...",
-        "Um Goblin Guardião vigia a entrada de uma área restrita do acampamento.",
-        "Ele só deixa passar quem prova que sabe decidir com lógica, não com força.",
-        "Sua missão: montar um programa que decide quem pode entrar, usando if/else.",
+        "Você chegou a uma nova área da Vila Inicial...",
+        "Um Esqueleto Contador vigia a entrada de uma área restrita.",
+        "Ele só deixa passar quem prova que sabe somar valores em JavaScript.",
+        "Sua missão: montar um programa que declara dois números, soma e exibe o resultado.",
       ],
-      titulo: "Desafio JavaScript",
+      titulo: "Soma de Números",
       texto:
-        "Monte, na ordem correta, um programa em JavaScript que verifica se uma pessoa pode acessar uma área restrita.",
-      dica: "utilize `if` para testar a condição e `else` para o caso contrário.",
+        "Monte, na ordem correta, um programa em JavaScript que declara duas variáveis numéricas, soma os valores e exibe o resultado no console.",
+      dica: "declare as duas variáveis primeiro — a soma só pode usar o que já existe.",
     },
-    2: {
-      // Reaproveitando a arte do GoblinJS — o portal 2 ainda não tem
+    4: {
+      inimigo: { imagem: mercadorInimigo, nome: "Elfo Mercador" },
+      falas: [
+        "Você chega a uma bifurcação vigiada pelo Elfo Mercador...",
+        "Ele não luta com espada — luta reconhecendo código certo e errado.",
+        "Vai te mostrar 3 trechos de código, um de cada vez, pra você julgar.",
+        "Sua missão: arrastar cada cartão pra direita se estiver certo, ou pra esquerda se estiver errado.",
+      ],
+      titulo: "Certo ou Errado?",
+      texto:
+        "Analise cada cartão de código e arraste pra direita se estiver CERTO, ou pra esquerda se estiver ERRADO. Acerte os 3 para vencer.",
+      dica: "preste atenção nos detalhes pequenos, como chaves que não fecham ou um = sozinho onde deveria ter === .",
+    },
+  },
+  2: {},
+  3: {
+    1: {
+      // Reaproveitando a arte do GoblinJS — o portal 3 ainda não tem
       // inimigo próprio desenhado.
       inimigo: { imagem: goblinJS, nome: "Goblin Sábio" },
       falas: [
-        "Você avança mais fundo no Acampamento Goblin...",
+        "Você chega à Arena do Dragão...",
         "Um Goblin Sábio observa você, sem levantar arma nenhuma.",
         "Ele não quer lutar — quer ouvir você explicar o que aprendeu.",
         "Sua missão: escrever, com suas próprias palavras, o que o console.log() faz em JavaScript.",
@@ -74,14 +88,12 @@ const INTROS = {
         "Explique, com suas próprias palavras, o que o comando console.log() faz em JavaScript e para que ele é usado.",
       dica: "pense no que aparece no console do navegador quando esse comando roda, e por que isso ajuda quem está programando.",
     },
-  },
-  3: {
-    1: {
+    2: {
       // Reaproveitando a arte do Slime — o portal 3 ainda não tem inimigo
       // nem cenário próprios desenhados.
       inimigo: { imagem: slime, nome: "Slime da Arena" },
       falas: [
-        "Você chega à Arena do Dragão...",
+        "Você avança mais fundo na Arena do Dragão...",
         "Antes do verdadeiro guardião, um Slime da Arena testa quem ousa entrar.",
         "Ele não ataca à toa — quer ver se você sabe repetir uma ação sem repetir o código à mão.",
         "Sua missão: escrever um laço de repetição em JavaScript.",
@@ -141,8 +153,16 @@ function DesafioIntro() {
         ← Voltar
       </BotaoPixel>
 
-      {/* Cena — apenas o inimigo do desafio, em destaque e centralizado, flutuando */}
+      {/* Cena — anúncio do confronto (aviso + nome) acima do inimigo do
+          desafio, em destaque e centralizado, flutuando */}
       <div className="intro-cena">
+        <div className="intro-inimigo-anuncio">
+          <p className="intro-inimigo-aviso">
+            Um inimigo surgiu no seu caminho! Você vai precisar enfrentá-lo.
+          </p>
+          <h2 className="intro-inimigo-nome">{intro.inimigo.nome}</h2>
+        </div>
+
         <img
           src={intro.inimigo.imagem}
           alt={intro.inimigo.nome}

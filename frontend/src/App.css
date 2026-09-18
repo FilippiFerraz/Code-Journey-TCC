@@ -28,6 +28,17 @@
   transform: translateZ(0);
 }
 
+/* Exceção à moldura estreita: quando o MainLayout está em modo desktop
+   (sidebar esquerda + coluna direita, ver layouts/MainLayout.jsx e
+   hooks/useIsMobile.js), a página usa a largura cheia da janela — a
+   moldura de 720px foi pensada pro design mobile-first do resto do app e
+   deixava esse layout espremido, com faixas enormes de fundo nas laterais.
+   Páginas sem MainLayout (Login, telas de desafio, etc.) continuam com a
+   moldura estreita normalmente, sem nenhuma mudança. */
+.app-frame:has(.layout-corpo-desktop) {
+  max-width: none;
+}
+
 /* Preenche as laterais quando a tela é mais larga que a moldura (só
    aparece nesse caso — no celular a moldura já ocupa 100% da largura).
    Mesmo degradê azul->roxo->magenta já usado em Login.css e nas telas de

@@ -1,8 +1,28 @@
 .desafio-tela {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 100%;
   background: linear-gradient(180deg, #6a3fd9, #9b2fc9 55%, #b229c4);
+}
+
+/* Botão "Voltar" no canto superior esquerdo — mesmo padrão do
+   .intro-voltar em DesafioIntro.css. Abre o popup de confirmação em vez
+   de navegar direto, pra não perder a tentativa em andamento sem querer.
+   Fica abaixo dos corações de vida (.cena-vida, top: 10px) pra não
+   cobrí-los. */
+.desafio-voltar {
+  position: absolute;
+  top: 48px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(10, 14, 26, 0.9);
+}
+
+.desafio-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
 }
 
 /* ---------- Cena da batalha ---------- */
@@ -344,6 +364,118 @@
 .dissertativa-textarea:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+/* ---------- Arrastar cartão (exercício "avaliar_codigo") ---------- */
+/* Mecânica de arrastar ao estilo Tinder: um cartão de código por vez,
+   arrastado pra direita ("certo") ou esquerda ("errado") — ver
+   renderAvaliarCodigo em ResolverDesafio.jsx. */
+
+.avaliar-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avaliar-progresso {
+  display: block;
+  margin-bottom: 10px;
+  color: #f0d9ff;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.avaliar-carta-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* selos ✕/✓ atrás do cartão — a opacidade é controlada via inline style
+   proporcional ao quanto o cartão já foi arrastado pra cada lado */
+.avaliar-selo {
+  position: absolute;
+  top: 14px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.avaliar-selo--errado {
+  left: 14px;
+  background: #ff5a5a;
+  color: #3a0a0a;
+  transform: rotate(-14deg);
+}
+
+.avaliar-selo--certo {
+  right: 14px;
+  background: #7ed957;
+  color: #1c2f10;
+  transform: rotate(14deg);
+}
+
+.avaliar-carta {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 320px;
+  min-height: 140px;
+  padding: 22px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #5c1a73;
+  border-radius: 14px;
+  background: #2c0a35;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.25);
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* enquanto o dedo/mouse está segurando o cartão, ele precisa seguir o
+   ponteiro sem o "atraso" da transição — só volta a animar suavemente ao
+   soltar (snap de volta ao centro ou saída voando pra um dos lados) */
+.avaliar-carta--arrastando {
+  transition: none;
+  cursor: grabbing;
+}
+
+.avaliar-carta--certo,
+.avaliar-carta--errado {
+  opacity: 0;
+}
+
+.avaliar-carta-codigo {
+  width: 100%;
+  color: #7cff3f;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.avaliar-instrucao {
+  margin: 14px 0 0;
+  color: #d9bfe8;
+  font-size: 0.78rem;
+  font-style: italic;
+  text-align: center;
 }
 
 /* ---------- Montagem de blocos (exercício "ordenar_blocos") ---------- */
@@ -702,7 +834,8 @@
   .opcao,
   .botao-avante,
   .coracao,
-  .dissertativa-textarea {
+  .dissertativa-textarea,
+  .avaliar-carta {
     transition: none;
   }
   /* sem animação, garante o estado final do foco/morte */

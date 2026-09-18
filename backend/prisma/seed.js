@@ -6,7 +6,7 @@
 // (ou automaticamente depois de `prisma migrate dev`, via a config
 // "prisma.seed" no package.json).
 //
-// Só semeia os desafios que já têm conteúdo real: 1 e 2 da trilha
+// Só semeia os desafios que já têm conteúdo real: 1 a 4 da trilha
 // "iniciante" do mundo 1, e 1 da trilha "iniciante" do mundo 2 (ver Home.jsx
 // e SelecionarDificuldade.jsx pros ids reais). Os demais ainda não têm
 // enunciado definido em nenhum lugar do projeto — quando existirem,
@@ -110,6 +110,81 @@ async function main() {
       descricaoRecompensa: chapeuGoblin.descricao,
       iconeRecompensa: chapeuGoblin.icone,
       itemRecompensaId: chapeuGoblin.id,
+    },
+    {
+      mundoId: MUNDO_ID,
+      dificuldade: DIFICULDADE,
+      numero: 3,
+      titulo: "Soma de Números",
+      enunciado:
+        "O Esqueleto Contador guarda a passagem seguinte e só deixa passar quem consegue somar dois números corretamente.\n\nEscreva um programa em JavaScript que declare duas variáveis com valores numéricos, guarde a soma delas em uma terceira variável e exiba o resultado no console.\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.",
+      dica: "toda variável só pode ser usada depois de declarada — a soma dos dois números precisa vir antes do console.log() que exibe o resultado.",
+      alternativas: {
+        tipo: "ordenar_blocos",
+        blocos: [
+          { id: "b1", codigo: "let numeroA = 4;" },
+          { id: "b2", codigo: "let numeroB = 7;" },
+          { id: "b3", codigo: "let soma = numeroA + numeroB;" },
+          { id: "b4", codigo: "console.log(soma);" },
+        ],
+        ordemCorreta: ["b1", "b2", "b3", "b4"],
+      },
+      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
+      // depende de nenhuma arte nova de item
+      tipoRecompensa: "insignia",
+      nomeRecompensa: "Contador de Variáveis",
+      descricaoRecompensa:
+        "Uma insígnia concedida a quem provou que sabe declarar variáveis, somar valores e exibir o resultado — a base de qualquer programa.",
+      iconeRecompensa: "🧮",
+    },
+    {
+      // Exercício "avaliar_codigo": o jogador arrasta cada cartão pra
+      // direita ("certo") ou esquerda ("errado") em vez de escolher entre
+      // alternativas ou montar blocos — ver ResolverDesafio.jsx e o
+      // comentário em schema.prisma sobre os três formatos de
+      // "alternativas".
+      mundoId: MUNDO_ID,
+      dificuldade: DIFICULDADE,
+      numero: 4,
+      titulo: "Certo ou Errado?",
+      enunciado:
+        "O Elfo Mercador quer saber se você reconhece código correto de verdade.\n\nArraste cada cartão para a direita se achar que o código está CERTO, ou para a esquerda se achar que está ERRADO. Acerte os 3 cartões para derrotá-lo.",
+      dica: "leia com calma — às vezes o erro está em um detalhe pequeno, como um sinal de igual sozinho ou uma chave que não fecha.",
+      alternativas: {
+        tipo: "avaliar_codigo",
+        cartas: [
+          {
+            id: "c1",
+            codigo: 'function somar(a, b) {\n  return a + b;\n}\n\nconsole.log(somar(2, 3));',
+            correta: true,
+            explicacao:
+              "Certo! A função declara os parâmetros direito, usa return pra devolver o resultado, e o console.log() exibe 5 corretamente.",
+          },
+          {
+            id: "c2",
+            codigo:
+              'function saudacao(nome) {\n  console.log("Olá, " + nome);\n\nsaudacao("Ana");',
+            correta: false,
+            explicacao:
+              "Errado! Falta a chave de fechamento } da função saudacao() — sem ela, o código tem um erro de sintaxe e nem chega a rodar.",
+          },
+          {
+            id: "c3",
+            codigo:
+              'let nota = 8;\n\nif (nota >= 6) {\n  console.log("Aprovado");\n} else {\n  console.log("Reprovado");\n}',
+            correta: true,
+            explicacao:
+              "Certo! O operador >= compara nota com 6 corretamente, e o if/else cobre os dois resultados possíveis.",
+          },
+        ],
+      },
+      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
+      // depende de nenhuma arte nova de item
+      tipoRecompensa: "insignia",
+      nomeRecompensa: "Olho Crítico",
+      descricaoRecompensa:
+        "Uma insígnia concedida a quem provou que sabe reconhecer código certo de código quebrado — o instinto de quem revisa antes de rodar.",
+      iconeRecompensa: "🧐",
     },
     {
       // Primeiro desafio do mundo 2 (portal "Acampamento Goblin" — ver

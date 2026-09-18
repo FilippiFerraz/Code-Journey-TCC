@@ -1,3 +1,10 @@
+/* ============================================================
+   MainLayout.css — casca fixa (cabeçalho + navegação) de toda tela
+   Estrutura: mobile usa rodapé de ícones; desktop (>768px, ver
+   hooks/useIsMobile.js) usa sidebar esquerda + coluna direita de widgets,
+   no estilo Duolingo. .layout-conteudo é sempre a única área que rola.
+   ============================================================ */
+
 .layout-container {
   height: 100%; /* trava na altura da moldura (.app-frame), que por sua vez trava na tela — antes era min-height, por isso a página inteira rolava */
   width: 100%;
@@ -8,7 +15,7 @@
   overflow: hidden; /* impede que o container inteiro role */
 }
 
-/* Cabeçalho */
+/* Cabeçalho — igual em mobile e desktop */
 .layout-header {
   display: flex;
   align-items: center;
@@ -34,7 +41,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Linha gradiente (usada abaixo do header e acima do footer) */
+/* Linha gradiente (usada abaixo do header e acima do rodapé no mobile) */
 .layout-linha-gradiente {
   height: 4px;
   width: 100%;
@@ -42,10 +49,11 @@
   background: linear-gradient(90deg, #2f6fed, #6a3fd9, #9b2fc9, #b229c4);
 }
 
-/* Área de conteúdo - é a ÚNICA parte que rola */
+/* Área de conteúdo — é a ÚNICA parte que rola, em mobile ou desktop */
 .layout-conteudo {
   flex: 1;
   min-height: 0; /* essencial pro overflow funcionar dentro de um flex container */
+  min-width: 0; /* idem, quando .layout-conteudo é filho do flex row do desktop */
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
@@ -53,7 +61,10 @@
   -webkit-overflow-scrolling: touch; /* rolagem suave no iOS/mobile */
 }
 
-/* Rodapé */
+/* ============================================================
+   Mobile — rodapé fixo com ícones (comportamento original)
+   ============================================================ */
+
 .layout-footer {
   display: flex;
   align-items: center;
@@ -63,27 +74,141 @@
   flex-shrink: 0; /* nunca encolhe nem some ao rolar */
 }
 
-.layout-footer-item {
+/* ============================================================
+   Desktop — sidebar esquerda + conteúdo + coluna direita
+   ============================================================ */
+
+.layout-corpo-desktop {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  color: #a23fd0;
-  text-decoration: none;
-  opacity: 0.55;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  overflow: hidden; /* reforça que só .layout-conteudo rola aqui dentro */
 }
 
-.layout-footer-item:hover {
+/* No desktop, a faixa central não estica até o limite entre a sidebar e a
+   coluna direita — fica com uma largura mais confortável de leitura e
+   centralizada no espaço disponível, em vez de esticar o conteúdo (feito
+   pra celular) numa faixa larga demais. */
+.layout-corpo-desktop .layout-conteudo {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.layout-sidebar {
+  flex-shrink: 0;
+  width: 264px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 12px;
+  background: #ffffff;
+  border-right: 1px solid #ece9f0;
+  overflow-y: auto; /* se a lista de itens crescer além da altura da tela */
+}
+
+.layout-coluna-direita {
+  flex-shrink: 0;
+  width: 280px;
+  padding: 20px 16px;
+  background: #faf8fc;
+  border-left: 1px solid #ece9f0;
+  overflow-y: auto;
+}
+
+/* placeholder — widgets de XP/ranking/missão do dia entram aqui depois */
+.layout-widget-placeholder {
+  padding: 18px 16px;
+  border: 2px dashed #d8c7ea;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.layout-widget-placeholder-texto {
+  margin: 0;
+  font-size: 13px;
+  color: #8a8a95;
+  line-height: 1.5;
+}
+
+/* Sidebar e conteúdo já cabem a partir de 768px, mas com a coluna direita
+   junto o conteúdo ficaria espremido demais entre 768px e ~1100px — some
+   com ela nessa faixa e devolve o espaço pro conteúdo central. */
+@media (max-width: 1100px) {
+  .layout-coluna-direita {
+    display: none;
+  }
+}
+
+/* ============================================================
+   Item de navegação — compartilhado entre rodapé e sidebar
+   (ver ItemNavegacao em MainLayout.jsx); .layout-nav-item--footer e
+   .layout-nav-item--sidebar controlam o que muda entre as duas variantes.
+   ============================================================ */
+
+.layout-nav-item {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #a23fd0;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.layout-nav-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+/* ---------- variante "footer" (mobile) — só ícone, igual ao original ---------- */
+.layout-nav-item--footer {
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px;
+  opacity: 0.55;
+}
+
+.layout-nav-item--footer:hover {
   opacity: 0.85;
 }
 
-.layout-footer-item-ativo {
+.layout-nav-item--footer.layout-nav-item-ativo {
   opacity: 1;
   transform: translateY(-2px);
 }
 
-.layout-footer-icon {
-  width: 26px;
-  height: 26px;
+/* ---------- variante "sidebar" (desktop) — ícone + texto, estilo Duolingo ---------- */
+.layout-nav-item--sidebar {
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  color: #5c5c66;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.layout-nav-item--sidebar:hover {
+  background: #f4eefa;
+}
+
+.layout-nav-item--sidebar.layout-nav-item-ativo {
+  background: #f4eefa;
+  color: #7a1fa8;
+}
+
+.layout-nav-item-texto {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ponto de troca mobile/desktop — a estrutura já muda via JS
+   (hooks/useIsMobile.js), este valor só precisa continuar igual ao
+   BREAKPOINT_MOBILE de MainLayout.jsx pra qualquer ajuste fino de CSS
+   bater exatamente onde a estrutura muda. */
+@media (max-width: 768px) {
+  .layout-header-titulo {
+    font-size: 18px; /* header um pouco mais compacto em telas bem estreitas */
+  }
 }

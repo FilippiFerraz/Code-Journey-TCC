@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Check, X } from "lucide-react";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
 import BotaoPixel from "../../components/BotaoPixel";
+import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
+import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.png";
+import mercadorInimigo from "../../assets/images/mercador_inimigo.png";
 import fundoBatalha from "../../assets/images/Fundo_batalha.png";
 import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
 import "./ResolverDesafio.css";
@@ -33,6 +37,12 @@ const DURACAO_GIF_ATAQUE_MS = 600;
 // - "dissertativa": o jogador escreve a resposta com as próprias palavras
 //   num <textarea>; a correção ainda é mockada localmente (ver
 //   corrigirRespostaComIA) até existir a rota real de IA no backend
+// - "avaliar_codigo": desafio.cartas com { id, codigo, correta, explicacao } —
+//   mecânica de arrastar ao estilo Tinder (ver renderAvaliarCodigo): o
+//   jogador arrasta cada cartão pra direita se achar o código CERTO, ou pra
+//   esquerda se achar ERRADO. Precisa acertar a classificação dos cartoes
+//   na ordem em que aparecem (um errado não pula pro próximo — perde vida e
+//   tenta esse mesmo cartão de novo) pra derrotar o inimigo.
 const DESAFIOS = {
   1: {
     1: {
@@ -64,45 +74,76 @@ const DESAFIOS = {
         { id: "d", texto: "NaN (number)", correta: false },
       ],
     },
-  },
-  2: {
-    1: {
-      numero: 1,
+    3: {
+      numero: 3,
       tipo: "ordenar_blocos",
-      titulo: "Desafio JavaScript",
+      titulo: "Soma de Números",
       enunciado:
-        'Você está desenvolvendo um sistema que verifica se uma pessoa pode acessar uma área restrita.\n\nO programa deve receber a idade de uma pessoa e verificar se ela possui 18 anos ou mais. Caso tenha, deve exibir "Acesso permitido". Caso contrário, deve exibir "Acesso negado".\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.',
-      dica: "o bloco if/else só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
-      // Reaproveitando a arte do GoblinJS — o portal 2 ainda não tem
-      // inimigo nem cenário próprios desenhados.
-      inimigo: { imagem: goblinJS, nome: "Goblin Guardião" },
+        "O Esqueleto Contador guarda a passagem seguinte e só deixa passar quem consegue somar dois números corretamente.\n\nEscreva um programa em JavaScript que declare duas variáveis com valores numéricos, guarde a soma delas em uma terceira variável e exiba o resultado no console.\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.",
+      dica: "toda variável só pode ser usada depois de declarada — a soma dos dois números precisa vir antes do console.log() que exibe o resultado.",
+      inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto Contador" },
       fundo: fundoBatalha,
       blocos: [
-        { id: "b1", codigo: "let idade = 20;" },
-        { id: "b2", codigo: "if (idade >= 18) {" },
-        { id: "b3", codigo: 'console.log("Acesso permitido");', indent: 1 },
-        { id: "b4", codigo: "} else {" },
-        { id: "b5", codigo: 'console.log("Acesso negado");', indent: 1 },
-        { id: "b6", codigo: "}" },
+        { id: "b1", codigo: "let numeroA = 4;" },
+        { id: "b2", codigo: "let numeroB = 7;" },
+        { id: "b3", codigo: "let soma = numeroA + numeroB;" },
+        { id: "b4", codigo: "console.log(soma);" },
       ],
-      ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
+      ordemCorreta: ["b1", "b2", "b3", "b4"],
     },
-    2: {
-      numero: 2,
+    4: {
+      numero: 4,
+      tipo: "avaliar_codigo",
+      titulo: "Certo ou Errado?",
+      enunciado:
+        "O Elfo Mercador quer saber se você reconhece código correto de verdade.\n\nArraste cada cartão para a direita se achar que o código está CERTO, ou para a esquerda se achar que está ERRADO. Acerte os 3 cartões para derrotá-lo.",
+      dica: "leia com calma — às vezes o erro está em um detalhe pequeno, como um sinal de igual sozinho ou uma chave que não fecha.",
+      // Largura um pouco maior que a do guerreiro (120px, ver cena-heroi
+      // logo abaixo) — o Elfo Mercador é mais alto que os outros inimigos.
+      inimigo: { imagem: mercadorInimigo, nome: "Elfo Mercador", largura: 136 },
+      fundo: fundoBatalha2,
+      cartas: [
+        {
+          id: "c1",
+          codigo: 'function somar(a, b) {\n  return a + b;\n}\n\nconsole.log(somar(2, 3));',
+          correta: true,
+          explicacao:
+            "Certo! A função declara os parâmetros direito, usa return pra devolver o resultado, e o console.log() exibe 5 corretamente.",
+        },
+        {
+          id: "c2",
+          codigo: 'function saudacao(nome) {\n  console.log("Olá, " + nome);\n\nsaudacao("Ana");',
+          correta: false,
+          explicacao:
+            "Errado! Falta a chave de fechamento } da função saudacao() — sem ela, o código tem um erro de sintaxe e nem chega a rodar.",
+        },
+        {
+          id: "c3",
+          codigo:
+            'let nota = 8;\n\nif (nota >= 6) {\n  console.log("Aprovado");\n} else {\n  console.log("Reprovado");\n}',
+          correta: true,
+          explicacao:
+            "Certo! O operador >= compara nota com 6 corretamente, e o if/else cobre os dois resultados possíveis.",
+        },
+      ],
+    },
+  },
+  2: {},
+  3: {
+    1: {
+      numero: 1,
       tipo: "dissertativa",
       titulo: "Explique com suas palavras",
       enunciado:
         "O Goblin Sábio bloqueia o caminho e exige uma explicação antes de deixar você passar.\n\nCom suas próprias palavras, explique o que o comando console.log() faz em JavaScript e para que ele é usado.",
       dica: "pense no que aparece no console do navegador quando esse comando roda, e por que isso ajuda quem está programando.",
-      // Reaproveitando a arte do GoblinJS — o portal 2 ainda não tem
+      // Reaproveitando a arte do GoblinJS — o portal 3 ainda não tem
       // inimigo nem cenário próprios desenhados.
       inimigo: { imagem: goblinJS, nome: "Goblin Sábio" },
       fundo: fundoBatalha2,
     },
-  },
-  3: {
-    1: {
-      numero: 1,
+    2: {
+      numero: 2,
       tipo: "dissertativa",
       titulo: "Domine o Laço de Repetição",
       enunciado:
@@ -170,6 +211,7 @@ function ResolverDesafio() {
   const desafio = DESAFIOS[mundoId]?.[desafioId] || DESAFIOS[1][1];
   const ehOrdenarBlocos = desafio.tipo === "ordenar_blocos";
   const ehDissertativa = desafio.tipo === "dissertativa";
+  const ehAvaliarCodigo = desafio.tipo === "avaliar_codigo";
 
   const [opcaoSelecionada, setOpcaoSelecionada] = useState(null);
   // null | "erro" | "derrota" | "acertando" | "vitoria"
@@ -191,10 +233,35 @@ function ResolverDesafio() {
   const [corrigindo, setCorrigindo] = useState(false);
   const [feedbackDissertativa, setFeedbackDissertativa] = useState("");
 
+  // Estado do exercício "avaliar_codigo": índice do cartão atual (0 até
+  // cartas.length - 1), quanto o cartão foi arrastado no eixo X (controla a
+  // rotação/translação dele e a opacidade dos selos CERTO/ERRADO), se o
+  // arraste está em andamento, pra qual lado o cartão acabou de ser solto
+  // (dispara a animação de saída antes de revelar o resultado), e se o
+  // cartão atual já foi acertado e está aguardando o jogador confirmar
+  // "Próximo cartão" — só o ÚLTIMO acerto dispara vencer().
+  const [indiceCartao, setIndiceCartao] = useState(0);
+  const [arrasteCartaoX, setArrasteCartaoX] = useState(0);
+  const [arrastandoCartao, setArrastandoCartao] = useState(false);
+  const [cartaoSolto, setCartaoSolto] = useState(null); // null | "certo" | "errado"
+  const [aguardandoProximoCartao, setAguardandoProximoCartao] = useState(false);
+  // O que o jogador marcou (true = "certo", false = "errado") em cada
+  // cartão já respondido corretamente até agora, na ordem — enviado pro
+  // backend junto com a vitória do último cartão, pra ele revalidar a
+  // resposta inteira em vez de confiar só na contagem (ver
+  // avaliarCartoes em progresso.service.js).
+  const [classificacoesCorretas, setClassificacoesCorretas] = useState([]);
+  const origemArrasteCartaoRef = useRef(0);
+
   // Resposta de POST /api/progresso (xpGanho, itemGanho, ...), levada pra
   // tela de recompensa. Fica null se a chamada ainda não voltou ou falhou —
   // RecompensaDesafio cai de volta pro conteúdo hardcoded nesse caso.
   const [recompensaApi, setRecompensaApi] = useState(null);
+
+  // Popup de confirmação do botão "Voltar" — sair no meio de uma tentativa
+  // descarta a vida/blocos/resposta em andamento (nada disso é persistido),
+  // então avisamos antes de navegar pra fora da tela.
+  const [mostrarConfirmarSair, setMostrarConfirmarSair] = useState(false);
 
   // flags de animação da cena
   const [tomandoGolpe, setTomandoGolpe] = useState(false); // herói leva dano
@@ -280,6 +347,18 @@ function ResolverDesafio() {
     });
   }
 
+  function abrirConfirmarSair() {
+    setMostrarConfirmarSair(true);
+  }
+
+  function fecharConfirmarSair() {
+    setMostrarConfirmarSair(false);
+  }
+
+  function confirmarSairDesafio() {
+    navigate("/home");
+  }
+
   function responderMultiplaEscolha() {
     if (!opcaoSelecionada || travado) return;
 
@@ -332,6 +411,74 @@ function ResolverDesafio() {
     } else {
       sofrerGolpe(vida - 1);
     }
+  }
+
+  function iniciarArrasteCartao(e) {
+    if (travado || cartaoSolto) return;
+    setArrastandoCartao(true);
+    origemArrasteCartaoRef.current = e.clientX;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // Limpa o aviso de erro da tentativa anterior nesse cartão assim que o
+    // jogador começa a arrastar de novo — mesmo padrão de selecionarOpcao/
+    // alterarRespostaTexto pros outros tipos de exercício.
+    if (resultado === "erro") setResultado(null);
+  }
+
+  function moverArrasteCartao(e) {
+    if (!arrastandoCartao) return;
+    setArrasteCartaoX(e.clientX - origemArrasteCartaoRef.current);
+  }
+
+  // Solta o cartão: acima do limiar em qualquer direção conta como resposta
+  // (direita = "certo", esquerda = "errado"); abaixo disso, volta pro
+  // centro sem responder nada.
+  const LIMIAR_ARRASTE_CARTAO = 90;
+
+  function soltarArrasteCartao() {
+    if (!arrastandoCartao) return;
+    setArrastandoCartao(false);
+
+    if (arrasteCartaoX > LIMIAR_ARRASTE_CARTAO) {
+      responderCartao(true);
+    } else if (arrasteCartaoX < -LIMIAR_ARRASTE_CARTAO) {
+      responderCartao(false);
+    } else {
+      setArrasteCartaoX(0);
+    }
+  }
+
+  // Quanto tempo o cartão leva pra sair voando da tela (ver deslocamentoX
+  // em renderAvaliarCodigo) antes de revelar o resultado — dá tempo do
+  // jogador ver pra qual lado ele decidiu a resposta.
+  const DURACAO_SAIDA_CARTAO_MS = 260;
+
+  function responderCartao(marcouCerto) {
+    const carta = desafio.cartas[indiceCartao];
+    setCartaoSolto(marcouCerto ? "certo" : "errado");
+
+    setTimeout(() => {
+      const classificacaoCorreta = marcouCerto === carta.correta;
+      if (classificacaoCorreta) {
+        const novasClassificacoes = [...classificacoesCorretas, marcouCerto];
+        const ultimoCartao = indiceCartao === desafio.cartas.length - 1;
+        if (ultimoCartao) {
+          registrarVitoria({ classificacoes: novasClassificacoes });
+          vencer();
+        } else {
+          setClassificacoesCorretas(novasClassificacoes);
+          setAguardandoProximoCartao(true);
+        }
+      } else {
+        sofrerGolpe(vida - 1);
+      }
+      setCartaoSolto(null);
+      setArrasteCartaoX(0);
+    }, DURACAO_SAIDA_CARTAO_MS);
+  }
+
+  function avancarCartao() {
+    setAguardandoProximoCartao(false);
+    setIndiceCartao((i) => i + 1);
   }
 
   function moverParaResposta(id) {
@@ -420,6 +567,14 @@ function ResolverDesafio() {
       setRespostaTexto("");
       setCorrigindo(false);
       setFeedbackDissertativa("");
+    }
+    if (ehAvaliarCodigo) {
+      setIndiceCartao(0);
+      setArrasteCartaoX(0);
+      setArrastandoCartao(false);
+      setCartaoSolto(null);
+      setAguardandoProximoCartao(false);
+      setClassificacoesCorretas([]);
     }
   }
 
@@ -519,7 +674,9 @@ function ResolverDesafio() {
             ? "Monte o código:"
             : ehDissertativa
               ? "Escreva sua resposta:"
-              : "Escolha a resposta:"}
+              : ehAvaliarCodigo
+                ? "Avalie o código:"
+                : "Escolha a resposta:"}
         </h2>
         <p className="painel-enunciado">{desafio.enunciado}</p>
 
@@ -527,35 +684,58 @@ function ResolverDesafio() {
           ? renderMontagemBlocos()
           : ehDissertativa
             ? renderRespostaDissertativa()
-            : renderOpcoes()}
+            : ehAvaliarCodigo
+              ? renderAvaliarCodigo()
+              : renderOpcoes()}
 
         {resultado === "erro" && (
           <div className="retorno retorno--erro">
-            <p className="retorno-fala">{ehDissertativa ? feedbackDissertativa : falaGolpe}</p>
+            <p className="retorno-fala">
+              {ehDissertativa
+                ? feedbackDissertativa
+                : ehAvaliarCodigo
+                  ? desafio.cartas[indiceCartao].explicacao
+                  : falaGolpe}
+            </p>
             {mostrarDica && <p className="retorno-dica">Dica: {desafio.dica}</p>}
           </div>
         )}
 
-        <BotaoPixel
-          className="botao-avante"
-          classeMiolo="botao-avante-miolo"
-          onClick={
-            ehOrdenarBlocos
-              ? verificarBlocos
+        {/* No "avaliar_codigo" a resposta é o próprio arraste do cartão —
+            só existe botão aqui quando estamos aguardando o jogador seguir
+            pro próximo cartão depois de um acerto (ver aguardandoProximoCartao). */}
+        {!(ehAvaliarCodigo && !aguardandoProximoCartao) && (
+          <BotaoPixel
+            className="botao-avante"
+            classeMiolo="botao-avante-miolo"
+            onClick={
+              ehOrdenarBlocos
+                ? verificarBlocos
+                : ehDissertativa
+                  ? responderDissertativa
+                  : ehAvaliarCodigo
+                    ? avancarCartao
+                    : responderMultiplaEscolha
+            }
+            disabled={
+              ehOrdenarBlocos
+                ? blocosResposta.length !== desafio.blocos.length || travado
+                : ehDissertativa
+                  ? !respostaTexto.trim() || travado
+                  : ehAvaliarCodigo
+                    ? false
+                    : !opcaoSelecionada || travado
+            }
+          >
+            {ehOrdenarBlocos
+              ? "VERIFICAR"
               : ehDissertativa
-                ? responderDissertativa
-                : responderMultiplaEscolha
-          }
-          disabled={
-            ehOrdenarBlocos
-              ? blocosResposta.length !== desafio.blocos.length || travado
-              : ehDissertativa
-                ? !respostaTexto.trim() || travado
-                : !opcaoSelecionada || travado
-          }
-        >
-          {ehOrdenarBlocos ? "VERIFICAR" : ehDissertativa ? "ATACAR" : "AVANTE!"}
-        </BotaoPixel>
+                ? "ATACAR"
+                : ehAvaliarCodigo
+                  ? "PRÓXIMO CARTÃO"
+                  : "AVANTE!"}
+          </BotaoPixel>
+        )}
       </>
     );
   }
@@ -593,6 +773,65 @@ function ResolverDesafio() {
           disabled={travado}
           rows={5}
         />
+      </div>
+    );
+  }
+
+  // Mecânica de arrastar ao estilo Tinder: um cartão com um bloco de
+  // código por vez, que o jogador arrasta pra direita ("certo") ou pra
+  // esquerda ("errado"). Os selos ✕/✓ atrás do cartão vão ficando visíveis
+  // conforme o arraste se aproxima do limiar de cada lado (ver
+  // LIMIAR_ARRASTE_CARTAO), pra dar a mesma sensação de "prévia da decisão"
+  // de apps de arrastar.
+  function renderAvaliarCodigo() {
+    const carta = desafio.cartas[indiceCartao];
+
+    if (aguardandoProximoCartao) {
+      return (
+        <div className="acerto-banner">
+          <h2 className="acerto-titulo">Certo!</h2>
+          <p className="acerto-fala">{carta.explicacao}</p>
+        </div>
+      );
+    }
+
+    const deslocamentoX =
+      cartaoSolto === "certo" ? 480 : cartaoSolto === "errado" ? -480 : arrasteCartaoX;
+    const opacidadeErrado = deslocamentoX < 0 ? Math.min(-deslocamentoX / LIMIAR_ARRASTE_CARTAO, 1) : 0;
+    const opacidadeCerto = deslocamentoX > 0 ? Math.min(deslocamentoX / LIMIAR_ARRASTE_CARTAO, 1) : 0;
+
+    return (
+      <div className="avaliar-area">
+        <span className="avaliar-progresso">
+          Cartão {indiceCartao + 1} de {desafio.cartas.length}
+        </span>
+
+        <div className="avaliar-carta-wrapper">
+          <span className="avaliar-selo avaliar-selo--errado" style={{ opacity: opacidadeErrado }}>
+            <X size={22} strokeWidth={3} />
+          </span>
+          <span className="avaliar-selo avaliar-selo--certo" style={{ opacity: opacidadeCerto }}>
+            <Check size={22} strokeWidth={3} />
+          </span>
+
+          <div
+            className={`avaliar-carta ${cartaoSolto ? `avaliar-carta--${cartaoSolto}` : ""} ${
+              arrastandoCartao ? "avaliar-carta--arrastando" : ""
+            }`}
+            style={{ transform: `translateX(${deslocamentoX}px) rotate(${deslocamentoX / 18}deg)` }}
+            onPointerDown={iniciarArrasteCartao}
+            onPointerMove={moverArrasteCartao}
+            onPointerUp={soltarArrasteCartao}
+            onPointerCancel={soltarArrasteCartao}
+          >
+            <code className="avaliar-carta-codigo">{carta.codigo}</code>
+          </div>
+        </div>
+
+        <p className="avaliar-instrucao">
+          Arraste para a direita se estiver <strong>certo</strong>, ou para a esquerda se estiver{" "}
+          <strong>errado</strong>
+        </p>
       </div>
     );
   }
@@ -692,6 +931,21 @@ function ResolverDesafio() {
 
   return (
     <div className="desafio-tela">
+      <BotaoPixel
+        className="desafio-voltar"
+        classeMiolo="desafio-voltar-miolo"
+        onClick={abrirConfirmarSair}
+      >
+        ← Voltar
+      </BotaoPixel>
+
+      {mostrarConfirmarSair && (
+        <ConfirmarSairDesafio
+          onManterDesafio={fecharConfirmarSair}
+          onSairDesafio={confirmarSairDesafio}
+        />
+      )}
+
       {/* Cena da batalha — fundo agora usa a arte Fundo_batalha.png */}
       <section
         className={`cena ${tomandoGolpe ? "cena--golpe" : ""} ${
@@ -729,7 +983,7 @@ function ResolverDesafio() {
             className={`cena-inimigo ${
               tomandoGolpe ? "cena-inimigo--atacando" : ""
             } ${slimeMorrendo ? "cena-inimigo--morrendo" : ""}`}
-            style={{ width: 96, imageRendering: "pixelated" }}
+            style={{ width: desafio.inimigo.largura || 96, imageRendering: "pixelated" }}
             draggable={false}
           />
         </div>

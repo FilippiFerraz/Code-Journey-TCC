@@ -36,10 +36,12 @@ function calcularBonusVelocidade(tempoSegundos) {
   return Math.round(BONUS_VELOCIDADE_MAXIMO * fracaoRestante);
 }
 
-// Desafio.alternativas é Json livre e hoje guarda um de dois formatos (ver
+// Desafio.alternativas é Json livre e hoje guarda um de três formatos (ver
 // ResolverDesafio.jsx no frontend):
 // - múltipla escolha: array [{ id, texto, correta }] -> valida opcaoId
 // - ordenar blocos: objeto { tipo: "ordenar_blocos", blocos, ordemCorreta } -> valida ordem
+// - avaliar código: objeto { tipo: "avaliar_codigo", cartas: [{id, codigo, correta}] }
+//   -> valida classificacoes (array de booleans, um "marcou certo?" por cartão)
 function avaliarMultiplaEscolha(alternativas, opcaoId) {
   const escolhida = alternativas.find((alt) => alt.id === opcaoId);
   if (!escolhida) {
@@ -59,6 +61,30 @@ function avaliarOrdenacaoDeBlocos(alternativas, ordem) {
   return ordem.every((id, i) => id === ordemCorreta[i]);
 }
 
+function avaliarCartoes(alternativas, classificacoes) {
+  const cartas = alternativas?.cartas;
+  if (!Array.isArray(cartas)) {
+    throw erroDeValidacao("Este desafio não aceita esse formato de resposta.");
+  }
+  if (!Array.isArray(classificacoes) || classificacoes.length !== cartas.length) {
+    return false;
+  }
+  return classificacoes.every((marcouCerto, i) => marcouCerto === cartas[i].correta);
+}
+
+// Escolhe o validador certo a partir do formato de Desafio.alternativas —
+// array é sempre múltipla escolha; objeto usa o campo "tipo" pra decidir
+// entre ordenar blocos e avaliar código.
+function avaliarResposta(alternativas, { opcaoId, ordem, classificacoes }) {
+  if (Array.isArray(alternativas)) {
+    return avaliarMultiplaEscolha(alternativas, opcaoId);
+  }
+  if (alternativas?.tipo === "avaliar_codigo") {
+    return avaliarCartoes(alternativas, classificacoes);
+  }
+  return avaliarOrdenacaoDeBlocos(alternativas, ordem);
+}
+
 // Confere a resposta contra o gabarito de Desafio.alternativas (nunca confia
 // num "correta: true" vindo do cliente) e grava o resultado em Progresso. O
 // XP só é somado em Usuario.xpTotal na primeira vez que o jogador acerta
@@ -75,6 +101,7 @@ async function responderDesafio({
   numero,
   opcaoId,
   ordem,
+  classificacoes,
   tempoSegundos,
 }) {
   const numeroDesafio = Number(numero);
@@ -82,8 +109,10 @@ async function responderDesafio({
   if (!mundoId || !dificuldade || !Number.isInteger(numeroDesafio)) {
     throw erroDeValidacao("Informe o desafio respondido (mundoId, dificuldade e numero).");
   }
-  if (!opcaoId && !Array.isArray(ordem)) {
-    throw erroDeValidacao("Informe a alternativa escolhida ou a ordem dos blocos.");
+  if (!opcaoId && !Array.isArray(ordem) && !Array.isArray(classificacoes)) {
+    throw erroDeValidacao(
+      "Informe a alternativa escolhida, a ordem dos blocos ou as classificações dos cartões."
+    );
   }
 
   const desafio = await prisma.desafio.findUnique({
@@ -105,9 +134,7 @@ async function responderDesafio({
 
   const idDesafio = desafio.id;
 
-  const correta = Array.isArray(desafio.alternativas)
-    ? avaliarMultiplaEscolha(desafio.alternativas, opcaoId)
-    : avaliarOrdenacaoDeBlocos(desafio.alternativas, ordem);
+  const correta = avaliarResposta(desafio.alternativas, { opcaoId, ordem, classificacoes });
 
   const progressoAnterior = await prisma.progresso.findUnique({
     where: { usuarioId_desafioId: { usuarioId, desafioId: idDesafio } },

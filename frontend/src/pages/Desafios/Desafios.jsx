@@ -25,6 +25,17 @@ const IDS_DESAFIOS = [1, 2, 3, 4, 5, 6];
 // na posição da trilha.
 const ID_DESAFIO_CHEFE = IDS_DESAFIOS[IDS_DESAFIOS.length - 1];
 
+// Desafios que usam a mecânica de "montar poção" (ver
+// src/pages/DesafioIntroPocao e src/pages/ResolverDesafioPocao) em vez da
+// batalha de múltipla escolha/ordenar blocos/avaliar código padrão. Mesmo
+// TODO do ID_DESAFIO_CHEFE acima: por enquanto fixo por mundo+posição, até
+// a API de desafios existir de verdade e trazer isso marcado nos dados.
+const DESAFIOS_POCAO = [{ mundoId: "1", numero: 5 }];
+
+function ehDesafioPocao(mundoId, numero) {
+  return DESAFIOS_POCAO.some((d) => d.mundoId === String(mundoId) && d.numero === numero);
+}
+
 function Desafios() {
   const { mundoId, dificuldade } = useParams();
   const navigate = useNavigate();
@@ -60,6 +71,8 @@ function Desafios() {
     if (desafio.bloqueado) return;
     if (desafio.id === ID_DESAFIO_CHEFE) {
       navigate(`/desafio-chefe/${mundoId}/${dificuldade}/${desafio.id}`);
+    } else if (ehDesafioPocao(mundoId, desafio.id)) {
+      navigate(`/desafio-pocao/${mundoId}/${dificuldade}/${desafio.id}`);
     } else {
       navigate(`/desafio/${mundoId}/${dificuldade}/${desafio.id}`);
     }
