@@ -6,6 +6,7 @@ import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
 import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.png";
 import mercadorInimigo from "../../assets/images/mercador_inimigo.png";
+import bruxaInimigo from "../../assets/images/bruxa_inimigo.png";
 
 // Enquanto a rota de desafios não existe no backend, o conteúdo fica aqui,
 // espelhando os desafios definidos em ResolverDesafio.jsx (mesmo mundo,
@@ -71,7 +72,34 @@ const INTROS = {
       dica: "preste atenção nos detalhes pequenos, como chaves que não fecham ou um = sozinho onde deveria ter === .",
     },
   },
-  2: {},
+  2: {
+    1: {
+      inimigo: { imagem: goblinJS, nome: "Goblin Sentinela" },
+      falas: [
+        "Bem-vindo ao Acampamento Goblin, viajante...",
+        "Um Goblin Sentinela vigia a entrada e só deixa passar quem sabe controlar o acesso.",
+        "Ele embaralhou o código do portão! As peças estão todas fora de ordem.",
+        "Sua missão: organizar os blocos para decidir quem pode entrar.",
+      ],
+      titulo: "Desafio JavaScript",
+      texto:
+        'Monte um programa que verifica se a idade é 18 ou mais e exibe "Acesso permitido" ou "Acesso negado".',
+      dica: "o bloco `if/else` só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
+    },
+    2: {
+      inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento" },
+      falas: [
+        "No fundo do acampamento, uma Bruxa guarda o portão...",
+        "Ela não aceita respostas decoradas. Quer ouvir você explicar com as próprias palavras.",
+        "Desta vez, quem vai julgar sua resposta é o Mago Corretor: ele lê o que você escrever e decide se você entendeu de verdade.",
+        "Sua missão: ler um código com if, else if e else e explicar qual mensagem aparece no console e por quê.",
+      ],
+      titulo: "O Enigma da Bruxa",
+      texto:
+        "Leia o código e explique, com suas palavras, qual mensagem aparece no console e por quê. Sua resposta será corrigida por inteligência artificial.",
+      dica: "o JavaScript testa as condições de cima para baixo e executa só o primeiro bloco cuja condição for verdadeira.",
+    },
+  },
   3: {
     1: {
       // Reaproveitando a arte do GoblinJS — o portal 3 ainda não tem

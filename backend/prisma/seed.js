@@ -6,13 +6,14 @@
 // (ou automaticamente depois de `prisma migrate dev`, via a config
 // "prisma.seed" no package.json).
 //
-// Só semeia os desafios que já têm conteúdo real: 1 a 4 da trilha
-// "iniciante" do mundo 1, e 1 da trilha "iniciante" do mundo 2 (ver Home.jsx
-// e SelecionarDificuldade.jsx pros ids reais). Os demais ainda não têm
-// enunciado definido em nenhum lugar do projeto — quando existirem,
-// adicione aqui em vez de inventar conteúdo placeholder no banco.
+// Só semeia os desafios que já têm conteúdo real: 1 a 6 (trilha completa)
+// da trilha "iniciante" do mundo 1, e 1 e 2 da trilha "iniciante" do mundo 2
+// (ver Home.jsx e SelecionarDificuldade.jsx pros ids reais). Os demais
+// ainda não têm enunciado definido em nenhum lugar do projeto — quando
+// existirem, adicione aqui em vez de inventar conteúdo placeholder no banco.
 
 const { PrismaClient } = require("@prisma/client");
+const desafioIA = require("./desafios/desafioIA");
 
 const prisma = new PrismaClient();
 
@@ -187,6 +188,114 @@ async function main() {
       iconeRecompensa: "🧐",
     },
     {
+      // Exercício "montar_pocao": o jogador arrasta ingredientes de código
+      // até um caldeirão, na ordem certa, com distratores misturados no
+      // monte — ver ResolverDesafioPocao.jsx e o comentário em
+      // schema.prisma sobre os formatos de "alternativas".
+      mundoId: MUNDO_ID,
+      dificuldade: DIFICULDADE,
+      numero: 5,
+      titulo: "Monte a Poção",
+      enunciado:
+        "Arraste cada ingrediente até o caldeirão, na ordem certa, para completar a poção da Bruxa Sintática. Nem todo ingrediente do monte serve — os que não fazem parte da receita são cuspidos de volta.",
+      dica:
+        'primeiro crie a variável vazia com aspas (""), depois vá somando cada ingrediente com +=, e só no final mostre o resultado com console.log().',
+      alternativas: {
+        tipo: "montar_pocao",
+        ingredientesCorretos: [
+          { id: "i1", codigo: 'let pocao = "";' },
+          { id: "i2", codigo: 'pocao += "3 pitadas de erva-lua, ";' },
+          { id: "i3", codigo: 'pocao += "1 lágrima de fênix, ";' },
+          { id: "i4", codigo: 'pocao += "2 escamas de dragão.";' },
+          { id: "i5", codigo: "console.log(pocao);" },
+        ],
+        distratores: [
+          { id: "d1", codigo: "let pocao = 0;" },
+          { id: "d2", codigo: 'pocao.add("pó de unicórnio");' },
+          { id: "d3", codigo: "console.log(receita);" },
+        ],
+      },
+      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
+      // depende de nenhuma arte nova de item
+      tipoRecompensa: "insignia",
+      nomeRecompensa: "Aprendiz de Poções",
+      descricaoRecompensa:
+        "Uma insígnia concedida a quem ajudou a Bruxa Sintática a montar a receita certa, ingrediente por ingrediente, na ordem exata.",
+      iconeRecompensa: "🧪",
+    },
+    {
+      // Chefe da trilha (último desafio do portal — ver ID_DESAFIO_CHEFE em
+      // Desafios.jsx). Exercício "batalha_chefe": o jogador precisa acertar
+      // "vidasNecessarias" perguntas do pool (pode repetir perguntas se
+      // errar bastante) — ver DesafioChefe.jsx e avaliarBatalhaChefe em
+      // progresso.service.js.
+      mundoId: MUNDO_ID,
+      dificuldade: DIFICULDADE,
+      numero: 6,
+      titulo: "Rei GoblinJS",
+      enunciado:
+        "O Rei GoblinJS surge no topo da torre, cercado pelos ecos de tudo que você já enfrentou no Portal 1. Ele vai testar tudo que você aprendeu até aqui — acerte 3 golpes certeiros para derrubá-lo.",
+      dica: "releia cada pergunta com calma — elas revisam os desafios anteriores desta trilha.",
+      alternativas: {
+        tipo: "batalha_chefe",
+        vidasNecessarias: 3,
+        perguntas: [
+          {
+            id: "p1",
+            opcoes: [
+              { id: "a", texto: 'console.log("mensagem")', correta: true },
+              { id: "b", texto: 'print("mensagem")', correta: false },
+              { id: "c", texto: 'console.exibir("mensagem")', correta: false },
+              { id: "d", texto: 'System.out.println("mensagem")', correta: false },
+            ],
+          },
+          {
+            id: "p2",
+            opcoes: [
+              { id: "a", texto: '"53" (string)', correta: true },
+              { id: "b", texto: "8 (number)", correta: false },
+              { id: "c", texto: "53 (number)", correta: false },
+              { id: "d", texto: "NaN", correta: false },
+            ],
+          },
+          {
+            id: "p3",
+            opcoes: [
+              { id: "a", texto: "===", correta: true },
+              { id: "b", texto: "==", correta: false },
+              { id: "c", texto: "=", correta: false },
+              { id: "d", texto: "!=", correta: false },
+            ],
+          },
+          {
+            id: "p4",
+            opcoes: [
+              { id: "a", texto: "const", correta: true },
+              { id: "b", texto: "let", correta: false },
+              { id: "c", texto: "var", correta: false },
+              { id: "d", texto: "function", correta: false },
+            ],
+          },
+          {
+            id: "p5",
+            opcoes: [
+              { id: "a", texto: '"string"', correta: true },
+              { id: "b", texto: '"number"', correta: false },
+              { id: "c", texto: '"undefined"', correta: false },
+              { id: "d", texto: '"object"', correta: false },
+            ],
+          },
+        ],
+      },
+      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
+      // depende de nenhuma arte nova de item
+      tipoRecompensa: "insignia",
+      nomeRecompensa: "Coroa Derrubada",
+      descricaoRecompensa:
+        "Uma insígnia concedida a quem derrotou o Rei GoblinJS e provou domínio sobre tudo que o Portal 1 ensinou.",
+      iconeRecompensa: "👑",
+    },
+    {
       // Primeiro desafio do mundo 2 (portal "Acampamento Goblin" — ver
       // Home.jsx). Exercício de "ordenar blocos": o jogador monta o
       // programa arrastando/organizando os blocos na ordem certa, em vez
@@ -219,6 +328,10 @@ async function main() {
         "Uma insígnia concedida a quem provou domínio sobre if/else — a lógica que decide os rumos de qualquer programa.",
       iconeRecompensa: "🏅",
     },
+    // Segundo desafio do mundo 2: resposta dissertativa corrigida por IA.
+    // Conteúdo em prisma/desafios/desafioIA.js (também usado por
+    // scripts/criarDesafioIA.js, que cadastra só ele).
+    desafioIA,
   ];
 
   for (const desafio of desafios) {

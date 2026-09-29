@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
+import { pararSom, tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
-import goblinJS from "../../assets/images/GoblinJS.png";
+import reiGoblinInimigo from "../../assets/images/rei_goblin_inimigo.png";
 import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
 import "./DesafioChefe.css";
 
@@ -35,9 +36,7 @@ const CHEFES = {
   1: {
     nome: "Rei GoblinJS",
     tag: "CHEFE",
-    // Reaproveitando a arte do GoblinJS, em destaque — o chefe final do
-    // Portal 1 ainda não tem sprite próprio desenhado.
-    imagem: goblinJS,
+    imagem: reiGoblinInimigo,
     fundo: fundoBatalha2,
     introFalas: [
       "Você chega ao topo da torre, no fim do Portal 1...",
@@ -120,6 +119,12 @@ function DesafioChefe() {
   const [resultado, setResultado] = useState(null);
   const [vidasChefe, setVidasChefe] = useState(VIDAS_CHEFE);
 
+  // Um { perguntaId, opcaoId } por golpe certeiro — enviado pro backend na
+  // vitória pra ele revalidar cada resposta contra o pool de perguntas (ver
+  // avaliarBatalhaChefe em progresso.service.js), em vez de confiar só na
+  // contagem de vidas do chefe.
+  const [respostasCorretas, setRespostasCorretas] = useState([]);
+
   // Resposta de POST /api/progresso, levada pra tela de recompensa — mesmo
   // padrão de ResolverDesafio.jsx.
   const [recompensaApi, setRecompensaApi] = useState(null);
@@ -145,6 +150,13 @@ function DesafioChefe() {
   const cronometroAtivo = fase === "batalha" && resultado !== "vitoria";
   const [segundosBatalha] = useCronometro(cronometroAtivo);
 
+  // Som de entrada do chefe, tocado assim que a cena abre. Para ao sair da
+  // tela pra não continuar tocando por cima das outras páginas.
+  useEffect(() => {
+    tocarSom("boss");
+    return () => pararSom("boss");
+  }, []);
+
   function avancarIntro() {
     if (falaIndice < chefe.introFalas.length - 1) {
       setFalaIndice((i) => i + 1);
@@ -161,13 +173,14 @@ function DesafioChefe() {
   // fluxo de ResolverDesafio.jsx — roda em paralelo com a animação de
   // derrota do chefe; se falhar, a tela de recompensa cai pro conteúdo
   // hardcoded como reserva.
-  async function registrarVitoria() {
+  async function registrarVitoria(respostas) {
     try {
       const resposta = await api.post("/progresso", {
         mundoId: Number(mundoId),
         dificuldade,
         numero: Number(desafioId),
         tempoSegundos: segundosBatalha,
+        respostas,
       });
       setRecompensaApi(resposta.data);
     } catch (erro) {
@@ -195,7 +208,8 @@ function DesafioChefe() {
 
   // Acerto: herói golpeia, chefe leva o hit e perde uma vida. Na última
   // vida, encadeia direto pra animação de derrota do chefe.
-  function golpeCerteiro() {
+  function golpeCerteiro(perguntaId, opcaoId) {
+    tocarSom("acerto");
     setResultado("acerto");
     setHeroiAtacando(true);
 
@@ -206,12 +220,14 @@ function DesafioChefe() {
       setChefeSofrendoGolpe(false);
       const vidaRestante = vidasChefe - 1;
       setVidasChefe(vidaRestante);
+      const novasRespostas = [...respostasCorretas, { perguntaId, opcaoId }];
 
       if (vidaRestante <= 0) {
-        registrarVitoria();
+        registrarVitoria(novasRespostas);
         setChefeMorrendo(true);
         setTimeout(() => setResultado("vitoria"), 900);
       } else {
+        setRespostasCorretas(novasRespostas);
         setResultado(null);
         setOpcaoSelecionada(null);
         avancarPergunta();
@@ -223,6 +239,7 @@ function DesafioChefe() {
   // pode tirar HP do personagem aqui; por ora o jogador não sofre dano,
   // só perde a chance de avançar mais rápido no pool de perguntas).
   function golpeEsquivado() {
+    tocarSom("erro");
     setResultado("erro");
     setChefeEsquivando(true);
 
@@ -238,7 +255,7 @@ function DesafioChefe() {
     if (travado) return;
     setOpcaoSelecionada(opcao.id);
     if (opcao.correta) {
-      golpeCerteiro();
+      golpeCerteiro(perguntaAtual.id, opcao.id);
     } else {
       golpeEsquivado();
     }

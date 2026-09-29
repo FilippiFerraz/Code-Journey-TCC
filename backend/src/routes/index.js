@@ -19,4 +19,10 @@ router.use("/admin", adminRoutes);
 const rankingRoutes = require("./ranking.routes.js");
 router.use("/ranking", rankingRoutes);
 
+const bauRoutes = require("./bau.routes.js");
+router.use("/baus", bauRoutes);
+
+const itemRoutes = require("./item.routes.js");
+router.use("/itens", itemRoutes);
+
 module.exports = router;

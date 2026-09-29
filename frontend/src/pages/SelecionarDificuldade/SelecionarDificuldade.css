@@ -1,159 +1,553 @@
 /* ============================================================
-   SelecionarDificuldade.css — placa de madeira com 2 dificuldades
-   Estilo baseado na placa de "DESAFIOS" (madeira + botões pixel-art).
+   SelecionarDificuldade.css — tela cheia com a arte de fundo
+   (fundo_tela_selcionardesafio.png) e um painel de madeira + pergaminho
+   com os botões de dificuldade.
+
+   Todo o cenário vem da imagem; aqui só a vinheta, o botão de voltar e o
+   painel. Entrada: fundo aparece -> painel desce com quique -> botões em
+   sequência. Loop: brilho do brasão. Tudo desligado com
+   prefers-reduced-motion (fim do arquivo).
    ============================================================ */
 
 .dif-tela {
+  /* paleta */
+  --dif-madeira: #3b2416;
+  --dif-madeira-clara: #5a3822;
+  --dif-ferro: #2b2a33;
+  --dif-ferro-claro: #45434f;
+  --dif-dourado: #f4c542;
+  --dif-dourado-escuro: #d99a1e;
+  --dif-dourado-sombra: #8a5a12;
+  --dif-roxo: #4b2a9e;
+  --dif-roxo-medio: #3a1f7a;
+  --dif-roxo-escuro: #2a155a;
+  --dif-pergaminho: #e6d2a6;
+  --dif-creme: #f3e9d2;
+
+  position: relative;
+  box-sizing: border-box;
   min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 14px;
-  /* fundo roxo do projeto, pra combinar com a identidade */
-  background: linear-gradient(180deg, #6a3fd9 0%, #9b2fc9 100%);
-}
-
-/* Placa de madeira */
-.dif-placa {
-  width: 100%;
-  max-width: 360px;
-  border-radius: 18px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-  border: 6px solid #6b3f1f;
+  /* padding de baixo maior que o de cima: sobe o painel e deixa o
+     cavaleiro do rodapé da arte à mostra */
+  padding: 72px 16px 18vh;
   overflow: hidden;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: #1d1540;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  animation: dif-aparecer 0.4s ease-out both;
 }
 
-/* Topo laranja com título + botão fechar */
-.dif-placa-topo {
+/* vinheta leve nas bordas, pra destacar o painel */
+.dif-tela::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 45%, rgba(8, 4, 24, 0.55) 100%);
+}
+
+/* ---------- Botão voltar (mesmo padrão de Desafios / Recompensa) ---------- */
+
+.dif-voltar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  background: var(--dif-dourado-sombra);
+}
+
+.dif-voltar-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+  color: var(--dif-creme);
+  font-size: 20px;
+}
+
+.dif-voltar-miolo::before {
+  opacity: 0.25;
+}
+
+.dif-voltar:focus-visible {
+  outline: none;
+}
+
+.dif-voltar:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+/* ---------- Painel ---------- */
+
+.dif-painel {
+  position: relative;
+  z-index: 1;
+  width: 85%;
+  max-width: 360px;
+  padding-top: 30px; /* metade do brasão fica pra fora da moldura */
+  animation: dif-descer 0.65s cubic-bezier(0.3, 1.4, 0.5, 1) 0.15s both;
+}
+
+.dif-moldura {
+  position: relative;
+  padding: 8px;
+  background: linear-gradient(180deg, var(--dif-madeira-clara), var(--dif-madeira));
+  box-shadow:
+    inset 0 0 0 2px #1e120a,
+    inset 0 0 0 4px rgba(255, 255, 255, 0.06),
+    0 16px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* pontas de madeira salientes nas laterais de cima */
+.dif-ponta-madeira {
+  position: absolute;
+  z-index: 2;
+  top: 34px;
+  width: 16px;
+  height: 22px;
+  background: linear-gradient(180deg, var(--dif-madeira-clara), var(--dif-madeira));
+  box-shadow: inset 0 0 0 2px #1e120a;
+}
+
+.dif-ponta-madeira--esquerda {
+  left: -10px;
+}
+
+.dif-ponta-madeira--direita {
+  right: -10px;
+}
+
+/* estandartes roxos pendurados nas bordas do topo */
+.dif-estandarte {
+  position: absolute;
+  z-index: 2;
+  top: 38px;
+  width: 22px;
+  height: 64px;
+  background: linear-gradient(180deg, #6a44c2, var(--dif-roxo) 55%, var(--dif-roxo-escuro));
+  border-left: 2px solid var(--dif-dourado-escuro);
+  border-right: 2px solid var(--dif-dourado-escuro);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+
+/* losango dourado perto da ponta em "V" */
+.dif-estandarte::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  width: 8px;
+  height: 8px;
+  background: var(--dif-dourado);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.dif-estandarte--esquerda {
+  left: 6px;
+}
+
+.dif-estandarte--direita {
+  right: 6px;
+}
+
+/* brasão: escudo roxo com moldura de ferro, encaixado no meio da borda de
+   cima (metade pra fora). O invólucro não tem recorte pra o brilho em loop
+   (drop-shadow) não ser cortado pelo clip-path do escudo. */
+.dif-brasao {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 50%;
+  width: 56px;
+  height: 64px;
+  transform: translateX(-50%);
+  animation: dif-brilho-brasao 2.4s ease-in-out 1s infinite;
+}
+
+.dif-brasao-ferro {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--dif-ferro-claro), var(--dif-ferro));
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}
+
+.dif-brasao-escudo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #6a44c2 0%, var(--dif-roxo) 50%, var(--dif-roxo-escuro) 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+  color: var(--dif-creme);
+  font-size: 20px;
+}
+
+/* ---------- Placa do título ---------- */
+
+.dif-placa-titulo {
+  position: relative;
+  margin: 18px 34px 10px; /* afastada das bordas pra os estandartes não cobrirem os losangos */
+  padding: 8px 12px;
+  text-align: center;
+  background: linear-gradient(180deg, #2a1a10, #1b100a);
+  border: 2px solid #120a05;
+  box-shadow: inset 0 0 0 2px rgba(217, 154, 30, 0.35);
+}
+
+.dif-placa-titulo h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--dif-creme);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+}
+
+.dif-placa-titulo::before,
+.dif-placa-titulo::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  background: var(--dif-dourado);
+  border: 2px solid var(--dif-dourado-sombra);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.dif-placa-titulo::before {
+  left: -9px;
+}
+
+.dif-placa-titulo::after {
+  right: -9px;
+}
+
+/* ---------- Pergaminho ---------- */
+
+.dif-pergaminho {
+  padding: 16px 16px 14px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(184, 152, 104, 0.3) 0 24px, transparent 50px),
+    radial-gradient(circle at 88% 80%, rgba(184, 152, 104, 0.28) 0 30px, transparent 60px),
+    repeating-linear-gradient(0deg, rgba(107, 63, 31, 0.04) 0 1px, transparent 1px 5px),
+    radial-gradient(ellipse at 50% 50%, var(--dif-pergaminho) 55%, #d2b784 100%);
+  box-shadow: inset 0 0 0 2px #b89868;
+}
+
+/* ---------- Divisores ---------- */
+
+.dif-divisor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dif-divisor-linha {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--dif-roxo-medio));
+}
+
+.dif-divisor-linha--direita {
+  background: linear-gradient(90deg, var(--dif-roxo-medio), transparent);
+}
+
+.dif-divisor-ponto {
+  width: 4px;
+  height: 4px;
+  background: var(--dif-roxo-medio);
+}
+
+.dif-divisor-losango {
+  width: 9px;
+  height: 9px;
+  background: var(--dif-roxo);
+  border: 1px solid var(--dif-roxo-escuro);
+  transform: rotate(45deg);
+}
+
+.dif-divisor-losango--pequeno {
+  width: 6px;
+  height: 6px;
+}
+
+.dif-divisor--inferior .dif-divisor-linha {
+  background: var(--dif-roxo-medio);
+}
+
+.dif-divisor-coroa {
+  font-size: 18px;
+  color: var(--dif-roxo);
+}
+
+/* ---------- Botões de dificuldade ---------- */
+
+.dif-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.dif-opcao {
   position: relative;
   display: flex;
   align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* faixa mais clara no topo pra dar volume */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0 22%, transparent 22%),
+    linear-gradient(180deg, var(--dif-roxo) 0%, var(--dif-roxo-medio) 100%);
+  border: 3px solid #160a30;
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+    0 5px 0 #160a30,
+    0 8px 12px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out;
+  /* backwards (não both): depois da entrada o transform fica livre pro
+     hover/clique. O atraso de cada botão vem do JSX. */
+  animation: dif-subir 0.4s ease-out backwards;
+}
+
+.dif-opcao:hover,
+.dif-opcao:focus-visible {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.12),
+    0 7px 0 #160a30,
+    0 10px 16px rgba(0, 0, 0, 0.35);
+}
+
+.dif-opcao:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+    0 2px 0 #160a30,
+    0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dif-opcao:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+/* cantoneiras douradas nos quatro cantos */
+.dif-opcao-canto {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--dif-dourado);
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 40% 40%, 40% 100%, 0 100%);
+  transition: filter 0.12s ease-out;
+}
+
+.dif-opcao-canto--se {
+  top: 2px;
+  left: 2px;
+}
+
+.dif-opcao-canto--sd {
+  top: 2px;
+  right: 2px;
+  transform: scaleX(-1);
+}
+
+.dif-opcao-canto--ie {
+  bottom: 2px;
+  left: 2px;
+  transform: scaleY(-1);
+}
+
+.dif-opcao-canto--id {
+  bottom: 2px;
+  right: 2px;
+  transform: scale(-1, -1);
+}
+
+.dif-opcao:hover .dif-opcao-canto,
+.dif-opcao:focus-visible .dif-opcao-canto {
+  filter: drop-shadow(0 0 4px rgba(255, 214, 102, 0.95)) brightness(1.15);
+}
+
+.dif-opcao-icone {
+  flex-shrink: 0;
+  width: 40px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 16px 0;
-  background: linear-gradient(180deg, #e0862f 0%, #c96a1a 100%);
-  border-bottom: 4px solid #6b3f1f;
 }
 
-.dif-placa-titulo {
-  margin: 0;
-  color: #ffffff;
-  font-size: 22px;
+.dif-opcao-icone-emoji {
+  font-size: 30px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.45));
+}
+
+.dif-opcao-icone-imagem {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.dif-opcao-losango {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--dif-dourado);
+  border: 1px solid var(--dif-dourado-sombra);
+  transform: rotate(45deg);
+}
+
+.dif-opcao-rotulo {
+  font-size: 1.2rem;
   font-weight: 900;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  letter-spacing: 1.5px;
+  color: var(--dif-creme);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
 }
 
-/* Botão "✕" de fechar — mesmo recorte pixelado do resto da tela (ver
-   BotaoPixel), pequeno o bastante pra caber no canto da placa. */
-.dif-fechar {
+/* ---------- Cantoneiras de ferro (cantos de baixo da moldura) ---------- */
+
+.dif-cantoneira {
   position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  background: #4a2c14;
+  bottom: -2px;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, var(--dif-ferro-claro), var(--dif-ferro));
+  clip-path: polygon(0 0, 40% 0, 40% 60%, 100% 60%, 100% 100%, 0 100%);
 }
 
-.dif-fechar-miolo {
-  padding: 8px;
-  font-size: 13px;
-  background: linear-gradient(
-    to bottom,
-    #e0862f 0%,
-    #e0862f 16%,
-    #c96a1a 16%,
-    #c96a1a 78%,
-    #96500f 78%,
-    #96500f 100%
-  );
-}
-
-/* Corpo de pergaminho quadriculado */
-.dif-placa-corpo {
-  padding: 28px 20px 24px;
-  background: #e8c99a;
-  background-image: linear-gradient(
-      0deg,
-      rgba(107, 63, 31, 0.06) 1px,
-      transparent 1px
-    ),
-    linear-gradient(90deg, rgba(107, 63, 31, 0.06) 1px, transparent 1px);
-  background-size: 14px 14px;
-}
-
-/* Duas colunas (um botão em cada) */
-.dif-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-/* ===== Botão "Iniciante"/"Guerreiro" — usa <BotaoPixel> (ver
-   src/components/BotaoPixel.jsx e src/styles/botaoPixel.css pra
-   geometria/mecânica); aqui só ficam as cores próprias desta tela. ===== */
-
-.dif-botao {
-  background: #3a1530; /* cor da moldura — mesma do padrão em Desafios */
-}
-
-.dif-botao-miolo {
-  padding: 16px 8px;
-  font-size: 14px;
-  text-transform: uppercase;
-  /* faixas sólidas (sem gradiente suave) simulando luz em cima e sombra
-     embaixo, igual ao botão de referência */
-  background: linear-gradient(
-    to bottom,
-    #f27fd6 0%,
-    #f27fd6 16%,
-    #d43fc0 16%,
-    #d43fc0 78%,
-    #a220a0 78%,
-    #a220a0 100%
-  );
-}
-
-/* Rótulo que aparece ao passar o mouse (fácil / difícil) */
-.dif-tooltip {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
-  white-space: nowrap;
-  background: #6b3f1f;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  z-index: 5;
-}
-
-/* setinha do balão */
-.dif-tooltip::before {
+/* rebite dourado */
+.dif-cantoneira::after {
   content: "";
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-bottom-color: #6b3f1f;
+  left: 4px;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  background: var(--dif-dourado);
 }
 
-.dif-botao:hover .dif-tooltip,
-.dif-botao:focus-visible .dif-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.dif-cantoneira--esquerda {
+  left: -2px;
 }
 
-/* Espadas cruzadas no rodapé */
-.dif-espadas {
-  text-align: center;
-  font-size: 28px;
-  margin-top: 34px; /* espaço extra pro tooltip não encostar */
+.dif-cantoneira--direita {
+  right: -2px;
+  transform: scaleX(-1);
+}
+
+/* ---------- Telas baixas: aperta os espaçamentos pros dois botões
+   continuarem visíveis sem rolar ---------- */
+
+@media (max-height: 640px) {
+  .dif-tela {
+    padding-top: 64px;
+    padding-bottom: 6vh;
+  }
+
+  .dif-placa-titulo {
+    margin: 14px 34px 6px;
+    padding: 6px 10px;
+  }
+
+  .dif-pergaminho {
+    padding: 10px 14px;
+  }
+
+  .dif-opcoes {
+    gap: 10px;
+    margin: 10px 0;
+  }
+
+  .dif-opcao {
+    padding: 10px 16px;
+  }
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes dif-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dif-descer {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dif-subir {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dif-brilho-brasao {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(244, 197, 66, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 9px rgba(244, 197, 66, 0.85));
+  }
+}
+
+/* Reduzir movimento: nada entra, pulsa nem se desloca. */
+@media (prefers-reduced-motion: reduce) {
+  .dif-tela,
+  .dif-tela *,
+  .dif-tela *::before,
+  .dif-tela *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .dif-opcao:hover,
+  .dif-opcao:focus-visible,
+  .dif-opcao:active {
+    transform: none;
+  }
 }

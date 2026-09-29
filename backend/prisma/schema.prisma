@@ -152,11 +152,14 @@ model Desafio {
   enunciado String
   dica      String?
 
-  // Json livre, no mesmo formato já usado em ResolverDesafio.jsx — hoje
-  // guarda um de três formatos, conforme o tipo do exercício:
+  // Json livre, no mesmo formato já usado nos componentes de desafio do
+  // frontend — hoje guarda um de cinco formatos, conforme o tipo do
+  // exercício:
   // - múltipla escolha: [{ id: "a", texto: "...", correta: true }, ...]
   // - ordenar blocos: { tipo: "ordenar_blocos", blocos: [{id, codigo}], ordemCorreta: [id, ...] }
   // - avaliar código: { tipo: "avaliar_codigo", cartas: [{id, codigo, correta}, ...] }
+  // - montar poção: { tipo: "montar_pocao", ingredientesCorretos: [{id, codigo}, ...], distratores: [{id, codigo}, ...] }
+  // - batalha de chefe: { tipo: "batalha_chefe", vidasNecessarias, perguntas: [{id, opcoes: [{id, texto, correta}]}, ...] }
   alternativas Json
 
   xpConcedido Int @default(10)

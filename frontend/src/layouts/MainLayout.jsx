@@ -169,7 +169,7 @@ function ordenarParaRodapeMobile(itens) {
   return [...outros.slice(0, meio), inicio, ...outros.slice(meio)];
 }
 
-function MainLayout({ titulo, children }) {
+function MainLayout({ titulo, children, buscaHeader }) {
   const ehAdministrador = useEhAdministrador();
   const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
   const location = useLocation();
@@ -179,9 +179,19 @@ function MainLayout({ titulo, children }) {
 
   return (
     <div className="layout-container">
-      {/* Cabeçalho — igual em mobile e desktop */}
+      {/* Cabeçalho — igual em mobile e desktop, exceto pelo slot central de
+          busca: só quem passa a prop `buscaHeader` usa ele (hoje só a Home,
+          e só na versão desktop — no mobile ela mesma decide manter a
+          busca no corpo da página, ver Home.jsx). Em quem não passa nada,
+          essa célula do grid fica vazia e o layout cai de volta pro mesmo
+          resultado visual de antes (título à esquerda, logo à direita). */}
       <header className="layout-header">
         <h1 className="layout-header-titulo">{titulo}</h1>
+        {/* Sempre renderizada (mesmo vazia) pra manter as 3 colunas do grid
+            na ordem certa — sem isso, com só título+logo, o logo cairia na
+            coluna do meio (1fr) em vez da direita quando ninguém passa
+            buscaHeader. */}
+        <div className="layout-header-busca">{buscaHeader}</div>
         <img src={logo} alt="Code Journey" className="layout-header-logo" />
       </header>
       <div className="layout-linha-gradiente" />

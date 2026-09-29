@@ -1,176 +1,877 @@
+/* ============================================================
+   Desafios.css — seleção de desafios da trilha (dentro do MainLayout).
+
+   De cima pra baixo: cena do mundo (com a barra voltar + "ATO 1" por
+   cima) -> painel de pergaminho (faixa "DESAFIOS", dificuldade, grid 2x3
+   de cards, emblema) sobre um salão de pedra desenhado em CSS.
+
+   Cards têm 3 estados: disponivel / bloqueado / concluido (ver
+   Desafios.jsx). Loops (brilho do chefe, estrelas, tochas) e movimentos
+   são desligados com prefers-reduced-motion (fim do arquivo).
+   ============================================================ */
+
 .desafios-container {
+  /* paleta */
+  --des-pergaminho: #e6d2a6;
+  --des-pergaminho-mancha: #b89868;
+  --des-madeira: #3b2416;
+  --des-madeira-clara: #5a3822;
+  --des-dourado: #f4c542;
+  --des-dourado-escuro: #d99a1e;
+  --des-dourado-sombra: #8a5a12;
+  --des-roxo: #3a1f5e;
+  --des-roxo-claro: #4d2a7a;
+  --des-roxo-faixa: #24123d;
+  --des-vermelho: #a8242c;
+  --des-creme: #f3e9d2;
+  --des-texto-escuro: #2a1a0a;
+
+  /* chanfro dos cards (cantos cortados em 45°) */
+  --des-chanfro: polygon(
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px),
+    0 10px
+  );
+
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  /* anula o padding de 20px de .layout-conteudo pra cena ir de ponta a
+     ponta, e ocupa pelo menos a área visível inteira */
   width: calc(100% + 40px);
+  min-height: calc(100% + 40px);
   margin: -20px;
+  padding-bottom: 28px;
+  overflow: hidden;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Parede de pedra: vinheta + juntas dos blocos + degradê.
+     TODO: trocar as três últimas camadas por imagem de fundo quando existir. */
+  background:
+    radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(5, 2, 12, 0.7) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.3) 0 2px, transparent 2px 30px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0 2px, transparent 2px 58px),
+    linear-gradient(180deg, #2a2138 0%, #1b1526 100%);
 }
 
-/* pega qualquer <img> dentro da cena, não importa a classe que ela tenha */
-.desafios-cena img {
-  height: 150px;
+.desafios-container > :not(.desafios-cenario) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Fundo: tochas e folhagem ---------- */
+
+.desafios-cenario {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.desafios-tocha {
+  position: absolute;
+  bottom: 120px;
+  width: 8px;
+  height: 22px;
+  background: linear-gradient(180deg, #6b4a2a, #3b2614);
+  border-top: 4px solid #5a5a66;
+}
+
+.desafios-tocha--esquerda {
+  left: 10px;
+}
+
+.desafios-tocha--direita {
+  right: 10px;
+}
+
+.desafios-tocha::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 14px;
+  height: 20px;
+  margin-bottom: 4px;
+  transform: translateX(-50%);
+  transform-origin: 50% 100%;
+  background: radial-gradient(ellipse at 50% 75%, #fff4b0 0 20%, #ffb627 45%, #e2531a 75%, transparent 76%);
+  animation: des-chama 0.5s ease-in-out infinite alternate;
+}
+
+.desafios-tocha::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 90px;
+  height: 90px;
+  transform: translate(-50%, 35%);
+  background: radial-gradient(circle, rgba(255, 170, 60, 0.28) 0%, transparent 65%);
+}
+
+.desafios-folhagem {
+  position: absolute;
+  bottom: 0;
+  width: 90px;
+  height: 70px;
+  background:
+    radial-gradient(circle at 20% 80%, #2f5a2a 0 22px, transparent 23px),
+    radial-gradient(circle at 55% 95%, #264a22 0 26px, transparent 27px),
+    radial-gradient(circle at 30% 45%, #3a6b32 0 14px, transparent 15px);
+  opacity: 0.8;
+}
+
+.desafios-folhagem--esquerda {
+  left: 0;
+}
+
+.desafios-folhagem--direita {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* ---------- Cena do topo ---------- */
+
+.desafios-cena {
+  height: 240px;
+  overflow: hidden;
+  animation: des-aparecer 0.4s ease-out both;
+}
+
+/* arte da cena como fundo (equivalente a object-fit: cover) + avatar do
+   jogador por cima */
+.desafios-cena-fundo {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 46px;
+  box-sizing: border-box;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* mundo sem arte própria: céu + faixa de grama */
+.desafios-cena-fundo--placeholder {
+  background:
+    linear-gradient(180deg, transparent 0 68%, #4f8f3a 68% 74%, #3b6e2c 74%),
+    linear-gradient(180deg, #5aa7e8 0%, #9fd0f5 68%);
+}
+
+.desafios-cena-personagem {
+  height: 130px;
   width: auto;
   display: block;
   image-rendering: pixelated;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
 }
 
-.intro-cena {
+/* degradê escuro na base, fundindo a cena com o painel */
+.desafios-cena::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 90px;
+  background: linear-gradient(180deg, transparent, #2a2138);
+  pointer-events: none;
+}
+
+/* placa de madeira com o nome da cena (só no placeholder — a arte real já
+   traz a placa desenhada) */
+.desafios-cena-placa {
+  position: absolute;
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--des-creme);
+  background: linear-gradient(180deg, var(--des-madeira-clara), var(--des-madeira));
+  border: 2px solid var(--des-dourado-sombra);
+  text-shadow: 1px 1px 0 #000;
+  z-index: 1;
+}
+
+/* ---------- Barra superior (sobre a cena) ---------- */
+
+.desafios-barra {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+}
+
+.desafios-voltar {
+  width: 48px;
+  height: 48px;
+  background: var(--des-dourado-sombra);
+}
+
+.desafios-voltar-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+  color: var(--des-creme);
+  font-size: 20px;
+}
+
+.desafios-voltar-miolo::before {
+  opacity: 0.25;
+}
+
+.desafios-voltar:focus-visible {
+  outline: none;
+}
+
+.desafios-voltar:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+.desafios-placa-ato {
+  position: relative;
+  justify-self: center;
+  padding: 8px 26px;
+  background: linear-gradient(180deg, #2e2540, #1d1729);
+  border: 3px solid var(--des-dourado-escuro);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.desafios-placa-ato span {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--des-creme);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.desafios-placa-ato::before,
+.desafios-placa-ato::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--des-dourado);
+  border: 2px solid var(--des-dourado-sombra);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.desafios-placa-ato::before {
+  left: -10px;
+}
+
+.desafios-placa-ato::after {
+  right: -10px;
+}
+
+/* ---------- Painel de pergaminho ---------- */
+
+.desafios-painel {
+  margin: -44px 14px 0;
+  padding: 7px;
+  background: linear-gradient(180deg, var(--des-madeira-clara), var(--des-madeira));
+  box-shadow:
+    inset 0 0 0 2px #1e120a,
+    0 14px 28px rgba(0, 0, 0, 0.5);
+  animation: des-subir 0.5s ease-out 0.15s both;
+}
+
+.desafios-painel-corpo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 42px 14px 16px; /* espaço pros estandartes acima da faixa */
+  background:
+    radial-gradient(circle at 15% 20%, rgba(184, 152, 104, 0.35) 0 30px, transparent 60px),
+    radial-gradient(circle at 85% 70%, rgba(184, 152, 104, 0.3) 0 40px, transparent 80px),
+    radial-gradient(ellipse at 50% 50%, var(--des-pergaminho) 55%, #d4b986 100%);
+  box-shadow: inset 0 0 0 2px var(--des-pergaminho-mancha);
+}
+
+/* cantoneiras douradas nos 4 cantos da moldura */
+.desafios-painel-canto {
+  position: absolute;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  background: var(--des-dourado);
+  border: 2px solid var(--des-dourado-sombra);
+  box-sizing: border-box;
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 35% 35%, 35% 100%, 0 100%);
+}
+
+.desafios-painel-canto--se {
+  top: 0;
+  left: 0;
+}
+
+.desafios-painel-canto--sd {
+  top: 0;
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.desafios-painel-canto--ie {
+  bottom: 0;
+  left: 0;
+  transform: scaleY(-1);
+}
+
+.desafios-painel-canto--id {
+  bottom: 0;
+  right: 0;
+  transform: scale(-1, -1);
+}
+
+/* estandartes vermelhos pendurados nas laterais de cima */
+.desafios-painel-estandarte {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  width: 20px;
+  height: 40px;
+  background:
+    linear-gradient(90deg, transparent 0 35%, var(--des-dourado) 35% 65%, transparent 65%) 0 14px / 100% 6px no-repeat,
+    linear-gradient(180deg, #c3313a, var(--des-vermelho) 60%, #7a1820);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
+}
+
+.desafios-painel-estandarte--esquerda {
+  left: 22px;
+}
+
+.desafios-painel-estandarte--direita {
+  right: 22px;
+}
+
+/* gema azul em losango no topo central */
+.desafios-painel-gema {
+  position: absolute;
+  z-index: 2;
+  top: -9px;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 35% 35%, #bfe6ff 0 15%, #3b8fe0 45%, #1c4f96 100%);
+  border: 3px solid var(--des-dourado);
+  box-shadow: 0 0 0 2px var(--des-dourado-sombra);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* ---------- Faixa "DESAFIOS" ---------- */
+
+/* wrapper com as pontas dobradas (atrás) + corpo roxo por cima — mesmo
+   esquema da faixa de RecompensaDesafio.css */
+.desafios-faixa {
+  position: relative;
+  z-index: 0; /* contexto próprio: as pontas (z-index -1) ficam atrás só do corpo, não do pergaminho */
+  width: calc(100% - 36px);
+}
+
+.desafios-faixa::before,
+.desafios-faixa::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  z-index: -1;
+  width: 32px;
+  height: 100%;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--des-roxo), #1c0f30);
+  border-top: 3px solid var(--des-dourado-escuro);
+  border-bottom: 3px solid var(--des-dourado-escuro);
+}
+
+.desafios-faixa::before {
+  left: -20px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 35% 50%);
+}
+
+.desafios-faixa::after {
+  right: -20px;
+  clip-path: polygon(0 0, 100% 0, 65% 50%, 100% 100%, 0 100%);
+}
+
+.desafios-faixa-corpo {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 40px; /* espaço entre mago e slime */
+  gap: 6px;
+  padding: 8px 8px 10px;
+  background: linear-gradient(180deg, #6a3aa8 0%, var(--des-roxo-claro) 55%, var(--des-roxo) 100%);
+  border-top: 3px solid var(--des-dourado);
+  border-bottom: 3px solid var(--des-dourado);
+  box-shadow: 0 4px 0 var(--des-dourado-sombra);
 }
 
-.desafios-personagem-placeholder {
-  height: 140px; /* a cena tem 200px — sobra respiro em cima e embaixo */
-  width: auto;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
+.desafios-faixa-lis {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: var(--des-dourado);
+  text-shadow: 1px 1px 0 var(--des-dourado-sombra);
 }
 
-.desafios-personagem-placeholder {
-  font-size: 72px;
-  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
+.desafios-faixa-textos {
+  flex: 1;
+  text-align: center;
 }
 
-.desafios-cena {
-  height: 200px;
-  overflow: hidden; /* ← acrescente esta linha */
+.desafios-faixa-titulo {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  color: var(--des-creme);
+  text-shadow:
+    -2px -2px 0 #1b0d33,
+    2px -2px 0 #1b0d33,
+    -2px 2px 0 #1b0d33,
+    2px 2px 0 #1b0d33,
+    0 3px 0 #1b0d33;
+}
+
+.desafios-faixa-subtitulo {
+  margin: 4px 0 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--des-creme);
+  opacity: 0.95;
+}
+
+/* ---------- Etiqueta de dificuldade ---------- */
+
+.desafios-dificuldade {
+  margin-top: 14px;
+  padding: 3px 12px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #ffffff;
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.desafios-dificuldade--verde {
+  background: #2f9e44;
+}
+
+.desafios-dificuldade--amarelo {
+  background: #e0a800;
+  color: var(--des-texto-escuro);
+  text-shadow: none;
+}
+
+.desafios-dificuldade--vermelho {
+  background: #c92a2a;
+}
+
+.desafios-dificuldade--neutra {
+  background: #6b5a45;
+}
+
+/* ---------- Grid de cards ---------- */
+
+.desafios-grid {
+  width: 100%;
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 14px;
+}
+
+/* O <button> em si não tem recorte (senão o brilho/sombra e o foco seriam
+   cortados); o chanfro fica nas duas camadas internas: a moldura dourada
+   por fora e o corpo roxo por dentro. */
+.desafio-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35));
+  transition:
+    transform 0.15s ease-out,
+    filter 0.15s ease-out;
+  /* backwards (não both): depois da entrada o transform fica livre pro
+     hover/clique. O atraso de cada card vem do JSX. */
+  animation: des-subir 0.35s ease-out backwards;
+}
+
+.desafio-card-moldura {
+  display: block;
+  padding: 3px;
+  background: linear-gradient(135deg, #e2b25a 0%, #b07a2c 50%, #6e4516 100%);
+  clip-path: var(--des-chanfro);
+}
+
+.desafio-card-corpo {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(180deg, #2b6f6a 0%, #17403d 100%);
-  border-bottom: 4px solid #0d2624;
+  flex-direction: column;
+  clip-path: var(--des-chanfro);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 4px, transparent 4px 8px),
+    radial-gradient(circle at 50% 35%, var(--des-roxo-claro) 0%, var(--des-roxo) 75%);
 }
 
-/* Placa de madeira */
-.desafios-placa {
-  margin: 24px 16px 32px;
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-  border: 6px solid #6b3f1f;
-}
-
-.desafios-placa-topo {
+.desafio-card-icone {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 0;
-  background: linear-gradient(180deg, #e0862f 0%, #c96a1a 100%);
-  border-bottom: 4px solid #6b3f1f;
+  height: 84px;
 }
 
-.desafios-placa-titulo {
-  margin: 0;
-  color: #ffffff;
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+.desafio-card-icone-emoji {
+  font-size: 44px;
+  line-height: 1;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.4));
 }
 
-/* Botão "✕" de fechar — mesmo recorte pixelado dos demais botões
-   (ver BotaoPixel), só que pequeno e redondo o bastante pra caber no
-   cantinho da placa de madeira. */
-.desafios-fechar {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  background: #4a2c14;
-}
-
-.desafios-fechar-miolo {
-  padding: 8px;
-  font-size: 13px;
-  background: linear-gradient(
-    to bottom,
-    #e0862f 0%,
-    #e0862f 16%,
-    #c96a1a 16%,
-    #c96a1a 78%,
-    #96500f 78%,
-    #96500f 100%
-  );
-}
-
-.desafios-placa-corpo {
-  padding: 24px 18px 20px;
-  background: #e8c99a;
-  background-image: linear-gradient(
-      0deg,
-      rgba(107, 63, 31, 0.06) 1px,
-      transparent 1px
-    ),
-    linear-gradient(90deg, rgba(107, 63, 31, 0.06) 1px, transparent 1px);
-  background-size: 14px 14px;
-}
-
-.desafios-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-/* ===== Botões "DESAFIO N" — usam <BotaoPixel> (ver src/components/
-   BotaoPixel.jsx e src/styles/botaoPixel.css pra geometria/mecânica); aqui
-   só ficam as cores próprias desta tela. ===== */
-
-.desafios-botao-liberado {
-  background: #3a1530; /* roxo bem escuro, cor da moldura */
-}
-
-.desafios-botao-bloqueado {
-  background: #4a4a52;
-}
-
-.desafios-botao-miolo {
-  font-size: 12px;
-}
-
-/* faixas sólidas (sem gradiente suave) simulando luz em cima e sombra
-   embaixo, igual ao botão de referência */
-.desafios-botao-miolo-liberado {
-  background: linear-gradient(
-    to bottom,
-    #f27fd6 0%,
-    #f27fd6 16%,
-    #d43fc0 16%,
-    #d43fc0 78%,
-    #a220a0 78%,
-    #a220a0 100%
-  );
-}
-
-.desafios-botao-miolo-bloqueado {
-  background: linear-gradient(
-    to bottom,
-    #c9c9d1 0%,
-    #c9c9d1 16%,
-    #9a9aa4 16%,
-    #9a9aa4 78%,
-    #78787f 78%,
-    #78787f 100%
-  );
-  color: #55555c;
-  text-shadow: none;
-}
-
-.desafios-cadeado {
-  font-size: 12px;
-}
-
-.desafios-coroa {
-  font-size: 12px;
-}
-
-.desafios-espadas {
-  display: block;
-  width: 25%;
-  max-width: 130px;
-  height: auto;
-  margin: 20px auto 0;
+.desafio-card-icone-imagem {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
   image-rendering: pixelated;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.desafio-card-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px 9px;
+  background: var(--des-roxo-faixa);
+  border-top: 2px solid rgba(217, 154, 30, 0.6);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  color: var(--des-creme);
+}
+
+.desafio-card-seta {
+  font-size: 1.15rem;
+  line-height: 0.8;
+  color: var(--des-dourado);
+}
+
+/* --- estado: disponível / concluído (interação) --- */
+
+.desafio-card--disponivel:hover,
+.desafio-card--concluido:hover,
+.desafio-card--disponivel:focus-visible,
+.desafio-card--concluido:focus-visible {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.35)) drop-shadow(0 0 8px rgba(244, 197, 66, 0.55));
+}
+
+.desafio-card--disponivel:active,
+.desafio-card--concluido:active {
+  transform: translateY(2px);
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+}
+
+.desafio-card:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+/* --- estado: concluído (selo dourado) --- */
+
+.desafio-card-selo {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--des-texto-escuro);
+  background: radial-gradient(circle at 35% 35%, #ffe78f, var(--des-dourado) 55%, var(--des-dourado-escuro));
+  border: 2px solid var(--des-dourado-sombra);
+  border-radius: 50%;
+}
+
+/* --- estado: bloqueado --- */
+
+.desafio-card--bloqueado {
+  cursor: not-allowed;
+}
+
+.desafio-card--bloqueado .desafio-card-moldura {
+  background: linear-gradient(135deg, #7c7486 0%, #544d5e 100%);
+}
+
+.desafio-card--bloqueado .desafio-card-corpo {
+  background: radial-gradient(circle at 50% 35%, #3a3346 0%, #26202f 75%);
+}
+
+.desafio-card--bloqueado .desafio-card-icone-emoji,
+.desafio-card--bloqueado .desafio-card-icone-imagem {
+  filter: grayscale(1) brightness(0.45);
+}
+
+.desafio-card--bloqueado .desafio-card-rodape {
+  color: #9b93a6;
+  border-top-color: rgba(124, 116, 134, 0.5);
+}
+
+.desafio-card-cadeado {
+  position: absolute;
+  font-size: 26px;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+/* !important no atraso: o style inline do card (atraso da entrada em
+   sequência) senão atrasaria o tremor também */
+.desafio-card--tremendo {
+  animation: des-tremer 0.4s ease-in-out both;
+  animation-delay: 0s !important;
+}
+
+/* --- chefe (desafio 6) --- */
+
+.desafio-card--chefe .desafio-card-moldura {
+  background: linear-gradient(135deg, #fff1b0 0%, var(--des-dourado) 40%, var(--des-dourado-escuro) 75%, var(--des-dourado-sombra) 100%);
+}
+
+.desafio-card--chefe .desafio-card-rodape {
+  color: var(--des-dourado);
+}
+
+.desafio-card--chefe.desafio-card--disponivel,
+.desafio-card--chefe.desafio-card--concluido {
+  animation:
+    des-subir 0.35s ease-out backwards,
+    des-brilho-chefe 1.8s ease-in-out 0.8s infinite;
+}
+
+/* bloqueado: apagado como os outros, mas a moldura continua dourada pra
+   indicar que é especial */
+.desafio-card--chefe.desafio-card--bloqueado .desafio-card-moldura {
+  background: linear-gradient(135deg, #c9a24e 0%, #8a6424 60%, #5a3d12 100%);
+}
+
+.desafio-card-estrela {
+  position: absolute;
+  z-index: 2;
+  color: var(--des-dourado);
+  filter: drop-shadow(0 0 3px rgba(255, 214, 102, 0.9));
+  animation: des-piscar 1.5s ease-in-out infinite both;
+}
+
+.desafio-card-estrela--1 {
+  top: -6px;
+  left: 8px;
+  font-size: 14px;
+  animation-delay: 0.9s;
+}
+
+.desafio-card-estrela--2 {
+  top: 30px;
+  right: -6px;
+  font-size: 11px;
+  animation-delay: 1.4s;
+}
+
+.desafio-card-estrela--3 {
+  bottom: 38px;
+  left: -5px;
+  font-size: 10px;
+  animation-delay: 1.9s;
+}
+
+/* ---------- Mensagem de bloqueio ---------- */
+
+.desafios-mensagem-bloqueio {
+  min-height: 1.3em;
+  margin: 12px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-style: italic;
+  color: #7a1820;
+}
+
+.desafios-mensagem-bloqueio:not(:empty) {
+  animation: des-aparecer 0.2s ease-out both;
+}
+
+/* ---------- Emblema do rodapé ---------- */
+
+.desafios-emblema {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.desafios-emblema-linha {
+  position: relative;
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, var(--des-pergaminho-mancha), #7a5a30);
+}
+
+.desafios-emblema-linha--direita {
+  background: linear-gradient(90deg, #7a5a30, var(--des-pergaminho-mancha));
+}
+
+/* losango na ponta de fora de cada linha */
+.desafios-emblema-linha::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -2px;
+  width: 7px;
+  height: 7px;
+  background: #7a5a30;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.desafios-emblema-linha--direita::before {
+  left: auto;
+  right: -2px;
+}
+
+.desafios-emblema-imagem {
+  width: 104px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes des-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes des-subir {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes des-tremer {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes des-brilho-chefe {
+  0%,
+  100% {
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35)) drop-shadow(0 0 4px rgba(244, 197, 66, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35)) drop-shadow(0 0 12px rgba(255, 214, 102, 0.95));
+  }
+}
+
+@keyframes des-piscar {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes des-chama {
+  from {
+    transform: translateX(-50%) scale(1, 1);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(-50%) scale(0.85, 1.15);
+    opacity: 1;
+  }
+}
+
+/* Reduzir movimento: sem entradas, loops, tremor nem elevação. */
+@media (prefers-reduced-motion: reduce) {
+  .desafios-container,
+  .desafios-container *,
+  .desafios-container *::before,
+  .desafios-container *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .desafio-card:hover,
+  .desafio-card:focus-visible,
+  .desafio-card:active {
+    transform: none;
+  }
+
+  /* chefe mantém um brilho fixo, sem pulsar */
+  .desafio-card--chefe.desafio-card--disponivel,
+  .desafio-card--chefe.desafio-card--concluido {
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35)) drop-shadow(0 0 8px rgba(244, 197, 66, 0.7));
+  }
+
+  .desafio-card-estrela {
+    opacity: 0.8;
+  }
 }

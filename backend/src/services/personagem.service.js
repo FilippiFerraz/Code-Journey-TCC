@@ -103,8 +103,26 @@ async function desequiparItem(usuarioId, itemPersonagemId) {
   });
 }
 
+// Adiciona um item ao inventário do personagem (cria o personagem se for o
+// primeiro acesso) — se ele já tinha esse item, só soma quantidade em vez
+// de duplicar a linha em ItemPersonagem. Devolve a quantidade que ficou.
+// Usado pela recompensa de desafio (progresso.service) e pelo baú de fim
+// de mundo (bau.service).
+async function concederItem(usuarioId, itemId) {
+  const personagem = await buscarOuCriarPersonagem(usuarioId);
+
+  const itemPersonagem = await prisma.itemPersonagem.upsert({
+    where: { personagemId_itemId: { personagemId: personagem.id, itemId } },
+    update: { quantidade: { increment: 1 } },
+    create: { personagemId: personagem.id, itemId },
+  });
+
+  return itemPersonagem.quantidade;
+}
+
 module.exports = {
   buscarOuCriarPersonagem,
+  concederItem,
   buscarPersonagem,
   atualizarPersonagem,
   equiparItem,

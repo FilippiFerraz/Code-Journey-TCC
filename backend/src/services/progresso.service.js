@@ -1,5 +1,6 @@
 const prisma = require("../config/prisma");
-const { buscarOuCriarPersonagem } = require("./personagem.service");
+const { concederItem } = require("./personagem.service");
+const { corrigirRespostaDissertativa } = require("./ia.service");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -36,12 +37,19 @@ function calcularBonusVelocidade(tempoSegundos) {
   return Math.round(BONUS_VELOCIDADE_MAXIMO * fracaoRestante);
 }
 
-// Desafio.alternativas é Json livre e hoje guarda um de três formatos (ver
-// ResolverDesafio.jsx no frontend):
+// Desafio.alternativas é Json livre e hoje guarda um de cinco formatos (ver
+// componentes de desafio no frontend):
 // - múltipla escolha: array [{ id, texto, correta }] -> valida opcaoId
 // - ordenar blocos: objeto { tipo: "ordenar_blocos", blocos, ordemCorreta } -> valida ordem
 // - avaliar código: objeto { tipo: "avaliar_codigo", cartas: [{id, codigo, correta}] }
 //   -> valida classificacoes (array de booleans, um "marcou certo?" por cartão)
+// - montar poção: objeto { tipo: "montar_pocao", ingredientesCorretos: [{id, codigo}], distratores }
+//   -> valida ingredientes (array de ids, na ordem em que entraram no caldeirão)
+// - batalha de chefe: objeto { tipo: "batalha_chefe", vidasNecessarias, perguntas: [{id, opcoes}] }
+//   -> valida respostas (array de { perguntaId, opcaoId }, uma por golpe certeiro)
+// - dissertativa: objeto { tipo: "dissertativa", codigo?, criterios: [texto], respostaReferencia? }
+//   -> valida respostaTexto com a IA (ver ia.service.js), fora de avaliarResposta
+//   porque é assíncrona e também devolve um feedback escrito pro jogador
 function avaliarMultiplaEscolha(alternativas, opcaoId) {
   const escolhida = alternativas.find((alt) => alt.id === opcaoId);
   if (!escolhida) {
@@ -72,15 +80,55 @@ function avaliarCartoes(alternativas, classificacoes) {
   return classificacoes.every((marcouCerto, i) => marcouCerto === cartas[i].correta);
 }
 
+function avaliarPocao(alternativas, ingredientes) {
+  const ingredientesCorretos = alternativas?.ingredientesCorretos;
+  if (!Array.isArray(ingredientesCorretos)) {
+    throw erroDeValidacao("Este desafio não aceita esse formato de resposta.");
+  }
+  if (!Array.isArray(ingredientes) || ingredientes.length !== ingredientesCorretos.length) {
+    return false;
+  }
+  return ingredientes.every((id, i) => id === ingredientesCorretos[i].id);
+}
+
+// Confere cada golpe certeiro da batalha de chefe contra o pool de
+// perguntas guardado em alternativas.perguntas — precisa vir exatamente
+// "vidasNecessarias" respostas, todas com opcaoId correto pra pergunta
+// indicada (a mesma pergunta do pool pode se repetir, ver indicePergunta em
+// DesafioChefe.jsx).
+function avaliarBatalhaChefe(alternativas, respostas) {
+  const perguntas = alternativas?.perguntas;
+  const vidasNecessarias = alternativas?.vidasNecessarias;
+  if (!Array.isArray(perguntas) || !Number.isInteger(vidasNecessarias)) {
+    throw erroDeValidacao("Este desafio não aceita esse formato de resposta.");
+  }
+  if (!Array.isArray(respostas) || respostas.length !== vidasNecessarias) {
+    return false;
+  }
+
+  const perguntasPorId = new Map(perguntas.map((p) => [p.id, p]));
+  return respostas.every(({ perguntaId, opcaoId }) => {
+    const pergunta = perguntasPorId.get(perguntaId);
+    const opcao = pergunta?.opcoes.find((o) => o.id === opcaoId);
+    return opcao?.correta === true;
+  });
+}
+
 // Escolhe o validador certo a partir do formato de Desafio.alternativas —
 // array é sempre múltipla escolha; objeto usa o campo "tipo" pra decidir
-// entre ordenar blocos e avaliar código.
-function avaliarResposta(alternativas, { opcaoId, ordem, classificacoes }) {
+// entre os demais formatos.
+function avaliarResposta(alternativas, { opcaoId, ordem, classificacoes, ingredientes, respostas }) {
   if (Array.isArray(alternativas)) {
     return avaliarMultiplaEscolha(alternativas, opcaoId);
   }
   if (alternativas?.tipo === "avaliar_codigo") {
     return avaliarCartoes(alternativas, classificacoes);
+  }
+  if (alternativas?.tipo === "montar_pocao") {
+    return avaliarPocao(alternativas, ingredientes);
+  }
+  if (alternativas?.tipo === "batalha_chefe") {
+    return avaliarBatalhaChefe(alternativas, respostas);
   }
   return avaliarOrdenacaoDeBlocos(alternativas, ordem);
 }
@@ -102,6 +150,9 @@ async function responderDesafio({
   opcaoId,
   ordem,
   classificacoes,
+  ingredientes,
+  respostas,
+  respostaTexto,
   tempoSegundos,
 }) {
   const numeroDesafio = Number(numero);
@@ -109,9 +160,16 @@ async function responderDesafio({
   if (!mundoId || !dificuldade || !Number.isInteger(numeroDesafio)) {
     throw erroDeValidacao("Informe o desafio respondido (mundoId, dificuldade e numero).");
   }
-  if (!opcaoId && !Array.isArray(ordem) && !Array.isArray(classificacoes)) {
+  if (
+    !opcaoId &&
+    !Array.isArray(ordem) &&
+    !Array.isArray(classificacoes) &&
+    !Array.isArray(ingredientes) &&
+    !Array.isArray(respostas) &&
+    typeof respostaTexto !== "string"
+  ) {
     throw erroDeValidacao(
-      "Informe a alternativa escolhida, a ordem dos blocos ou as classificações dos cartões."
+      "Informe a alternativa escolhida, a ordem dos blocos, as classificações dos cartões, os ingredientes da poção, as respostas da batalha ou o texto da resposta."
     );
   }
 
@@ -134,7 +192,37 @@ async function responderDesafio({
 
   const idDesafio = desafio.id;
 
-  const correta = avaliarResposta(desafio.alternativas, { opcaoId, ordem, classificacoes });
+  // Dissertativa: quem decide é a IA, que também devolve um feedback
+  // explicando o porquê. Se a IA falhar, o erro sobe ANTES de gravar
+  // qualquer tentativa — o jogador não é penalizado por falha do servidor.
+  let correta;
+  let feedbackIA = null;
+  if (desafio.alternativas?.tipo === "dissertativa") {
+    const { codigo, criterios, respostaReferencia } = desafio.alternativas;
+    if (!Array.isArray(criterios) || criterios.length === 0) {
+      throw erroDeValidacao("Este desafio dissertativo não tem critérios de correção cadastrados.");
+    }
+    if (typeof respostaTexto !== "string") {
+      throw erroDeValidacao("Este desafio espera uma resposta escrita.");
+    }
+    const correcao = await corrigirRespostaDissertativa({
+      enunciado: desafio.enunciado,
+      codigo,
+      criterios,
+      respostaReferencia,
+      resposta: respostaTexto,
+    });
+    correta = correcao.correta;
+    feedbackIA = correcao.feedback;
+  } else {
+    correta = avaliarResposta(desafio.alternativas, {
+      opcaoId,
+      ordem,
+      classificacoes,
+      ingredientes,
+      respostas,
+    });
+  }
 
   const progressoAnterior = await prisma.progresso.findUnique({
     where: { usuarioId_desafioId: { usuarioId, desafioId: idDesafio } },
@@ -211,6 +299,8 @@ async function responderDesafio({
     acertouDePrimeira: primeiraVezConcluindo ? acertouDePrimeira : false,
     tempoSegundos: progresso.tempoSegundos,
     itemGanho,
+    // Só nos desafios dissertativos: explicação da IA sobre a correção.
+    feedbackIA,
   };
 }
 
@@ -226,26 +316,11 @@ function formatarItem(item, quantidade) {
   };
 }
 
-// Adiciona o item ao inventário do personagem (cria o personagem se for o
-// primeiro item dele) — se ele já tinha esse item, só soma quantidade em vez
-// de duplicar a linha em ItemPersonagem.
+// Adiciona o item ao inventário do personagem (ver concederItem em
+// personagem.service.js — mesma regra usada pelo baú de fim de mundo).
 async function concederItemAoPersonagem(usuarioId, item) {
-  const personagem = await buscarOuCriarPersonagem(usuarioId);
-
-  const itemPersonagemExistente = await prisma.itemPersonagem.findUnique({
-    where: { personagemId_itemId: { personagemId: personagem.id, itemId: item.id } },
-  });
-
-  const itemPersonagem = itemPersonagemExistente
-    ? await prisma.itemPersonagem.update({
-        where: { id: itemPersonagemExistente.id },
-        data: { quantidade: { increment: 1 } },
-      })
-    : await prisma.itemPersonagem.create({
-        data: { personagemId: personagem.id, itemId: item.id },
-      });
-
-  return formatarItem(item, itemPersonagem.quantidade);
+  const quantidade = await concederItem(usuarioId, item.id);
+  return formatarItem(item, quantidade);
 }
 
 // Progresso do usuário cruzado com os desafios cadastrados — é a fonte de

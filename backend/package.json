@@ -8,12 +8,16 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "reset:baus": "node scripts/resetBaus.js",
+    "desafio:ia": "node scripts/criarDesafioIA.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
+    "@google/genai": "^2.24.0",
     "@prisma/client": "^6.16.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

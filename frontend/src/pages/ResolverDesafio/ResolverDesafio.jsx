@@ -5,6 +5,7 @@ import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
+import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
@@ -12,6 +13,7 @@ import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
 import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.png";
 import mercadorInimigo from "../../assets/images/mercador_inimigo.png";
+import bruxaInimigo from "../../assets/images/bruxa_inimigo.png";
 import fundoBatalha from "../../assets/images/Fundo_batalha.png";
 import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
 import "./ResolverDesafio.css";
@@ -35,8 +37,9 @@ const DURACAO_GIF_ATAQUE_MS = 600;
 // - "ordenar_blocos": desafio.blocos (embaralhados na tela) + desafio.ordemCorreta
 //   com a sequência de ids que forma o programa certo
 // - "dissertativa": o jogador escreve a resposta com as próprias palavras
-//   num <textarea>; a correção ainda é mockada localmente (ver
-//   corrigirRespostaComIA) até existir a rota real de IA no backend
+//   num <textarea> (com um trecho de código opcional em desafio.codigo) e
+//   quem corrige é a IA no backend — POST /api/progresso com respostaTexto,
+//   ver responderDissertativa e backend/src/services/ia.service.js
 // - "avaliar_codigo": desafio.cartas com { id, codigo, correta, explicacao } —
 //   mecânica de arrastar ao estilo Tinder (ver renderAvaliarCodigo): o
 //   jogador arrasta cada cartão pra direita se achar o código CERTO, ou pra
@@ -81,7 +84,8 @@ const DESAFIOS = {
       enunciado:
         "O Esqueleto Contador guarda a passagem seguinte e só deixa passar quem consegue somar dois números corretamente.\n\nEscreva um programa em JavaScript que declare duas variáveis com valores numéricos, guarde a soma delas em uma terceira variável e exiba o resultado no console.\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.",
       dica: "toda variável só pode ser usada depois de declarada — a soma dos dois números precisa vir antes do console.log() que exibe o resultado.",
-      inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto Contador" },
+      // Largura igual à do guerreiro (120px, ver cena-heroi mais abaixo).
+      inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto Contador", largura: 120 },
       fundo: fundoBatalha,
       blocos: [
         { id: "b1", codigo: "let numeroA = 4;" },
@@ -128,7 +132,52 @@ const DESAFIOS = {
       ],
     },
   },
-  2: {},
+  2: {
+    // Mesmo conteúdo do desafio 1 do mundo 2 em backend/prisma/seed.js —
+    // os ids dos blocos e a ordem correta precisam bater com o banco, que é
+    // quem valida a resposta.
+    1: {
+      numero: 1,
+      tipo: "ordenar_blocos",
+      titulo: "Desafio JavaScript",
+      enunciado:
+        'Você está desenvolvendo um sistema que verifica se uma pessoa pode acessar uma área restrita.\n\nO programa deve receber a idade de uma pessoa e verificar se ela possui 18 anos ou mais. Caso tenha, deve exibir "Acesso permitido". Caso contrário, deve exibir "Acesso negado".\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.',
+      dica: "o bloco if/else só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
+      inimigo: { imagem: goblinJS, nome: "Goblin Sentinela" },
+      fundo: fundoBatalha2,
+      blocos: [
+        { id: "b1", codigo: "let idade = 20;" },
+        { id: "b2", codigo: "if (idade >= 18) {" },
+        { id: "b3", codigo: 'console.log("Acesso permitido");', indent: 1 },
+        { id: "b4", codigo: "} else {" },
+        { id: "b5", codigo: 'console.log("Acesso negado");', indent: 1 },
+        { id: "b6", codigo: "}" },
+      ],
+      ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
+    },
+    // Desafio corrigido por IA. Enunciado e código iguais aos de
+    // backend/prisma/desafios/desafioIA.js — os critérios de correção ficam
+    // SÓ no backend (o jogador não deve ver o gabarito pelo navegador).
+    2: {
+      numero: 2,
+      tipo: "dissertativa",
+      titulo: "O Enigma da Bruxa",
+      enunciado:
+        "A Bruxa do Acampamento guarda o portão com um enigma e só deixa passar quem entende de verdade como o JavaScript toma decisões.\n\nLeia o código abaixo e explique, com suas palavras, qual mensagem aparece no console e por quê.",
+      codigo: `let moedas = 7;
+
+if (moedas >= 10) {
+  console.log("Você pode comprar a espada!");
+} else if (moedas >= 5) {
+  console.log("Você pode comprar o escudo!");
+} else {
+  console.log("Continue juntando moedas.");
+}`,
+      dica: "o JavaScript testa as condições de cima para baixo e executa só o primeiro bloco cuja condição for verdadeira.",
+      inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento" },
+      fundo: fundoBatalha2,
+    },
+  },
   3: {
     1: {
       numero: 1,
@@ -168,26 +217,8 @@ function embaralhar(lista) {
   return copia;
 }
 
-// Simula a correção por IA de uma resposta dissertativa: espera ~1,5s (pra
-// imitar o tempo de resposta de uma API de IA de verdade) e sorteia acerto
-// ou erro, com uma mensagem de feedback fixa de exemplo pra cada caso.
-//
-// TODO: substituir por chamada real à API quando a rota
-// POST /api/desafios/:id/responder existir (ver responderDissertativa
-// logo abaixo — é o único ponto que precisa trocar).
-function corrigirRespostaComIA(_texto) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const acertou = Math.random() < 0.5;
-      resolve({
-        correta: acertou,
-        mensagem: acertou
-          ? "Boa explicação! Você entendeu que o console.log() serve pra exibir informações no console, ajudando a conferir o que o código está fazendo."
-          : "Quase lá! Sua explicação ainda não deixa claro que o console.log() serve pra exibir informações no console do navegador — tente detalhar isso.",
-      });
-    }, 1500);
-  });
-}
+// Mesmo limite do backend (TAMANHO_MAXIMO_RESPOSTA em ia.service.js).
+const TAMANHO_MAXIMO_RESPOSTA = 2000;
 
 // Falas do golpe, em ordem de vida restante (2 -> 1 coração).
 // A intenção é dar o tom de "tomou dano" sem desanimar o jogador.
@@ -294,6 +325,7 @@ function ResolverDesafio() {
   }
 
   function sofrerGolpe(vidaRestante) {
+    tocarSom("erro");
     setTomandoGolpe(true);
     setVida(vidaRestante);
     setResultado(vidaRestante <= 0 ? "derrota" : "erro");
@@ -320,6 +352,8 @@ function ResolverDesafio() {
   }
 
   function vencer() {
+    tocarSom("acerto");
+
     // 1) herói avança e desfere o golpe — troca a imagem parada pelo GIF
     setResultado("acertando");
     setCicloAtaque((ciclo) => ciclo + 1);
@@ -397,16 +431,39 @@ function ResolverDesafio() {
   // assim, e não com um resultado "acertando" comum, porque o veredito só
   // chega depois da resposta da correção, diferente dos outros dois tipos
   // de desafio, que sabem na hora se acertaram.
+  //
+  // A correção é feita pela IA no backend, na mesma chamada que grava o
+  // progresso (POST /api/progresso com respostaTexto) — por isso aqui não
+  // passa por registrarVitoria: o acerto já volta registrado, com o XP e a
+  // recompensa. Se a IA falhar (servidor fora, chave não configurada...),
+  // o jogador vê o aviso e tenta de novo SEM perder vida: a falha não foi dele.
   async function responderDissertativa() {
     if (travado || !respostaTexto.trim()) return;
 
     setCorrigindo(true);
-    const resultadoIA = await corrigirRespostaComIA(respostaTexto);
+    let dados;
+    try {
+      const resposta = await api.post("/progresso", {
+        mundoId: Number(mundoId),
+        dificuldade,
+        numero: Number(desafioId),
+        tempoSegundos: segundosDecorridos,
+        respostaTexto,
+      });
+      dados = resposta.data;
+    } catch (erro) {
+      setCorrigindo(false);
+      setFeedbackDissertativa(
+        `⚠️ ${erro.response?.data?.erro || "Não foi possível falar com o mago agora. Verifique sua conexão e tente de novo."}`
+      );
+      setResultado("erro");
+      return;
+    }
     setCorrigindo(false);
-    setFeedbackDissertativa(resultadoIA.mensagem);
+    setFeedbackDissertativa(dados.feedbackIA || "");
 
-    if (resultadoIA.correta) {
-      registrarVitoria({ respostaTexto });
+    if (dados.correta) {
+      setRecompensaApi(dados);
       vencer();
     } else {
       sofrerGolpe(vida - 1);
@@ -465,6 +522,7 @@ function ResolverDesafio() {
           registrarVitoria({ classificacoes: novasClassificacoes });
           vencer();
         } else {
+          tocarSom("acerto");
           setClassificacoesCorretas(novasClassificacoes);
           setAguardandoProximoCartao(true);
         }
@@ -679,6 +737,11 @@ function ResolverDesafio() {
                 : "Escolha a resposta:"}
         </h2>
         <p className="painel-enunciado">{desafio.enunciado}</p>
+        {ehDissertativa && desafio.codigo && (
+          <pre className="dissertativa-codigo">
+            <code>{desafio.codigo}</code>
+          </pre>
+        )}
 
         {ehOrdenarBlocos
           ? renderMontagemBlocos()
@@ -772,6 +835,7 @@ function ResolverDesafio() {
           onChange={(e) => alterarRespostaTexto(e.target.value)}
           disabled={travado}
           rows={5}
+          maxLength={TAMANHO_MAXIMO_RESPOSTA}
         />
       </div>
     );

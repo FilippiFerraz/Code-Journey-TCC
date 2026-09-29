@@ -1,116 +1,709 @@
+/* ============================================================
+   RecompensaDesafio.css — tela de vitória/recompensa (tela cheia, sem
+   MainLayout), exibida depois de vencer qualquer desafio.
+
+   Sequência de entrada (~1,5s): fundo -> faixa "VITÓRIA ÉPICA!" desce ->
+   moldura do item surge com flash -> placa/descrição/mago sobem -> botão
+   "AVANTE!". Depois disso ficam em loop só os raios, as estrelas, as
+   chamas das tochas e o pulso do botão — tudo desligado com
+   prefers-reduced-motion (ver fim do arquivo).
+   ============================================================ */
+
 .recompensa-tela {
+  /* paleta */
+  --rec-fundo-escuro: #1a1428;
+  --rec-fundo-claro: #241a38;
+  --rec-roxo: #5b2a9e;
+  --rec-roxo-escuro: #3a1f66;
+  --rec-roxo-borda: #8e5bd6;
+  --rec-dourado: #f4c542;
+  --rec-dourado-escuro: #d99a1e;
+  --rec-dourado-sombra: #8a5a12;
+  --rec-pergaminho: #e8d4a8;
+  --rec-pergaminho-borda: #b08850;
+  --rec-creme: #f3e9d2;
+  --rec-texto-escuro: #2a1a0a;
+  --rec-destaque: #ffcc33;
+  --rec-pedra: #2b2338;
+
+  /* recorte chanfrado reaproveitado pela moldura do item e caixa do mago */
+  --rec-chanfro: polygon(
+    12px 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0 calc(100% - 12px),
+    0 12px
+  );
+
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
   min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  padding: 20px 16px 32px;
+  gap: 14px;
+  padding: 16px 16px 28px;
+  overflow: hidden;
   text-align: center;
-  color: #fff;
-  background: radial-gradient(
-      circle at 50% 0%,
-      #3a2a55 0%,
-      #1b1330 55%,
-      #0d0818 100%
-    ),
-    linear-gradient(#000, #000);
+  color: var(--rec-creme);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* Salão de pedra desenhado em CSS: vinheta + juntas dos blocos + degradê.
+     TODO: trocar as três últimas camadas por uma imagem de fundo em pixel
+     art quando existir (mantendo a vinheta por cima). */
+  background:
+    radial-gradient(ellipse at 50% 38%, transparent 35%, rgba(5, 2, 12, 0.75) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.32) 0 2px, transparent 2px 30px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 58px),
+    linear-gradient(180deg, var(--rec-fundo-claro) 0%, var(--rec-fundo-escuro) 100%);
+
+  animation: rec-aparecer 0.35s ease-out both;
 }
 
-.recompensa-cabecalho {
+/* tudo que é conteúdo fica acima do cenário */
+.recompensa-tela > :not(.recompensa-cenario) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Cenário (estandartes, tochas, folhagens) ---------- */
+
+.recompensa-cenario {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.recompensa-estandarte {
+  position: absolute;
+  top: 0;
+  width: 30px;
+  height: 150px;
+  background:
+    linear-gradient(90deg, transparent 0 40%, rgba(244, 197, 66, 0.55) 40% 60%, transparent 60%) 0 40px / 100% 8px no-repeat,
+    linear-gradient(180deg, var(--rec-roxo) 0%, var(--rec-roxo-escuro) 100%);
+  border-left: 3px solid var(--rec-dourado-sombra);
+  border-right: 3px solid var(--rec-dourado-sombra);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 86%, 0 100%);
+  opacity: 0.55;
+}
+
+.recompensa-estandarte--esquerda {
+  left: 4px;
+}
+
+.recompensa-estandarte--direita {
+  right: 4px;
+}
+
+/* suporte da tocha + chama (a chama é o ::before, tremulando em loop) */
+.recompensa-tocha {
+  position: absolute;
+  top: 250px;
+  width: 8px;
+  height: 22px;
+  background: linear-gradient(180deg, #6b4a2a, #3b2614);
+  border-top: 4px solid #5a5a66;
+}
+
+.recompensa-tocha--esquerda {
+  left: 14px;
+}
+
+.recompensa-tocha--direita {
+  right: 14px;
+}
+
+.recompensa-tocha::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 14px;
+  height: 20px;
+  margin-bottom: 4px;
+  transform: translateX(-50%);
+  transform-origin: 50% 100%;
+  background: radial-gradient(ellipse at 50% 75%, #fff4b0 0 20%, #ffb627 45%, #e2531a 75%, transparent 76%);
+  animation: rec-chama 0.5s ease-in-out infinite alternate;
+}
+
+/* halo de luz da tocha na parede */
+.recompensa-tocha::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 90px;
+  height: 90px;
+  transform: translate(-50%, 35%);
+  background: radial-gradient(circle, rgba(255, 170, 60, 0.28) 0%, transparent 65%);
+}
+
+.recompensa-folhagem {
+  position: absolute;
+  bottom: 0;
+  width: 90px;
+  height: 70px;
+  background:
+    radial-gradient(circle at 20% 80%, #2f5a2a 0 22px, transparent 23px),
+    radial-gradient(circle at 55% 95%, #264a22 0 26px, transparent 27px),
+    radial-gradient(circle at 30% 45%, #3a6b32 0 14px, transparent 15px);
+  opacity: 0.8;
+}
+
+.recompensa-folhagem--esquerda {
+  left: 0;
+}
+
+.recompensa-folhagem--direita {
+  right: 0;
+  transform: scaleX(-1);
+}
+
+/* ---------- Barra superior ---------- */
+
+.recompensa-barra {
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  animation: rec-aparecer 0.35s ease-out 0.1s both;
 }
 
-.recompensa-titulo {
+.recompensa-botao-quadrado {
+  width: 48px;
+  height: 48px;
+  background: var(--rec-dourado-sombra);
+}
+
+.recompensa-botao-quadrado-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, var(--rec-pedra));
+  color: var(--rec-creme);
+  font-size: 20px;
+}
+
+.recompensa-botao-quadrado-miolo::before {
+  opacity: 0.25;
+}
+
+.recompensa-icone-espadas {
+  width: 26px;
+  height: 26px;
+}
+
+.recompensa-placa-titulo {
+  position: relative;
+  margin: 0 10px;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, #2e2540, #1d1729);
+  border: 3px solid var(--rec-dourado-escuro);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.recompensa-placa-titulo h1 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-}
-
-.recompensa-icone-voltar {
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-.recompensa-icone-menu {
-  font-size: 1.25rem;
-}
-
-.recompensa-banner-vitoria {
-  width: 100%;
-  background: linear-gradient(135deg, #b229c4, #6a3fd9);
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-radius: 10px;
-  padding: 10px 14px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-}
-
-.recompensa-banner-texto {
+  font-size: 1.15rem;
   font-weight: 800;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  color: var(--rec-creme);
+  letter-spacing: 0.5px;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
 }
 
-.recompensa-caixa-icone {
-  width: 92px;
-  height: 92px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #fdf6e3, #e9dcb8);
-  border: 3px solid #caa94d;
+/* losangos dourados nas pontas das placas */
+.recompensa-placa-titulo::before,
+.recompensa-placa-titulo::after,
+.recompensa-placa-nome::before,
+.recompensa-placa-nome::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--rec-dourado);
+  border: 2px solid var(--rec-dourado-sombra);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.recompensa-placa-titulo::before,
+.recompensa-placa-nome::before {
+  left: -10px;
+}
+
+.recompensa-placa-titulo::after,
+.recompensa-placa-nome::after {
+  right: -10px;
+}
+
+/* ---------- Faixa "VITÓRIA ÉPICA!" ---------- */
+
+/* A faixa é um wrapper com as "pontas dobradas" (::before/::after, atrás)
+   e o corpo roxo por cima — separado assim porque, num elemento só, as
+   pontas com z-index negativo ficariam por cima do próprio fundo. */
+.recompensa-faixa {
+  width: calc(100% - 40px);
+  margin-top: 4px;
+  animation: rec-descer 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) 0.2s both;
+}
+
+.recompensa-faixa::before,
+.recompensa-faixa::after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  z-index: -1;
+  width: 36px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--rec-roxo-escuro), #24123f);
+  border-top: 3px solid var(--rec-dourado-escuro);
+  border-bottom: 3px solid var(--rec-dourado-escuro);
+  box-sizing: border-box;
+}
+
+.recompensa-faixa::before {
+  left: -22px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 35% 50%);
+}
+
+.recompensa-faixa::after {
+  right: -22px;
+  clip-path: polygon(0 0, 100% 0, 65% 50%, 100% 100%, 0 100%);
+}
+
+.recompensa-faixa-corpo {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 24px rgba(255, 215, 100, 0.45);
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, #7a3fcf 0%, var(--rec-roxo) 55%, #47207e 100%);
+  border-top: 3px solid var(--rec-dourado);
+  border-bottom: 3px solid var(--rec-dourado);
+  box-shadow:
+    0 4px 0 var(--rec-dourado-sombra),
+    0 8px 18px rgba(0, 0, 0, 0.5);
 }
 
-.recompensa-icone {
-  font-size: 2.5rem;
+.recompensa-faixa-coroa {
+  font-size: 28px;
+  color: var(--rec-dourado);
+  filter: drop-shadow(2px 2px 0 var(--rec-dourado-sombra));
+}
+
+.recompensa-faixa-textos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.recompensa-faixa-titulo {
+  margin: 0;
+  font-size: clamp(1.45rem, 7vw, 1.9rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: 1px;
+  color: var(--rec-creme);
+  text-shadow:
+    -2px -2px 0 #1b0d33,
+    2px -2px 0 #1b0d33,
+    -2px 2px 0 #1b0d33,
+    2px 2px 0 #1b0d33,
+    0 4px 0 #1b0d33;
+}
+
+.recompensa-faixa-subtitulo {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--rec-dourado);
+  text-shadow: 1px 1px 0 #1b0d33;
+}
+
+/* ---------- Destaque do item (raios + moldura) ---------- */
+
+.recompensa-destaque {
+  width: 220px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recompensa-raios {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 300px;
+  height: 300px;
+  margin: -150px 0 0 -150px;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(244, 197, 66, 0.4) 0deg 7deg,
+    transparent 7deg 24deg
+  );
+  -webkit-mask-image: radial-gradient(circle, #000 18%, transparent 62%);
+  mask-image: radial-gradient(circle, #000 18%, transparent 62%);
+  animation:
+    rec-aparecer 0.5s ease-out 0.7s both,
+    rec-girar 18s linear 0.7s infinite;
+}
+
+.recompensa-brilho {
+  position: absolute;
+  inset: 10px;
+  background: radial-gradient(circle, rgba(255, 214, 102, 0.55) 0%, rgba(255, 180, 40, 0.15) 45%, transparent 70%);
+  animation: rec-aparecer 0.5s ease-out 0.6s both;
+}
+
+.recompensa-estrela {
+  position: absolute;
+  color: var(--rec-dourado);
+  filter: drop-shadow(0 0 4px rgba(255, 214, 102, 0.9));
+  animation: rec-piscar 1.6s ease-in-out infinite both;
+}
+
+.recompensa-moldura {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  padding: 6px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #ffe28a 0%, var(--rec-dourado) 35%, var(--rec-dourado-escuro) 70%, var(--rec-dourado-sombra) 100%);
+  clip-path: var(--rec-chanfro);
+  animation: rec-surgir 0.55s ease-out 0.5s both;
+}
+
+.recompensa-moldura-interna {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, #3d2c5a 0%, #1a1128 80%);
+  clip-path: var(--rec-chanfro);
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.45);
+}
+
+.recompensa-moldura-flash {
+  position: absolute;
+  inset: 0;
+  background: #fffbe6;
+  pointer-events: none;
+  animation: rec-flash 0.6s ease-out 0.65s both;
+}
+
+.recompensa-item-imagem {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.recompensa-item-emoji {
+  font-size: 56px;
   line-height: 1;
 }
 
-.recompensa-texto-premio strong {
-  display: block;
-  font-size: 1rem;
-  margin-bottom: 4px;
+/* ---------- Nome, tipo e descrição do item ---------- */
+
+.recompensa-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: rec-subir 0.45s ease-out 0.85s both;
 }
 
-.recompensa-texto-premio p {
+.recompensa-placa-nome {
+  position: relative;
+  max-width: calc(100% - 28px);
+  padding: 8px 22px;
+  background: linear-gradient(180deg, #f3e3bd 0%, var(--rec-pergaminho) 60%, #d8bf8c 100%);
+  border: 3px solid var(--rec-pergaminho-borda);
+  box-shadow: 0 3px 0 #5e4424;
+}
+
+.recompensa-placa-nome strong {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--rec-texto-escuro);
+}
+
+.recompensa-etiqueta-tipo {
+  padding: 3px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--rec-dourado);
+  background: #1d1729;
+  border: 2px solid var(--rec-dourado-escuro);
+}
+
+.recompensa-descricao {
+  margin: 2px 0 0;
+  max-width: 340px;
   font-size: 0.85rem;
-  opacity: 0.85;
+  line-height: 1.45;
+  color: var(--rec-creme);
+  opacity: 0.92;
+}
+
+.recompensa-xp {
   margin: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--rec-destaque);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
 
-.recompensa-caixa-dialogo {
+/* ---------- Divisor ---------- */
+
+.recompensa-divisor {
+  width: 80%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: rec-aparecer 0.4s ease-out 0.95s both;
+}
+
+.recompensa-divisor::before,
+.recompensa-divisor::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--rec-pergaminho-borda));
+}
+
+.recompensa-divisor::after {
+  background: linear-gradient(90deg, var(--rec-pergaminho-borda), transparent);
+}
+
+.recompensa-divisor span {
+  width: 8px;
+  height: 8px;
+  background: var(--rec-pergaminho-borda);
+  transform: rotate(45deg);
+}
+
+/* ---------- Fala do mago ---------- */
+
+/* duas camadas com o mesmo chanfro: a externa faz a borda roxa clara */
+.recompensa-dialogo {
   width: 100%;
-  background: linear-gradient(135deg, #6a3fd9, #9b2fc9);
-  border-radius: 14px;
-  padding: 16px;
-  font-size: 0.85rem;
+  padding: 3px;
+  box-sizing: border-box;
+  background: var(--rec-roxo-borda);
+  clip-path: var(--rec-chanfro);
+  animation: rec-subir 0.45s ease-out 1.05s both;
+}
+
+.recompensa-dialogo-corpo {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px 14px 12px 8px;
+  background: linear-gradient(180deg, #33205a 0%, #231640 100%);
+  clip-path: var(--rec-chanfro);
+  text-align: left;
+}
+
+.recompensa-mago {
+  flex-shrink: 0;
+  width: 72px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.45));
+}
+
+.recompensa-dialogo-textos {
+  flex: 1;
+  min-width: 0;
+}
+
+.recompensa-dialogo-textos p {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
   line-height: 1.5;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  color: var(--rec-creme);
 }
 
-/* botão "AVANTE!" pixelado (ver BotaoPixel) */
-.recompensa-botao-avante {
+.recompensa-dialogo-textos p:last-child {
+  margin-bottom: 0;
+}
+
+.recompensa-termo {
+  font-weight: 800;
+  color: var(--rec-destaque);
+}
+
+/* ---------- Botão "AVANTE!" ---------- */
+
+.recompensa-avante {
   display: block;
-  margin-top: auto;
   width: 100%;
-  max-width: 320px;
-  background: #a86a10;
+  max-width: 340px;
+  margin-top: auto;
+  background: var(--rec-dourado-sombra);
+  animation:
+    rec-subir 0.4s ease-out 1.25s both,
+    rec-pulsar 1.8s ease-in-out 1.8s infinite;
 }
 
-.recompensa-botao-avante-miolo {
-  padding: 14px;
-  background: linear-gradient(135deg, #ffd76a, #f5a623);
-  font-size: 1rem;
-  letter-spacing: 0.5px;
+.recompensa-avante-miolo {
+  padding: 14px 18px;
+  justify-content: space-between;
+  background: linear-gradient(180deg, #ffe07a 0%, var(--rec-dourado) 50%, var(--rec-dourado-escuro) 100%);
+  color: var(--rec-texto-escuro);
+  font-size: 18px;
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.recompensa-avante-texto {
+  font-weight: 900;
+  font-size: 1.3rem;
+  letter-spacing: 1.5px;
+}
+
+/* foco visível — o recorte pixelado do BotaoPixel corta o outline por
+   fora, então o indicador é desenhado por dentro do miolo */
+.recompensa-botao-quadrado:focus-visible,
+.recompensa-avante:focus-visible {
+  outline: none;
+}
+
+.recompensa-botao-quadrado:focus-visible .botao-pixel-miolo,
+.recompensa-avante:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes rec-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rec-descer {
+  0% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rec-surgir {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rec-flash {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes rec-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rec-piscar {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes rec-subir {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rec-pulsar {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes rec-chama {
+  from {
+    transform: translateX(-50%) scale(1, 1);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(-50%) scale(0.85, 1.15);
+    opacity: 1;
+  }
+}
+
+/* Reduzir movimento: sem entradas, sem giros, sem pulsos — tudo aparece
+   já no estado final. O flash some de vez (senão ficaria parado por cima
+   do item). */
+@media (prefers-reduced-motion: reduce) {
+  .recompensa-tela,
+  .recompensa-tela *,
+  .recompensa-tela *::before,
+  .recompensa-tela *::after {
+    animation: none !important;
+  }
+
+  .recompensa-moldura-flash {
+    display: none;
+  }
+
+  .recompensa-estrela {
+    opacity: 0.8;
+  }
 }

@@ -1,9 +1,10 @@
 const prisma = require("../config/prisma");
 const { concederItem } = require("./personagem.service");
 
-// Quantos slots giram na roleta do baú (ver AbrirBau.jsx) — pode repetir
-// itens do catálogo se o jogo ainda não tiver esse tanto de itens distintos
-// cadastrados.
+// Quantos itens vão em "slots" na resposta de abrirBau — pode repetir itens
+// do catálogo se o jogo ainda não tiver esse tanto de itens distintos. A
+// tela atual (BauDaSorte.jsx) monta a própria fita com GET /api/itens, então
+// isso fica só por compatibilidade.
 const SLOTS_ROLETA = 6;
 
 function erroDeValidacao(mensagem) {
@@ -80,6 +81,27 @@ async function listarBaus(usuarioId) {
   return resultado;
 }
 
+// Peso de cada raridade no sorteio do prêmio (Item.raridade) — quanto maior,
+// mais provável. Raridade desconhecida conta como "comum".
+const PESOS_RARIDADE = {
+  comum: 60,
+  raro: 25,
+  epico: 12,
+  lendario: 3,
+};
+
+function sortearPorRaridade(itens) {
+  const pesoDe = (item) => PESOS_RARIDADE[item.raridade] ?? PESOS_RARIDADE.comum;
+  const pesoTotal = itens.reduce((soma, item) => soma + pesoDe(item), 0);
+
+  let sorteio = Math.random() * pesoTotal;
+  for (const item of itens) {
+    sorteio -= pesoDe(item);
+    if (sorteio < 0) return item;
+  }
+  return itens[itens.length - 1];
+}
+
 // Sorteia o item ganho e monta os SLOTS_ROLETA itens exibidos na roleta — o
 // item sorteado sempre ocupa um deles, no índice retornado em
 // "indiceVencedor" (é nesse slot que a animação do frontend deve parar).
@@ -91,7 +113,7 @@ async function sortearRoleta() {
 
   const sortear = () => itensDisponiveis[Math.floor(Math.random() * itensDisponiveis.length)];
 
-  const itemGanho = sortear();
+  const itemGanho = sortearPorRaridade(itensDisponiveis);
   const slots = Array.from({ length: SLOTS_ROLETA }, sortear);
   const indiceVencedor = Math.floor(Math.random() * SLOTS_ROLETA);
   slots[indiceVencedor] = itemGanho;

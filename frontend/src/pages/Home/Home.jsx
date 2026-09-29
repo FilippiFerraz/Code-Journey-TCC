@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import mapa from "../../assets/images/mapa.png";
@@ -6,9 +6,15 @@ import portalDesafios from "../../assets/images/Portal_Desafios.gif";
 import cadeadoPortal from "../../assets/images/Cadeado_portal.png";
 import api from "../../services/api";
 import { mundoLiberado } from "../../data/progresso";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
 import "./Home.css";
+
+// Mesmo breakpoint usado pelo MainLayout pra trocar entre rodapé (mobile) e
+// sidebar (desktop) — precisa bater com o de lá pra decidir corretamente
+// onde a barra de busca aparece (ver comentário mais abaixo).
+const BREAKPOINT_MOBILE = 768;
 
 // Posições em % relativas ao tamanho da imagem do mapa (ajuste livremente)
 const PORTAIS = [
@@ -19,6 +25,7 @@ const PORTAIS = [
 
 function Home() {
   const navigate = useNavigate();
+  const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
   const [mostrarTutorial, setMostrarTutorial] = useState(false);
   // Portal clicado enquanto ainda trancado — guarda o objeto pra mostrar o
   // nome dele no aviso do Mago; null quando não há aviso na tela.
@@ -27,6 +34,10 @@ function Home() {
   // quais portais estão liberados. Começa vazio — enquanto não chega (ou se
   // a chamada falhar), só o portal 1 aparece liberado, nunca o contrário.
   const [progresso, setProgresso] = useState([]);
+  // Baús de fim de mundo (GET /api/baus): um por trilha, com "disponivel"
+  // quando todos os desafios dela foram concluídos e o baú ainda não foi
+  // aberto — é isso que faz o ícone do baú aparecer ao lado do portal.
+  const [baus, setBaus] = useState([]);
   // Barra de pesquisa de jogadores (GET /api/perfil/buscar?nome=).
   const [termoBusca, setTermoBusca] = useState("");
   const [resultadosBusca, setResultadosBusca] = useState([]);
@@ -63,6 +74,15 @@ function Home() {
       .catch(() => {
         // sem progresso carregado (ex: offline) — mantém todo portal além
         // do 1 bloqueado em vez de liberar por engano
+      });
+
+    api
+      .get("/baus")
+      .then((res) => {
+        if (ativo) setBaus(res.data);
+      })
+      .catch(() => {
+        // sem baús carregados — só não mostra o ícone de baú no mapa
       });
 
     return () => {
@@ -116,87 +136,118 @@ function Home() {
     api.post("/perfil/tutorial-visto").catch(() => {});
   }
 
-  return (
-    <MainLayout titulo="HOME">
-      <div className="home-busca">
-        <div className="home-busca-campo">
-          <span className="home-busca-icone" aria-hidden="true">
-            <i className="hn hn-search"></i>
-          </span>
-          <input
-            type="text"
-            className="home-busca-input"
-            placeholder="Buscar jogador pelo nome…"
-            value={termoBusca}
-            onChange={(e) => setTermoBusca(e.target.value)}
-            aria-label="Buscar jogador pelo nome"
-          />
-          {termoBusca && (
-            <button
-              type="button"
-              className="home-busca-limpar"
-              aria-label="Limpar busca"
-              onClick={() => setTermoBusca("")}
-            >
-              <i className="hn hn-times" aria-hidden="true"></i>
-            </button>
-          )}
-        </div>
-
-        {termoBusca.trim() && (
-          <div className="home-busca-resultados">
-            {buscando ? (
-              <p className="home-busca-mensagem">Buscando…</p>
-            ) : resultadosBusca.length > 0 ? (
-              resultadosBusca.map((usuario) => (
-                <button
-                  key={usuario.id}
-                  type="button"
-                  className="home-busca-resultado"
-                  onClick={() => abrirPerfilBuscado(usuario)}
-                >
-                  <span className="home-busca-resultado-nome">{usuario.nome}</span>
-                  <span className="home-busca-resultado-handle">@{usuario.nomeUsuario}</span>
-                </button>
-              ))
-            ) : (
-              <p className="home-busca-mensagem">Nenhum jogador encontrado.</p>
-            )}
-          </div>
+  // Barra de busca de jogadores — mesma JSX em mobile e desktop, só muda
+  // ONDE ela aparece (ver uso logo abaixo): no mobile continua dentro do
+  // corpo da página, como sempre foi; no desktop vai pro slot central do
+  // cabeçalho (MainLayout.jsx), centralizada e maior. Extraída pra
+  // variável em vez de duplicada porque é o MESMO estado (termoBusca,
+  // resultadosBusca) controlando as duas — nunca as duas ao mesmo tempo.
+  const barraBusca = (
+    <div className="home-busca">
+      <div className="home-busca-campo">
+        <span className="home-busca-icone" aria-hidden="true">
+          <i className="hn hn-search"></i>
+        </span>
+        <input
+          type="text"
+          className="home-busca-input"
+          placeholder="Buscar jogador pelo nome…"
+          value={termoBusca}
+          onChange={(e) => setTermoBusca(e.target.value)}
+          aria-label="Buscar jogador pelo nome"
+        />
+        {termoBusca && (
+          <button
+            type="button"
+            className="home-busca-limpar"
+            aria-label="Limpar busca"
+            onClick={() => setTermoBusca("")}
+          >
+            <i className="hn hn-times" aria-hidden="true"></i>
+          </button>
         )}
       </div>
+
+      {termoBusca.trim() && (
+        <div className="home-busca-resultados">
+          {buscando ? (
+            <p className="home-busca-mensagem">Buscando…</p>
+          ) : resultadosBusca.length > 0 ? (
+            resultadosBusca.map((usuario) => (
+              <button
+                key={usuario.id}
+                type="button"
+                className="home-busca-resultado"
+                onClick={() => abrirPerfilBuscado(usuario)}
+              >
+                <span className="home-busca-resultado-nome">{usuario.nome}</span>
+                <span className="home-busca-resultado-handle">@{usuario.nomeUsuario}</span>
+              </button>
+            ))
+          ) : (
+            <p className="home-busca-mensagem">Nenhum jogador encontrado.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined}>
+      {ehMobile && barraBusca}
 
       <div className="home-mapa">
         <img src={mapa} alt="Mapa da jornada" className="home-mapa-imagem" />
 
         {PORTAIS.map((portal) => {
           const liberado = mundoLiberado(progresso, portal.id);
+          const bauDisponivel = baus.find(
+            (bau) => String(bau.mundoId) === portal.id && bau.disponivel
+          );
           return (
-            <button
-              key={portal.id}
-              type="button"
-              className={`home-portal ${liberado ? "" : "home-portal--bloqueado"}`}
-              style={{ top: portal.top, left: portal.left }}
-              onClick={() => handlePortalClick(portal)}
-              data-tutorial-alvo={portal.id === "1" ? "portal-desafios" : undefined}
-            >
-              <img
-                src={portalDesafios}
-                alt=""
-                aria-hidden="true"
-                className="home-portal-gif"
-                draggable={false}
-              />
-              {!liberado && (
+            <Fragment key={portal.id}>
+              <button
+                type="button"
+                className={`home-portal ${liberado ? "" : "home-portal--bloqueado"}`}
+                style={{ top: portal.top, left: portal.left }}
+                onClick={() => handlePortalClick(portal)}
+                data-tutorial-alvo={portal.id === "1" ? "portal-desafios" : undefined}
+              >
                 <img
-                  src={cadeadoPortal}
-                  alt="Bloqueado"
-                  className="home-portal-cadeado"
+                  src={portalDesafios}
+                  alt=""
+                  aria-hidden="true"
+                  className="home-portal-gif"
                   draggable={false}
                 />
+                {!liberado && (
+                  <img
+                    src={cadeadoPortal}
+                    alt="Bloqueado"
+                    className="home-portal-cadeado"
+                    draggable={false}
+                  />
+                )}
+                <span className="home-portal-nome">{portal.nome}</span>
+              </button>
+
+              {/* Baú de fim de mundo — irmão do portal (não dentro dele, pra
+                  não aninhar <button>), posicionado logo à direita. */}
+              {bauDisponivel && (
+                <button
+                  type="button"
+                  className="home-bau"
+                  style={{ top: portal.top, left: `calc(${portal.left} + 64px)` }}
+                  onClick={() =>
+                    navigate(`/bau/${portal.id}/${bauDisponivel.dificuldade}`)
+                  }
+                  aria-label={`Abrir o baú de ${portal.nome}`}
+                >
+                  <span className="home-bau-icone" aria-hidden="true">🎁</span>
+                  <span className="home-bau-texto">Abrir baú!</span>
+                </button>
               )}
-              <span className="home-portal-nome">{portal.nome}</span>
-            </button>
+            </Fragment>
           );
         })}
       </div>

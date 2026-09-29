@@ -15,11 +15,16 @@
   overflow: hidden; /* impede que o container inteiro role */
 }
 
-/* Cabeçalho — igual em mobile e desktop */
+/* Cabeçalho — igual em mobile e desktop. Grid de 3 colunas (em vez de
+   flex + space-between) pra dar um slot central de verdade pra busca
+   (.layout-header-busca) — a coluna do meio é flexível (1fr) e some sem
+   deixar buraco quando nenhuma página passa `buscaHeader` (ver
+   MainLayout.jsx). */
 .layout-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 16px;
   padding: 14px 18px;
   background: #7a1fa8;
   flex-shrink: 0; /* nunca encolhe nem some ao rolar */
@@ -31,6 +36,35 @@
   font-weight: 800;
   letter-spacing: 0.5px;
   margin: 0;
+  white-space: nowrap;
+}
+
+/* Slot central de busca — só tem conteúdo em quem passa `buscaHeader`
+   (hoje só a Home, e só na versão desktop). Vazio, não ocupa espaço
+   visual nenhum: título e logo ficam nas pontas, igual ao layout antigo. */
+.layout-header-busca {
+  display: flex;
+  justify-content: center;
+}
+
+/* Maior e centralizada — mesma barra de busca de Home.css (.home-busca*),
+   só que redimensionada aqui porque agora mora no cabeçalho. */
+.layout-header-busca .home-busca {
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 0;
+}
+
+.layout-header-busca .home-busca-campo {
+  padding: 12px 20px;
+}
+
+.layout-header-busca .home-busca-icone {
+  font-size: 17px;
+}
+
+.layout-header-busca .home-busca-input {
+  font-size: 16px;
 }
 
 .layout-header-logo {

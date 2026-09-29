@@ -336,6 +336,22 @@
   flex-direction: column;
 }
 
+/* trecho de código que o jogador precisa ler/explicar (desafio.codigo) */
+.dissertativa-codigo {
+  margin: 0 0 12px;
+  padding: 12px 10px;
+  overflow-x: auto;
+  border: 3px solid #5c1a73;
+  border-radius: 10px;
+  background: #1b1026;
+  color: #f0d9ff;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: clamp(0.62rem, 2.9vw, 0.72rem);
+  line-height: 1.45;
+  text-align: left;
+  white-space: pre;
+}
+
 .dissertativa-textarea {
   width: 100%;
   min-height: 110px;

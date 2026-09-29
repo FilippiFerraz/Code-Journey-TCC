@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import api from "../../services/api";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
+import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import caldeirao from "../../assets/images/caldeirao.png";
@@ -173,6 +174,7 @@ function ResolverDesafioPocao() {
     const proximoCorreto = desafio.ingredientesCorretos[progresso];
 
     if (proximoCorreto && id === proximoCorreto.id) {
+      tocarSom("acerto");
       setIngredientesDisponiveis((atual) => atual.filter((i) => i.id !== id));
       const novoProgresso = progresso + 1;
       setProgresso(novoProgresso);
@@ -182,6 +184,7 @@ function ResolverDesafioPocao() {
         setSucesso(true);
       }
     } else {
+      tocarSom("erro");
       setIdRejeitado(id);
       clearTimeout(timeoutRejeicaoRef.current);
       timeoutRejeicaoRef.current = setTimeout(() => setIdRejeitado(null), 500);

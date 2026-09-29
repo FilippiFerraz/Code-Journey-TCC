@@ -16,6 +16,7 @@ import Perfil from "./pages/Perfil/Perfil";
 import Ranking from "./pages/Ranking/Ranking";
 import EditarPersonagem from "./pages/EditarPersonagem/EditarPersonagem";
 import RecompensaDesafio from './pages/RecompensaDesafio/RecompensaDesafio';
+import BauDaSorte from "./pages/BauDaSorte/BauDaSorte";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
 import Conta from "./pages/Configuracoes/Conta/Conta";
 import Admin from "./pages/Admin/Admin";
@@ -56,6 +57,7 @@ function App() {
           <Route path="/ranking" element={<Ranking />} />
           <Route path="/editar-personagem" element={<EditarPersonagem />} />
           <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RecompensaDesafio />} />
+          <Route path="/bau/:mundoId/:dificuldade" element={<BauDaSorte />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/conta" element={<Conta />} />
           <Route path="/admin" element={<Admin />} />
