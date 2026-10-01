@@ -4,40 +4,169 @@ import MainLayout from "../../../layouts/MainLayout";
 import BotaoPixel from "../../../components/BotaoPixel";
 import api from "../../../services/api";
 import verificarIcon from "../../../assets/images/verificar.png";
-import smartphoneIcon from "../../../assets/images/smartphone.png";
+import atencaoIcon from "../../../assets/images/atencao.png";
 import "./Conta.css";
+
+// Tela "Minha Conta" (Configurações > Conta). Tudo aqui conversa com
+// /api/conta (ver backend/src/services/conta.service.js):
+// - nome: 1 troca a cada 30 dias
+// - e-mail: 1 troca a cada 30 dias, em duas etapas (código no e-mail novo)
+// - excluir conta: escondido em "Opções avançadas"; é um soft delete (a
+//   conta é desativada, não apagada — um administrador pode reativar)
+
+const TEXTO_CONFIRMACAO_EXCLUSAO = "EXCLUIR";
 
 function formatarData(dataIso) {
   if (!dataIso) return null;
   return new Date(dataIso).toLocaleDateString("pt-BR");
 }
 
+function textoDias(dias) {
+  return dias === 1 ? "1 dia" : `${dias} dias`;
+}
+
+function mensagemDoErro(erro, padrao) {
+  return erro.response?.data?.erro || padrao;
+}
+
+// Caixinha de retorno (sucesso/erro) usada em cada seção.
+function Aviso({ aviso }) {
+  if (!aviso) return null;
+  return (
+    <div className={aviso.tipo === "sucesso" ? "conta-sucesso" : "conta-erro"} role="status">
+      {aviso.texto}
+    </div>
+  );
+}
+
+// ---------- Modal de exclusão ----------
+
+function ModalExcluirConta({ onCancelar, onExcluida }) {
+  const [senha, setSenha] = useState("");
+  const [confirmacao, setConfirmacao] = useState("");
+  const [excluindo, setExcluindo] = useState(false);
+  const [erro, setErro] = useState("");
+
+  const podeExcluir =
+    senha.length > 0 && confirmacao.trim().toUpperCase() === TEXTO_CONFIRMACAO_EXCLUSAO;
+
+  async function handleExcluir(e) {
+    e.preventDefault();
+    if (!podeExcluir || excluindo) return;
+    setErro("");
+    setExcluindo(true);
+    try {
+      await api.post("/conta/excluir", { senha, confirmacao });
+      onExcluida();
+    } catch (err) {
+      setErro(mensagemDoErro(err, "Não foi possível excluir a conta. Tente novamente."));
+      setExcluindo(false);
+    }
+  }
+
+  return (
+    <div className="conta-modal-fundo" role="presentation" onClick={onCancelar}>
+      <form
+        className="conta-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="conta-modal-titulo"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={handleExcluir}
+      >
+        <h2 id="conta-modal-titulo" className="conta-modal-titulo">
+          <img src={atencaoIcon} alt="" className="conta-info-icone-img" /> Excluir minha conta
+        </h2>
+
+        <p className="conta-modal-texto">Ao excluir sua conta:</p>
+        <ul className="conta-modal-lista">
+          <li>você não conseguirá mais entrar no Code Journey com ela;</li>
+          <li>seu nome sai do ranking e da busca de jogadores;</li>
+          <li>
+            seu progresso, XP e itens <strong>ficam guardados</strong> — a conta é desativada, não
+            apagada. Se mudar de ideia, peça a um administrador para reativá-la.
+          </li>
+        </ul>
+
+        {erro && <div className="conta-erro">{erro}</div>}
+
+        <div className="conta-campo">
+          <label htmlFor="excluir-senha" className="conta-label">
+            Senha atual:
+          </label>
+          <input
+            id="excluir-senha"
+            type="password"
+            className="conta-input"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            autoComplete="current-password"
+            autoFocus
+          />
+        </div>
+
+        <div className="conta-campo">
+          <label htmlFor="excluir-confirmacao" className="conta-label">
+            Para confirmar, digite <strong>{TEXTO_CONFIRMACAO_EXCLUSAO}</strong>:
+          </label>
+          <input
+            id="excluir-confirmacao"
+            type="text"
+            className="conta-input"
+            value={confirmacao}
+            onChange={(e) => setConfirmacao(e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+
+        <div className="conta-modal-acoes">
+          <button type="button" className="conta-botao-texto" onClick={onCancelar}>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="conta-botao-perigo"
+            disabled={!podeExcluir || excluindo}
+          >
+            {excluindo ? "Excluindo…" : "Excluir conta"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// ---------- Tela ----------
+
 function Conta() {
   const navigate = useNavigate();
-  const [perfil, setPerfil] = useState(null);
+  const [conta, setConta] = useState(null);
   const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState(null);
+  const [erroCarga, setErroCarga] = useState("");
 
-  const [nomePersonagem, setNomePersonagem] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [email, setEmail] = useState("");
-  const [salvando, setSalvando] = useState(false);
-  const [sucessoMensagem, setSucessoMensagem] = useState("");
+  const [nome, setNome] = useState("");
+  const [salvandoNome, setSalvandoNome] = useState(false);
+  const [avisoNome, setAvisoNome] = useState(null);
+
+  const [novoEmail, setNovoEmail] = useState("");
+  const [senhaEmail, setSenhaEmail] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [enviandoEmail, setEnviandoEmail] = useState(false);
+  const [avisoEmail, setAvisoEmail] = useState(null);
+
+  const [mostrarExclusao, setMostrarExclusao] = useState(false);
 
   useEffect(() => {
     let ativo = true;
 
     api
-      .get("/perfil")
+      .get("/conta")
       .then((res) => {
-        if (ativo) {
-          setPerfil(res.data);
-          setNomePersonagem(res.data.nome || "");
-          setTelefone(res.data.telefone || "");
-          setEmail(res.data.email || "");
-        }
+        if (!ativo) return;
+        setConta(res.data);
+        setNome(res.data.nome || "");
       })
-      .catch(() => ativo && setErro("Não foi possível carregar as informações."))
+      .catch(() => ativo && setErroCarga("Não foi possível carregar as informações da conta."))
       .finally(() => ativo && setCarregando(false));
 
     return () => {
@@ -45,60 +174,96 @@ function Conta() {
     };
   }, []);
 
-  async function handleSalvar(e) {
+  async function handleSalvarNome(e) {
     e.preventDefault();
-    setErro("");
-    setSucessoMensagem("");
-
-    if (!nomePersonagem.trim()) {
-      setErro("O nome do personagem não pode estar vazio.");
-      return;
-    }
-
+    setAvisoNome(null);
+    setSalvandoNome(true);
     try {
-      setSalvando(true);
-
-      await api.put("/perfil", {
-        nome: nomePersonagem,
-        telefone: telefone || null,
-        email: email,
-      });
-
-      setSucessoMensagem("Alterações salvas com sucesso!");
-      setTimeout(() => setSucessoMensagem(""), 3000);
+      const res = await api.put("/conta/nome", { nome });
+      setConta(res.data);
+      setNome(res.data.nome);
+      setAvisoNome({ tipo: "sucesso", texto: "Nome alterado com sucesso!" });
     } catch (err) {
-      const mensagem =
-        err.response?.data?.erro ||
-        "Não foi possível salvar as alterações. Tente novamente.";
-      setErro(mensagem);
+      setAvisoNome({ tipo: "erro", texto: mensagemDoErro(err, "Não foi possível alterar o nome.") });
     } finally {
-      setSalvando(false);
+      setSalvandoNome(false);
     }
   }
 
-  if (carregando) {
+  async function handleSolicitarEmail(e) {
+    e.preventDefault();
+    setAvisoEmail(null);
+    setEnviandoEmail(true);
+    try {
+      const res = await api.post("/conta/email", { novoEmail, senha: senhaEmail });
+      setConta(res.data);
+      setSenhaEmail("");
+      setCodigo("");
+      setAvisoEmail({
+        tipo: "sucesso",
+        texto: `Enviamos um código para ${res.data.emailPendente}. Ele vale por 15 minutos.`,
+      });
+    } catch (err) {
+      setAvisoEmail({ tipo: "erro", texto: mensagemDoErro(err, "Não foi possível enviar o código.") });
+    } finally {
+      setEnviandoEmail(false);
+    }
+  }
+
+  async function handleConfirmarEmail(e) {
+    e.preventDefault();
+    setAvisoEmail(null);
+    setEnviandoEmail(true);
+    try {
+      const res = await api.post("/conta/email/confirmar", { codigo });
+      setConta(res.data);
+      setNovoEmail("");
+      setCodigo("");
+      setAvisoEmail({
+        tipo: "sucesso",
+        texto: `E-mail alterado! A partir de agora, entre com ${res.data.email}.`,
+      });
+    } catch (err) {
+      setAvisoEmail({ tipo: "erro", texto: mensagemDoErro(err, "Não foi possível confirmar o código.") });
+    } finally {
+      setEnviandoEmail(false);
+    }
+  }
+
+  async function handleCancelarEmail() {
+    setAvisoEmail(null);
+    try {
+      const res = await api.delete("/conta/email");
+      setConta(res.data);
+      setCodigo("");
+    } catch (err) {
+      setAvisoEmail({ tipo: "erro", texto: mensagemDoErro(err, "Não foi possível cancelar a troca.") });
+    }
+  }
+
+  // Conta excluída: mesma saída do botão "Sair" das Configurações.
+  function handleContaExcluida() {
+    localStorage.removeItem("token");
+    navigate("/", { replace: true });
+  }
+
+  if (carregando || !conta) {
     return (
-      <MainLayout titulo="Configurações">
+      <MainLayout titulo="Minha Conta">
         <div className="conta">
-          <div className="conta-estado">Carregando informações…</div>
+          <div className="conta-estado">{erroCarga || "Carregando informações…"}</div>
         </div>
       </MainLayout>
     );
   }
 
-  const ultimaAlteracaoNome = perfil?.ultimaAlteracaoNome
-    ? formatarData(perfil.ultimaAlteracaoNome)
-    : null;
-  const ultimaAlteracaoEmail = perfil?.ultimaAlteracaoEmail
-    ? formatarData(perfil.ultimaAlteracaoEmail)
-    : null;
-  const diasRestantesNome = perfil?.diasRestantesNome || 0;
-  const diasRestantesEmail = perfil?.diasRestantesEmail || 0;
+  const bloqueioNome = conta.diasParaAlterarNome > 0;
+  const bloqueioEmail = conta.diasParaAlterarEmail > 0;
+  const nomeMudou = nome.trim().replace(/\s+/g, " ") !== conta.nome;
 
   return (
     <MainLayout titulo="Minha Conta">
       <div className="conta">
-        {/* Botão Voltar */}
         <BotaoPixel
           className="conta-voltar"
           classeMiolo="conta-voltar-miolo"
@@ -107,131 +272,198 @@ function Conta() {
           ← Voltar
         </BotaoPixel>
 
-        {/* Mensagens de status */}
-        {erro && <div className="conta-erro">{erro}</div>}
-        {sucessoMensagem && (
-          <div className="conta-sucesso">{sucessoMensagem}</div>
-        )}
-
-        {/* Formulário */}
-        <form className="conta-form" onSubmit={handleSalvar}>
-          {/* Campo: Nome do Personagem */}
-          <fieldset className="conta-fieldset">
-            <legend className="conta-fieldset-titulo">Nome do Personagem</legend>
+        <div className="conta-form">
+          {/* ---------- Nome ---------- */}
+          <form className="conta-fieldset" onSubmit={handleSalvarNome}>
+            <h2 className="conta-fieldset-titulo">Nome</h2>
 
             <div className="conta-campo">
               <label htmlFor="nome" className="conta-label">
-                Nome:
+                Nome exibido no seu perfil e no ranking:
               </label>
               <input
                 id="nome"
                 type="text"
                 className="conta-input"
-                value={nomePersonagem}
-                onChange={(e) => setNomePersonagem(e.target.value)}
-                maxLength="50"
-                placeholder="Nome do seu personagem"
-              />
-            </div>
-
-            {ultimaAlteracaoNome && (
-              <div className="conta-info">
-                <span className="conta-info-icone">ℹ️</span>
-                <span className="conta-info-texto">
-                  Última alteração: {ultimaAlteracaoNome} — Faltam{" "}
-                  <strong>{diasRestantesNome} dias</strong> para poder alterar novamente.
-                </span>
-              </div>
-            )}
-            {!ultimaAlteracaoNome && (
-              <div className="conta-info">
-                <img src={verificarIcon} alt="" className="conta-info-icone-img" />
-                <span className="conta-info-texto">
-                  Você pode alterar seu nome agora.
-                </span>
-              </div>
-            )}
-          </fieldset>
-
-          {/* Campo: E-mail */}
-          <fieldset className="conta-fieldset">
-            <legend className="conta-fieldset-titulo">E-mail</legend>
-
-            <div className="conta-campo">
-              <label htmlFor="email" className="conta-label">
-                E-mail:
-              </label>
-              <input
-                id="email"
-                type="email"
-                className="conta-input"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu.email@exemplo.com"
-              />
-            </div>
-
-            {ultimaAlteracaoEmail && (
-              <div className="conta-info">
-                <span className="conta-info-icone">ℹ️</span>
-                <span className="conta-info-texto">
-                  Última alteração: {ultimaAlteracaoEmail} — Faltam{" "}
-                  <strong>{diasRestantesEmail} dias</strong> para poder alterar novamente.
-                </span>
-              </div>
-            )}
-            {!ultimaAlteracaoEmail && (
-              <div className="conta-info">
-                <img src={verificarIcon} alt="" className="conta-info-icone-img" />
-                <span className="conta-info-texto">
-                  Você pode alterar seu e-mail agora.
-                </span>
-              </div>
-            )}
-          </fieldset>
-
-          {/* Campo: Telefone */}
-          <fieldset className="conta-fieldset">
-            <legend className="conta-fieldset-titulo">Telefone (Opcional)</legend>
-
-            <div className="conta-campo">
-              <label htmlFor="telefone" className="conta-label">
-                Telefone:
-              </label>
-              <input
-                id="telefone"
-                type="tel"
-                className="conta-input"
-                value={telefone}
-                onChange={(e) => setTelefone(e.target.value)}
-                placeholder="(11) 9 9999-9999"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                maxLength={50}
+                disabled={bloqueioNome}
               />
             </div>
 
             <div className="conta-info">
-              <img src={smartphoneIcon} alt="" className="conta-info-icone-img" />
-              <span className="conta-info-texto">
-                Seu telefone não é obrigatório e pode ser alterado a qualquer momento.
-              </span>
+              {bloqueioNome ? (
+                <>
+                  <span className="conta-info-icone">ℹ️</span>
+                  <span className="conta-info-texto">
+                    Última alteração: {formatarData(conta.nomeAlteradoEm)} — faltam{" "}
+                    <strong>{textoDias(conta.diasParaAlterarNome)}</strong> para poder alterar de novo.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <img src={verificarIcon} alt="" className="conta-info-icone-img" />
+                  <span className="conta-info-texto">
+                    Você pode alterar seu nome agora. Depois, só de novo daqui a{" "}
+                    {conta.diasEntreAlteracoes} dias.
+                  </span>
+                </>
+              )}
             </div>
-          </fieldset>
 
-          {/* Botão Salvar */}
-          <BotaoPixel
-            type="submit"
-            className="conta-salvar"
-            classeMiolo="conta-salvar-miolo"
-            disabled={salvando}
-          >
-            {salvando ? (
-              "Salvando…"
-            ) : (
-              <>
-                <i className="hn hn-save" aria-hidden="true"></i> Salvar Alterações
-              </>
+            <Aviso aviso={avisoNome} />
+
+            {!bloqueioNome && (
+              <button
+                type="submit"
+                className="conta-botao"
+                disabled={salvandoNome || !nomeMudou || !nome.trim()}
+              >
+                {salvandoNome ? "Salvando…" : "Salvar nome"}
+              </button>
             )}
-          </BotaoPixel>
-        </form>
+          </form>
+
+          {/* ---------- E-mail ---------- */}
+          <section className="conta-fieldset">
+            <h2 className="conta-fieldset-titulo">E-mail</h2>
+
+            <p className="conta-email-atual">
+              E-mail atual: <strong>{conta.email}</strong>
+            </p>
+
+            {conta.emailPendente ? (
+              /* Etapa 2: aguardando o código enviado pro e-mail novo */
+              <form onSubmit={handleConfirmarEmail}>
+                <div className="conta-info">
+                  <span className="conta-info-icone">📧</span>
+                  <span className="conta-info-texto">
+                    Enviamos um código de 6 dígitos para <strong>{conta.emailPendente}</strong>.
+                    Digite-o abaixo para concluir a troca.
+                  </span>
+                </div>
+
+                <div className="conta-campo conta-campo--espaco">
+                  <label htmlFor="codigo" className="conta-label">
+                    Código de confirmação:
+                  </label>
+                  <input
+                    id="codigo"
+                    type="text"
+                    inputMode="numeric"
+                    className="conta-input conta-input--codigo"
+                    value={codigo}
+                    onChange={(e) => setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    autoComplete="one-time-code"
+                  />
+                </div>
+
+                <Aviso aviso={avisoEmail} />
+
+                <div className="conta-acoes-linha">
+                  <button type="button" className="conta-botao-texto" onClick={handleCancelarEmail}>
+                    Cancelar troca
+                  </button>
+                  <button
+                    type="submit"
+                    className="conta-botao"
+                    disabled={enviandoEmail || codigo.length !== 6}
+                  >
+                    {enviandoEmail ? "Confirmando…" : "Confirmar código"}
+                  </button>
+                </div>
+              </form>
+            ) : bloqueioEmail ? (
+              <>
+                <div className="conta-info">
+                  <span className="conta-info-icone">ℹ️</span>
+                  <span className="conta-info-texto">
+                    Última alteração: {formatarData(conta.emailAlteradoEm)} — faltam{" "}
+                    <strong>{textoDias(conta.diasParaAlterarEmail)}</strong> para poder alterar de novo.
+                  </span>
+                </div>
+                <Aviso aviso={avisoEmail} />
+              </>
+            ) : (
+              /* Etapa 1: novo e-mail + senha -> envia o código */
+              <form onSubmit={handleSolicitarEmail}>
+                <div className="conta-campo">
+                  <label htmlFor="novo-email" className="conta-label">
+                    Novo e-mail:
+                  </label>
+                  <input
+                    id="novo-email"
+                    type="email"
+                    className="conta-input"
+                    value={novoEmail}
+                    onChange={(e) => setNovoEmail(e.target.value)}
+                    placeholder="seu.novo.email@exemplo.com"
+                    autoComplete="email"
+                  />
+                </div>
+
+                <div className="conta-campo">
+                  <label htmlFor="senha-email" className="conta-label">
+                    Senha atual:
+                  </label>
+                  <input
+                    id="senha-email"
+                    type="password"
+                    className="conta-input"
+                    value={senhaEmail}
+                    onChange={(e) => setSenhaEmail(e.target.value)}
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <div className="conta-info">
+                  <img src={verificarIcon} alt="" className="conta-info-icone-img" />
+                  <span className="conta-info-texto">
+                    Vamos enviar um código para o novo e-mail. A troca só acontece depois que você
+                    confirmar esse código. Depois, só dá para trocar de novo daqui a{" "}
+                    {conta.diasEntreAlteracoes} dias.
+                  </span>
+                </div>
+
+                <Aviso aviso={avisoEmail} />
+
+                <button
+                  type="submit"
+                  className="conta-botao"
+                  disabled={enviandoEmail || !novoEmail.trim() || !senhaEmail}
+                >
+                  {enviandoEmail ? "Enviando…" : "Enviar código"}
+                </button>
+              </form>
+            )}
+          </section>
+
+          {/* ---------- Opções avançadas (fechado por padrão) ---------- */}
+          <details className="conta-avancado">
+            <summary className="conta-avancado-titulo">Opções avançadas</summary>
+            <div className="conta-avancado-corpo">
+              <p className="conta-avancado-texto">
+                Excluir a conta desativa seu acesso ao Code Journey. Seu progresso fica guardado e um
+                administrador pode reativar a conta se você pedir.
+              </p>
+              <button
+                type="button"
+                className="conta-botao-perigo"
+                onClick={() => setMostrarExclusao(true)}
+              >
+                Excluir minha conta
+              </button>
+            </div>
+          </details>
+        </div>
+
+        {mostrarExclusao && (
+          <ModalExcluirConta
+            onCancelar={() => setMostrarExclusao(false)}
+            onExcluida={handleContaExcluida}
+          />
+        )}
       </div>
     </MainLayout>
   );

@@ -28,6 +28,11 @@
   background: rgba(10, 14, 26, 0.9);
 }
 
+/* "Pular" da abertura na mesma altura do "← Voltar" (ver ControlesFalas) */
+.falas-pular.chefe-pular {
+  top: 84px;
+}
+
 .chefe-voltar-miolo {
   padding: 8px 16px;
   font-size: 14px;
@@ -238,20 +243,13 @@
 }
 
 /* cronômetro da batalha — canto superior direito da arena, fora dos cards */
+/* posição do <Temporizador> na arena (o visual fica em components/Temporizador.css) */
 .chefe-cronometro {
   position: absolute;
   top: 12px;
   right: 12px;
   z-index: 5;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(15, 10, 26, 0.75);
-  color: #ffffff;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45));
 }
 
 /* barra de HP/XP do jogador — decorativa nesta primeira versão */

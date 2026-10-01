@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login/Login";
 import Cadastro from "./pages/Cadastro/Cadastro";
@@ -26,6 +26,7 @@ import EditarDesafioAdmin from "./pages/Admin/Desafios/EditarDesafioAdmin";
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
 import AdminLogs from "./pages/Admin/Logs/AdminLogs";
 import AdminLoginHistorico from "./pages/Admin/LoginHistorico/AdminLoginHistorico";
+import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica } from "./components/Rotas";
 
 
 
@@ -40,33 +41,47 @@ function App() {
           laterais enormes (ver .app-frame:has(...) em App.css). */}
       <div className="app-frame">
         <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/cadastrar" element={<Cadastro />} />
+          {/* Só para quem NÃO está logado — logado vai direto pra Home */}
+          <Route element={<RotaPublica />}>
+            <Route path="/" element={<Login />} />
+            <Route path="/cadastrar" element={<Cadastro />} />
+          </Route>
           <Route path="/verificar-email" element={<VerificarEmail />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/dificuldade/:mundoId" element={<SelecionarDificuldade />} />
-          <Route path="/desafios/:mundoId/:dificuldade" element={<Desafios />} />
-          <Route path="/desafio/:mundoId/:dificuldade/:desafioId" element={<DesafioIntro />} />
-          <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<ResolverDesafio />} />
-          <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<DesafioChefe />} />
-          <Route path="/desafio-pocao/:mundoId/:dificuldade/:desafioId" element={<DesafioIntroPocao />} />
-          <Route path="/pocao/:mundoId/:dificuldade/:desafioId" element={<ResolverDesafioPocao />} />
-          <Route path="/perfil" element={<Perfil />} />
-          <Route path="/perfil/:usuarioId" element={<Perfil />} />
-          <Route path="/ranking" element={<Ranking />} />
-          <Route path="/editar-personagem" element={<EditarPersonagem />} />
-          <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RecompensaDesafio />} />
-          <Route path="/bau/:mundoId/:dificuldade" element={<BauDaSorte />} />
-          <Route path="/configuracoes" element={<Configuracoes />} />
-          <Route path="/conta" element={<Conta />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/usuarios" element={<AdminUsuarios />} />
-          <Route path="/admin/desafios" element={<AdminDesafios />} />
-          <Route path="/admin/desafios/:desafioId" element={<EditarDesafioAdmin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/logs" element={<AdminLogs />} />
-          <Route path="/admin/login-historico" element={<AdminLoginHistorico />} />
+
+          {/* Só para quem está logado (ver components/Rotas.jsx) */}
+          <Route element={<RotaProtegida />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/dificuldade/:mundoId" element={<RotaDesafio exigir="mundo"><SelecionarDificuldade /></RotaDesafio>} />
+            <Route path="/desafios/:mundoId/:dificuldade" element={<RotaDesafio exigir="mundo"><Desafios /></RotaDesafio>} />
+            <Route path="/desafio/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioIntro /></RotaDesafio>} />
+            <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><ResolverDesafio /></RotaDesafio>} />
+            <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioChefe /></RotaDesafio>} />
+            <Route path="/desafio-pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioIntroPocao /></RotaDesafio>} />
+            <Route path="/pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><ResolverDesafioPocao /></RotaDesafio>} />
+            <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="concluido"><RecompensaDesafio /></RotaDesafio>} />
+            <Route path="/bau/:mundoId/:dificuldade" element={<RotaDesafio exigir="mundo"><BauDaSorte /></RotaDesafio>} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/perfil/:usuarioId" element={<Perfil />} />
+            <Route path="/ranking" element={<Ranking />} />
+            <Route path="/editar-personagem" element={<EditarPersonagem />} />
+            <Route path="/configuracoes" element={<Configuracoes />} />
+            <Route path="/conta" element={<Conta />} />
+
+            {/* Só para administradores */}
+            <Route element={<RotaAdmin />}>
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+              <Route path="/admin/desafios" element={<AdminDesafios />} />
+              <Route path="/admin/desafios/:desafioId" element={<EditarDesafioAdmin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/logs" element={<AdminLogs />} />
+              <Route path="/admin/login-historico" element={<AdminLoginHistorico />} />
+            </Route>
+          </Route>
+
+          {/* URL que não existe: volta pro início (Login, ou Home se logado) */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </BrowserRouter>

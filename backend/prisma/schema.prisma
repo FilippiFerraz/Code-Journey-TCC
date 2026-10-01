@@ -54,6 +54,19 @@ model Usuario {
   // branco padrão.
   fundoPerfil String @default("padrao")
 
+  // Tela "Minha Conta" (Configurações): data da última troca de nome e de
+  // e-mail — cada um só pode mudar 1 vez a cada 30 dias (ver conta.service.js).
+  // Null = nunca alterou (pode alterar já).
+  nomeAlteradoEm  DateTime?
+  emailAlteradoEm DateTime?
+
+  // Troca de e-mail em andamento: o e-mail novo só passa a valer depois que
+  // o jogador confirma o código enviado PRA ELE (evita perder a conta por um
+  // e-mail digitado errado). Campos separados dos de cadastro/recuperação.
+  emailPendente            String?
+  codigoTrocaEmail         String?
+  codigoTrocaEmailExpiraEm DateTime?
+
   // Soft delete: quando preenchido, o usuário está "excluído". A linha
   // continua no banco (preserva Progresso/Personagem/Ranking já vinculados
   // a ele em vez de quebrar essas relações), mas some das leituras normais
@@ -240,7 +253,8 @@ model Item {
 
   nome        String
   // slot de equipamento — bate com os ids dos slots em EditarPersonagem.jsx:
-  // "capacete" | "peitoral" | "sapato" | "arma" | "costas" | "acessorios"
+  // "capacete" | "peitoral" | "arma" | "costas" (só esses podem ser equipados —
+  // ver TIPOS_EQUIPAVEIS em src/services/personagem.service.js)
   tipo        String
   raridade    String  @default("comum") // "comum" | "raro" | "epico" | "lendario"
   descricao   String?

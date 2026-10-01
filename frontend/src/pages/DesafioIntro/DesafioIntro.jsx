@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
+import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
+import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import "./DesafioIntro.css";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
@@ -160,6 +162,16 @@ function DesafioIntro() {
     }
   }
 
+  // Cada fala passa sozinha depois de alguns segundos (tocar na tela
+  // continua funcionando e reinicia a contagem) — na última, abre o card do
+  // enunciado, que espera o jogador clicar em "Iniciar Desafio".
+  useAvancoAutomatico(!mostrarEnunciado, indice, handleCliqueTela);
+
+  // "Pular": vai direto pro card do enunciado, sem passar pelas falas.
+  function pularFalas() {
+    setMostrarEnunciado(true);
+  }
+
   function handleIniciarDesafio(e) {
     e.stopPropagation();
     // Próxima etapa: tela do editor de código do desafio
@@ -180,6 +192,8 @@ function DesafioIntro() {
       >
         ← Voltar
       </BotaoPixel>
+
+      {!mostrarEnunciado && <BotaoPularFalas onPular={pularFalas} />}
 
       {/* Cena — anúncio do confronto (aviso + nome) acima do inimigo do
           desafio, em destaque e centralizado, flutuando */}
@@ -217,6 +231,7 @@ function DesafioIntro() {
             </div>
             <span className="intro-continuar">toque para continuar ▶</span>
           </div>
+          <BarraAvancoFala chave={indice} />
         </div>
       )}
 

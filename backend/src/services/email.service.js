@@ -72,4 +72,44 @@ async function enviarEmailVerificacao(email, nome, codigo) {
   });
 }
 
-module.exports = { transporter, enviarEmailRecuperacao, enviarEmailVerificacao };
+// Código enviado pro e-mail NOVO quando o jogador pede pra trocar o e-mail
+// da conta (tela Minha Conta) — a troca só acontece depois que ele digitar
+// esse código (ver conta.service.js).
+async function enviarEmailTrocaEmail(email, nome, codigo) {
+  await transporter.sendMail({
+    from: `Code Journey <${EMAIL_USER}>`,
+    to: email,
+    subject: "Confirme seu novo e-mail — Code Journey",
+    text:
+      `Olá, ${nome}!
+
+` +
+      `Você pediu para trocar o e-mail da sua conta no Code Journey para este endereço.
+` +
+      `Seu código de confirmação é: ${codigo}
+
+` +
+      `Ele expira em 15 minutos. Se não foi você, ignore este e-mail — nada será alterado.`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+        <h2 style="color: #6a3fd9;">Confirme seu novo e-mail</h2>
+        <p>Olá, <strong>${nome}</strong>! Você pediu para trocar o e-mail da sua conta no <strong>Code Journey</strong> para este endereço. Use o código abaixo para confirmar:</p>
+        <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;
+                  color: #22283a; background: #f2effa; padding: 14px 0;
+                  text-align: center; border-radius: 10px;">
+          ${codigo}
+        </p>
+        <p style="color: #6b7280; font-size: 14px;">
+          O código expira em 15 minutos. Se não foi você, ignore este e-mail — nada será alterado.
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = {
+  transporter,
+  enviarEmailRecuperacao,
+  enviarEmailVerificacao,
+  enviarEmailTrocaEmail,
+};

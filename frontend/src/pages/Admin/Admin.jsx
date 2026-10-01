@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, NotebookPen, BarChart3, ClipboardList, Lock } from "lucide-react";
 import MainLayout from "../../layouts/MainLayout";
 import BotaoPixel from "../../components/BotaoPixel";
-import api from "../../services/api";
 import "./Admin.css";
 
 // Cada item ganha sua própria tela numa parte do projeto — os que ainda não
@@ -20,38 +18,10 @@ const ITENS = [
 
 function Admin() {
   const navigate = useNavigate();
-  const [carregando, setCarregando] = useState(true);
-  const [autorizado, setAutorizado] = useState(false);
 
-  // O ícone na navegação (ver MainLayout/useEhAdministrador) já só aparece
-  // pra quem parece admin, mas quem decide de verdade é o backend — bate
-  // aqui em GET /api/admin/status (protegido por verificarAdmin) antes de
-  // mostrar qualquer coisa. Sem acesso (403) ou deslogado (401), some pra
-  // Home em vez de deixar a tela de admin vazia no ar.
-  useEffect(() => {
-    let ativo = true;
-
-    api
-      .get("/admin/status")
-      .then(() => ativo && setAutorizado(true))
-      .catch(() => ativo && navigate("/home", { replace: true }))
-      .finally(() => ativo && setCarregando(false));
-
-    return () => {
-      ativo = false;
-    };
-  }, [navigate]);
-
-  if (carregando) {
-    return (
-      <MainLayout titulo="Administração">
-        <div className="admin-estado">Verificando acesso…</div>
-      </MainLayout>
-    );
-  }
-
-  if (!autorizado) return null; // navigate() já disparou, evita piscar o menu
-
+  // O acesso de administrador já foi conferido em GET /api/admin/status
+  // antes desta tela abrir (RotaAdmin em components/Rotas.jsx, que cobre
+  // todas as telas /admin/*).
   return (
     <MainLayout titulo="Administração">
       <div className="admin">

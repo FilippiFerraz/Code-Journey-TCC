@@ -43,7 +43,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 22px 14px;
+  /* topo maior: deixa os slots abaixo do botão "← Voltar" (absoluto, top 14px) */
+  padding: 64px 14px 22px;
   background: radial-gradient(
       circle at 50% 30%,
       rgba(138, 47, 184, 0.25),
@@ -318,6 +319,14 @@
   color: #f0d9ff;
   font-size: 12px;
   line-height: 1.45;
+}
+
+/* item de um tipo sem slot (ver TIPOS_EQUIPAVEIS em EditarPersonagem.jsx) */
+.editar-item-detalhe-aviso {
+  margin: 10px 0 0;
+  color: #ffd84d;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* botão "Equipar"/"Desequipar" pixelado (ver BotaoPixel) */

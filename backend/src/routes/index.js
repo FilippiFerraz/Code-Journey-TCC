@@ -25,4 +25,7 @@ router.use("/baus", bauRoutes);
 const itemRoutes = require("./item.routes.js");
 router.use("/itens", itemRoutes);
 
+const contaRoutes = require("./conta.routes.js");
+router.use("/conta", contaRoutes);
+
 module.exports = router;

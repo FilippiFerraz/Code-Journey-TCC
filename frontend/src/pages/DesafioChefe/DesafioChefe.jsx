@@ -6,9 +6,12 @@ import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
 import { pararSom, tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
+import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
+import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
+import Temporizador from "../../components/Temporizador";
 import reiGoblinInimigo from "../../assets/images/rei_goblin_inimigo.png";
-import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
+import fundoDesafio6P1 from "../../assets/images/Fundo_desafio_6_P1.png";
 import "./DesafioChefe.css";
 
 // TODO: nome real do jogador viria do contexto de personagem/perfil (mesmo
@@ -37,7 +40,7 @@ const CHEFES = {
     nome: "Rei GoblinJS",
     tag: "CHEFE",
     imagem: reiGoblinInimigo,
-    fundo: fundoBatalha2,
+    fundo: fundoDesafio6P1,
     introFalas: [
       "Você chega ao topo da torre, no fim do Portal 1...",
       "O Rei GoblinJS surge, cercado pelos ecos de tudo que você já enfrentou aqui.",
@@ -165,6 +168,17 @@ function DesafioChefe() {
     }
   }
 
+  // As falas da abertura passam sozinhas depois de alguns segundos — menos
+  // a última ("toque para enfrentar"): sair dela começa a batalha e liga o
+  // cronômetro, então isso fica sempre por conta do jogador.
+  const ultimaFalaIntro = falaIndice === chefe.introFalas.length - 1;
+  useAvancoAutomatico(fase === "intro" && !ultimaFalaIntro, falaIndice, avancarIntro);
+
+  // "Pular": vai direto pra batalha.
+  function pularIntro() {
+    setFase("batalha");
+  }
+
   function avancarPergunta() {
     setIndicePergunta((i) => i + 1);
   }
@@ -265,6 +279,8 @@ function DesafioChefe() {
     const ultimaFala = falaIndice === chefe.introFalas.length - 1;
     return (
       <div className="chefe-intro" onClick={avancarIntro}>
+        <BotaoPularFalas onPular={pularIntro} className="chefe-pular" />
+
         <div className="chefe-intro-cena">
           <div className="chefe-intro-anuncio">
             <p className="chefe-intro-aviso">O chefe da trilha apareceu! Você vai precisar derrotá-lo.</p>
@@ -297,6 +313,7 @@ function DesafioChefe() {
               {ultimaFala ? "toque para enfrentar ▶" : "toque para continuar ▶"}
             </span>
           </div>
+          {!ultimaFala && <BarraAvancoFala chave={falaIndice} />}
         </div>
       </div>
     );
@@ -354,9 +371,13 @@ function DesafioChefe() {
           />
         </div>
 
-        <div className="chefe-cronometro" aria-label={`Tempo de batalha: ${formatarTempo(segundosBatalha)}`}>
-          ⏱ {formatarTempo(segundosBatalha)}
-        </div>
+        <Temporizador
+          className="chefe-cronometro"
+          segundos={segundosBatalha}
+          regressivo={false}
+          tamanho="medio"
+          pausado={!cronometroAtivo}
+        />
 
         <div className="chefe-card chefe-card-jogador">
           <span className="chefe-jogador-nome">{NOME_PERSONAGEM_PADRAO}</span>

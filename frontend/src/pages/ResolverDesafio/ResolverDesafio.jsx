@@ -8,6 +8,7 @@ import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
+import Temporizador from "../../components/Temporizador";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
@@ -16,6 +17,8 @@ import mercadorInimigo from "../../assets/images/mercador_inimigo.png";
 import bruxaInimigo from "../../assets/images/bruxa_inimigo.png";
 import fundoBatalha from "../../assets/images/Fundo_batalha.png";
 import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
+import fundoDesafio3P1 from "../../assets/images/Fundo_desafio_3_P1.png";
+import fundoDesafio4P1 from "../../assets/images/Fundo_desafio_4_P1.png";
 import "./ResolverDesafio.css";
 
 const VIDA_MAXIMA = 3;
@@ -86,7 +89,7 @@ const DESAFIOS = {
       dica: "toda variável só pode ser usada depois de declarada — a soma dos dois números precisa vir antes do console.log() que exibe o resultado.",
       // Largura igual à do guerreiro (120px, ver cena-heroi mais abaixo).
       inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto Contador", largura: 120 },
-      fundo: fundoBatalha,
+      fundo: fundoDesafio3P1,
       blocos: [
         { id: "b1", codigo: "let numeroA = 4;" },
         { id: "b2", codigo: "let numeroB = 7;" },
@@ -105,7 +108,7 @@ const DESAFIOS = {
       // Largura um pouco maior que a do guerreiro (120px, ver cena-heroi
       // logo abaixo) — o Elfo Mercador é mais alto que os outros inimigos.
       inimigo: { imagem: mercadorInimigo, nome: "Elfo Mercador", largura: 136 },
-      fundo: fundoBatalha2,
+      fundo: fundoDesafio4P1,
       cartas: [
         {
           id: "c1",
@@ -1025,9 +1028,7 @@ function ResolverDesafio() {
       >
         {/* palco = tudo que sofre o zoom da "câmera" */}
         <div className={`cena-palco ${focoSlime ? "cena-palco--foco" : ""}`}>
-          {/* chão marrom antigo desligado — o fundo novo já traz o piso */}
-          <div className="cena-chao" style={{ background: "transparent" }} />
-
+          {/* sem chão desenhado em CSS: cada imagem de fundo já traz o piso */}
           <img
             // key muda a cada golpe pra forçar o navegador a reiniciar o
             // GIF do quadro zero, e volta pra uma key fixa quando parado
@@ -1065,9 +1066,13 @@ function ResolverDesafio() {
           ))}
         </div>
 
-        <div className="cena-cronometro" aria-label={`Tempo decorrido: ${formatarTempo(segundosDecorridos)}`}>
-          ⏱ {formatarTempo(segundosDecorridos)}
-        </div>
+        <Temporizador
+          className="cena-cronometro"
+          segundos={segundosDecorridos}
+          regressivo={false}
+          tamanho="medio"
+          pausado={!cronometroAtivo}
+        />
 
         {tomandoGolpe && <div className="cena-flash" />}
       </section>

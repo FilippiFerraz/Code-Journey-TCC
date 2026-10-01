@@ -22,7 +22,7 @@ const DIFICULDADE = "iniciante";
 
 // Itens reais de equipamento, concedidos como recompensa ao concluir um
 // desafio (ver Desafio.itemRecompensaId). O "tipo" precisa bater com um
-// slot de EditarPersonagem.jsx: capacete|peitoral|sapato|arma|costas|acessorios.
+// slot de EditarPersonagem.jsx: capacete|peitoral|arma|costas.
 const itens = [
   {
     nome: "Peitoral de Ferro",

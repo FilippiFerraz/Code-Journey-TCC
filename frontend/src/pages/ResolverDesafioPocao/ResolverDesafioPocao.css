@@ -32,19 +32,13 @@
   background: rgba(30, 38, 66, 0.9);
 }
 
+/* posição do <Temporizador> (o visual fica em components/Temporizador.css) */
 .pocao-cronometro {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 10;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(15, 10, 26, 0.55);
-  color: #ffffff;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
 }
 
 /* ---------- Cabeçalho: título, enunciado, progresso ---------- */

@@ -64,12 +64,20 @@ async function buscarItemDoPersonagem(personagemId, itemPersonagemId) {
   return itemPersonagem;
 }
 
+// Tipos de item (Item.tipo) que têm slot no personagem — mesmos slots de
+// EditarPersonagem.jsx. Itens de outros tipos podem existir no inventário,
+// mas não podem ser equipados.
+const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas"];
+
 // Equipa um item, desequipando antes qualquer outro item do mesmo slot
-// (Item.tipo) — hoje EditarPersonagem.jsx só tem uma posição por slot
-// (capacete, peitoral, sapato, arma, costas, acessorios).
+// (Item.tipo) — EditarPersonagem.jsx só tem uma posição por slot.
 async function equiparItem(usuarioId, itemPersonagemId) {
   const personagem = await buscarOuCriarPersonagem(usuarioId);
   const itemPersonagem = await buscarItemDoPersonagem(personagem.id, itemPersonagemId);
+
+  if (!TIPOS_EQUIPAVEIS.includes(itemPersonagem.item.tipo)) {
+    throw erroDeValidacao("Este item não pode ser equipado.");
+  }
 
   await prisma.$transaction([
     prisma.itemPersonagem.updateMany({

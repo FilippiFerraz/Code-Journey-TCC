@@ -7,6 +7,7 @@ import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
+import Temporizador from "../../components/Temporizador";
 import caldeirao from "../../assets/images/caldeirao.png";
 import "./ResolverDesafioPocao.css";
 
@@ -228,12 +229,12 @@ function ResolverDesafioPocao() {
       )}
 
       {!sucesso && (
-        <div
+        <Temporizador
           className="pocao-cronometro"
-          aria-label={`Tempo decorrido: ${formatarTempo(segundosDecorridos)}`}
-        >
-          ⏱ {formatarTempo(segundosDecorridos)}
-        </div>
+          segundos={segundosDecorridos}
+          regressivo={false}
+          tamanho="medio"
+        />
       )}
 
       {sucesso ? (

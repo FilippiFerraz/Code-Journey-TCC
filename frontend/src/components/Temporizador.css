@@ -1,0 +1,145 @@
+/* ============================================================
+   Temporizador.css — medalhão com ampulheta + faixa com o tempo (ver
+   Temporizador.jsx). O desenho é uma grade de 56 x 22 pixels; --pixel
+   define o tamanho de cada um, então a escala é sempre um múltiplo da
+   grade e o pixel art continua nítido.
+   ============================================================ */
+
+.temporizador {
+  --pixel: 2px;
+  --cor-numeros: #f4ecd8;
+
+  position: relative;
+  display: inline-block;
+  width: calc(var(--pixel) * 56);
+  height: calc(var(--pixel) * 22);
+  flex-shrink: 0;
+  line-height: 0;
+  user-select: none;
+}
+
+.temporizador--pequeno {
+  --pixel: 1.5px;
+}
+
+.temporizador--medio {
+  --pixel: 2px;
+}
+
+.temporizador--grande {
+  --pixel: 3px;
+}
+
+.temporizador-desenho {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  overflow: visible;
+}
+
+/* Números em cima da faixa: começam depois do ornamento da direita do
+   medalhão (pixel ~23) e terminam antes da ponta da seta (pixel ~49). */
+.temporizador-numeros {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--pixel) * 23);
+  width: calc(var(--pixel) * 26);
+  transform: translateY(-50%);
+  text-align: center;
+  font-family: "Silkscreen", "Courier New", monospace;
+  font-weight: 700;
+  font-size: calc(var(--pixel) * 6.4);
+  line-height: 1;
+  color: var(--cor-numeros);
+  /* sombra "dura" de pixel, sem desfoque */
+  text-shadow: var(--pixel) var(--pixel) 0 #0d0c18;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Estados ---------- */
+
+.temporizador--alerta {
+  --cor-numeros: #ff6b4a;
+}
+
+.temporizador--alerta .temporizador-numeros {
+  animation: temporizador-pulsar 1s steps(2, jump-none) infinite;
+}
+
+.temporizador--esgotado {
+  --cor-numeros: #c0281c;
+}
+
+.temporizador--esgotado .temporizador-medalhao {
+  filter: saturate(0.35) brightness(0.85);
+}
+
+/* ---------- Ampulheta: fio de areia piscando + grão caindo ---------- */
+
+.temporizador-fio {
+  animation: temporizador-piscar 0.8s steps(1, end) infinite;
+}
+
+.temporizador-grao {
+  animation: temporizador-cair 0.8s steps(3, end) infinite;
+}
+
+.temporizador--parado .temporizador-fio,
+.temporizador--parado .temporizador-grao {
+  animation-play-state: paused;
+}
+
+.temporizador--esgotado .temporizador-fio,
+.temporizador--esgotado .temporizador-grao {
+  animation: none;
+  opacity: 0;
+}
+
+/* Texto só pro leitor de tela (aviso de alerta / tempo esgotado). */
+.temporizador-aviso {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@keyframes temporizador-pulsar {
+  0% {
+    transform: translateY(-50%) scale(1);
+  }
+  100% {
+    transform: translateY(-50%) scale(1.12);
+  }
+}
+
+@keyframes temporizador-piscar {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes temporizador-cair {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temporizador-fio,
+  .temporizador-grao,
+  .temporizador--alerta .temporizador-numeros {
+    animation: none;
+  }
+}

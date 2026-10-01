@@ -133,6 +133,65 @@ function avaliarResposta(alternativas, { opcaoId, ordem, classificacoes, ingredi
   return avaliarOrdenacaoDeBlocos(alternativas, ordem);
 }
 
+// Trilha usada pra checar o progresso entre mundos — mesma regra de
+// mundoLiberado em frontend/src/data/progresso.js.
+const DIFICULDADE_PADRAO = "iniciante";
+
+function erroDeDesafioTrancado(mensagem) {
+  const erro = new Error(mensagem);
+  erro.status = 403;
+  return erro;
+}
+
+// Mesmas regras de desbloqueio do frontend (data/progresso.js), revalidadas
+// aqui porque a tela de um desafio pode ser aberta digitando a URL direto
+// (ex: /codigo/1/iniciante/5) — sem isso dava pra pular desafios e ganhar o
+// XP e o item deles. Desafio N só aceita resposta com o N-1 concluído; um
+// mundo > 1 só com todos os desafios da trilha padrão do mundo anterior
+// concluídos.
+async function verificarDesafioLiberado(usuarioId, desafio) {
+  if (desafio.numero > 1) {
+    const anterior = await prisma.desafio.findUnique({
+      where: {
+        mundoId_dificuldade_numero: {
+          mundoId: desafio.mundoId,
+          dificuldade: desafio.dificuldade,
+          numero: desafio.numero - 1,
+        },
+      },
+      select: { id: true },
+    });
+    const progressoAnterior = anterior
+      ? await prisma.progresso.findUnique({
+          where: { usuarioId_desafioId: { usuarioId, desafioId: anterior.id } },
+          select: { concluido: true },
+        })
+      : null;
+
+    if (!progressoAnterior?.concluido) {
+      throw erroDeDesafioTrancado("Conclua o desafio anterior antes de responder este.");
+    }
+  }
+
+  if (desafio.mundoId > 1) {
+    const desafiosMundoAnterior = await prisma.desafio.findMany({
+      where: { mundoId: desafio.mundoId - 1, dificuldade: DIFICULDADE_PADRAO },
+      select: { id: true },
+    });
+    const concluidos = await prisma.progresso.count({
+      where: {
+        usuarioId,
+        concluido: true,
+        desafioId: { in: desafiosMundoAnterior.map((d) => d.id) },
+      },
+    });
+
+    if (desafiosMundoAnterior.length === 0 || concluidos < desafiosMundoAnterior.length) {
+      throw erroDeDesafioTrancado("Conclua o mundo anterior antes de responder este desafio.");
+    }
+  }
+}
+
 // Confere a resposta contra o gabarito de Desafio.alternativas (nunca confia
 // num "correta: true" vindo do cliente) e grava o resultado em Progresso. O
 // XP só é somado em Usuario.xpTotal na primeira vez que o jogador acerta
@@ -189,6 +248,8 @@ async function responderDesafio({
     erro.status = 404;
     throw erro;
   }
+
+  await verificarDesafioLiberado(usuarioId, desafio);
 
   const idDesafio = desafio.id;
 

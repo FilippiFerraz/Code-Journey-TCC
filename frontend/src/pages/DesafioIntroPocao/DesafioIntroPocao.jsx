@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
+import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
+import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import bruxaInimigo from "../../assets/images/bruxa_inimigo.png";
 import "./DesafioIntroPocao.css";
 
@@ -54,6 +56,15 @@ function DesafioIntroPocao() {
     }
   }
 
+  // Mesmo comportamento do DesafioIntro: cada fala passa sozinha depois de
+  // alguns segundos e a última abre o card do enunciado.
+  useAvancoAutomatico(!mostrarEnunciado, indice, handleCliqueTela);
+
+  // "Pular": vai direto pro card do enunciado, sem passar pelas falas.
+  function pularFalas() {
+    setMostrarEnunciado(true);
+  }
+
   function handleIniciarDesafio(e) {
     e.stopPropagation();
     // Próxima etapa: tela de montar a poção (ver ResolverDesafioPocao)
@@ -74,6 +85,8 @@ function DesafioIntroPocao() {
       >
         ← Voltar
       </BotaoPixel>
+
+      {!mostrarEnunciado && <BotaoPularFalas onPular={pularFalas} />}
 
       {/* Cena — anúncio (aviso + nome) acima da bruxa em destaque,
           flutuando, mesmo padrão de DesafioIntro.jsx */}
@@ -111,6 +124,7 @@ function DesafioIntroPocao() {
             </div>
             <span className="pocaoIntro-continuar">toque para continuar ▶</span>
           </div>
+          <BarraAvancoFala chave={indice} />
         </div>
       )}
 

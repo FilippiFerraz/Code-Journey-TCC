@@ -86,14 +86,6 @@
   to { opacity: 1; }
 }
 
-.cena-chao {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 45%;
-  background: linear-gradient(180deg, #c98b52, #a06437);
-  border-top: 4px solid #7d4a25;
-}
-
 /* barra de vida (corações) — fora do zoom */
 .cena-vida {
   position: absolute;
@@ -116,19 +108,12 @@
 }
 
 /* cronômetro do desafio — fora do zoom, canto oposto aos corações */
+/* posição do <Temporizador> na cena (o visual fica em components/Temporizador.css) */
 .cena-cronometro {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 6px;
+  right: 10px;
   z-index: 5;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(15, 10, 26, 0.55);
-  color: #ffffff;
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
 }
 

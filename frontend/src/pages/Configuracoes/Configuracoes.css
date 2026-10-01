@@ -13,8 +13,6 @@
   --texto: #22283a;
   --texto-suave: #6b7280;
   --branco: #ffffff;
-  --fundo-danger: #d64545;
-  --fundo-danger-escuro: #b83535;
 
   display: flex;
   flex-direction: column;
@@ -100,21 +98,6 @@
   image-rendering: pixelated;
 }
 
-/* Variação para o botão de deletar */
-.configuracoes-botao--deletar {
-  background: var(--fundo-danger);
-  border-color: var(--fundo-danger-escuro);
-}
-
-.configuracoes-botao--deletar .configuracoes-botao-miolo {
-  background: linear-gradient(180deg, #e86464, var(--fundo-danger));
-  color: var(--branco);
-}
-
-.configuracoes-botao--deletar:active {
-  box-shadow: 0 2px 0 var(--fundo-danger-escuro);
-}
-
 /* Variação para o botão Sair */
 .configuracoes-botao--sair {
   background: var(--teal);
@@ -128,12 +111,6 @@
 
 .configuracoes-botao--sair:active {
   box-shadow: 0 2px 0 var(--teal-escuro);
-}
-
-/* Variação para o botão Notificações */
-.configuracoes-botao--notificacoes {
-  background: var(--roxo);
-  border-color: var(--roxo-forte);
 }
 
 /* Variação para o botão Conta */

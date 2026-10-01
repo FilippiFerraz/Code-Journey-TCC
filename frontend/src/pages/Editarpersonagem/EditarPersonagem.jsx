@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HardHat, Shield, Footprints, Sword, Shirt, Gem, Medal, Award, Flame } from "lucide-react";
+import { HardHat, Shield, Sword, Shirt, Medal, Award, Flame } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
 import { resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
@@ -12,17 +12,19 @@ import BotaoPixel from "../../components/BotaoPixel";
 // "icone" é o componente do lucide-react (não uma instância) — a biblioteca
 // pixelada do resto do app não tem ícones de fantasia (capacete, peitoral,
 // espada...), então esses slots usam lucide-react só nesses casos.
+// Só esses 4 tipos podem ser equipados — o backend recusa qualquer outro
+// (ver TIPOS_EQUIPAVEIS em backend/src/services/personagem.service.js).
 const SLOTS_ESQUERDA = [
   { id: "capacete", nome: "Capacete", icone: HardHat },
   { id: "peitoral", nome: "Peitoral", icone: Shield },
-  { id: "sapato", nome: "Sapato", icone: Footprints },
 ];
 
 const SLOTS_DIREITA = [
   { id: "arma", nome: "Arma", icone: Sword },
   { id: "costas", nome: "Costas", icone: Shirt },
-  { id: "acessorios", nome: "Acessórios", icone: Gem },
 ];
+
+const TIPOS_EQUIPAVEIS = [...SLOTS_ESQUERDA, ...SLOTS_DIREITA].map((slot) => slot.id);
 
 // Quantidade de espaços do inventário (visual) — cresce se o jogador tiver
 // mais itens do que isso, pra nunca esconder um item real.
@@ -272,6 +274,13 @@ function EditarPersonagem() {
                   {itemSelecionado.item.descricao ?? "Sem descrição."}
                 </p>
 
+                {/* Item de um tipo sem slot (ex: sapato) fica só no
+                    inventário — a não ser que já estivesse equipado, aí
+                    ainda dá pra desequipar. */}
+                {!itemSelecionado.equipado &&
+                !TIPOS_EQUIPAVEIS.includes(itemSelecionado.item.tipo) ? (
+                  <p className="editar-item-detalhe-aviso">Este item não pode ser equipado.</p>
+                ) : (
                 <BotaoPixel
                   className={`editar-item-detalhe-botao ${
                     itemSelecionado.equipado ? "editar-item-detalhe-botao--desequipar" : ""
@@ -288,6 +297,7 @@ function EditarPersonagem() {
                       ? "Desequipar"
                       : "Equipar"}
                 </BotaoPixel>
+                )}
               </div>
             </div>
           )}
