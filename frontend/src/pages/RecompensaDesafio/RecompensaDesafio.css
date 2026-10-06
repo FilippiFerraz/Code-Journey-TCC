@@ -414,6 +414,14 @@
   line-height: 1;
 }
 
+/* Desafio que não dá item: coroa dourada no lugar do item. */
+.recompensa-sem-item-icone {
+  font-size: 56px;
+  line-height: 1;
+  color: var(--rec-dourado);
+  text-shadow: 3px 3px 0 var(--rec-dourado-sombra);
+}
+
 /* ---------- Nome, tipo e descrição do item ---------- */
 
 .recompensa-info {
@@ -465,6 +473,55 @@
   font-weight: 800;
   color: var(--rec-destaque);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Tempo da vitória ---------- */
+
+/* Plaquinha escura com borda roxa, no mesmo padrão do diálogo do mago —
+   entra logo depois do nome/XP do item (ver animação de .recompensa-info). */
+.recompensa-tempo {
+  max-width: calc(100% - 28px);
+  margin-top: 4px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--rec-roxo-escuro);
+  border: 2px solid var(--rec-roxo-borda);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.recompensa-tempo-valor,
+.recompensa-tempo-frase {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+.recompensa-tempo-valor {
+  font-size: 0.78rem;
+  color: var(--rec-creme);
+}
+
+.recompensa-tempo-valor strong {
+  color: var(--rec-dourado);
+}
+
+.recompensa-tempo-frase {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rec-pergaminho);
+}
+
+.recompensa-tempo-valor i,
+.recompensa-tempo-frase i {
+  flex-shrink: 0;
+  color: var(--rec-dourado);
 }
 
 /* ---------- Divisor ---------- */

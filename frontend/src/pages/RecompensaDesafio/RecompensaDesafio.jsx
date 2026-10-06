@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
-import {
-  getFalaMagoPorDesafio,
-  getRecompensaPorDesafio,
-  NUMERO_DESAFIO_CHEFE,
-} from '../../data/recompensas';
+import { getFalaMagoPorDesafio, NUMERO_DESAFIO_CHEFE } from '../../data/falasMago';
 import BotaoPixel from '../../components/BotaoPixel';
 import IconeItem from '../../components/IconeItem';
 import { tocarSom } from '../../utils/sons';
+import { formatarDuracao } from '../../utils/tempo';
 import mago from '../../assets/images/Mago.png';
 import './RecompensaDesafio.css';
 
@@ -65,11 +62,20 @@ function IconeEspadas() {
   );
 }
 
-// Rótulo da etiqueta abaixo do nome do item. Item.tipo no backend é o slot
-// de equipamento ("capacete", "peitoral"...), e o mock usa "item"/"insignia".
-function rotuloTipoRecompensa(tipo) {
-  if (tipo === 'insignia') return 'Insígnia de Conquista';
-  return 'Item de Equipamento';
+// Frase de incentivo conforme o tempo que o jogador levou pra vencer. As
+// duas primeiras faixas acompanham o bônus de velocidade do backend (cheio
+// até 20s, some aos 90s — ver calcularBonusVelocidade em
+// progresso.service.js); as mais lentas valorizam a persistência, nunca
+// soam como bronca.
+const FAIXAS_DE_TEMPO = [
+  { ate: 20, icone: 'hn-bolt-solid', frase: 'Rápido como um raio! Você dominou esse desafio.' },
+  { ate: 60, icone: 'hn-fire-solid', frase: 'Golpe certeiro! Mandou muito bem, aventureiro.' },
+  { ate: 180, icone: 'hn-star-solid', frase: 'Belo trabalho! Com calma e atenção, você chegou lá.' },
+  { ate: Infinity, icone: 'hn-trophy-solid', frase: 'Persistência de herói! Cada minuto de estudo te deixa mais forte.' },
+];
+
+function faixaDoTempo(segundos) {
+  return FAIXAS_DE_TEMPO.find((faixa) => segundos <= faixa.ate);
 }
 
 export default function RecompensaDesafio() {
@@ -109,27 +115,22 @@ export default function RecompensaDesafio() {
   // A tela de batalha manda o retorno de POST /api/progresso via state da
   // navegação (a rota já valida a resposta, grava o Progresso, soma o XP e
   // concede o item ao inventário do personagem — ver progresso.service.js).
-  // Se não tiver chegado (chamada falhou, offline, ou a tela foi aberta
-  // direto pela URL / recarregada), cai pro mock de data/recompensas.js.
+  // A única recompensa personalizável do jogo é o item de equipamento, e ele
+  // vem SEMPRE da API: desafio sem item (ou tela aberta direto pela URL /
+  // recarregada) mostra só a vitória, sem item inventado.
   const resultadoApi = location.state?.resultado;
-  const itemGanho = resultadoApi?.itemGanho;
-  const recompensaMock = getRecompensaPorDesafio(idNumerico, idMundo);
-
-  const item = itemGanho
-    ? {
-        ...itemGanho,
-        icone: itemGanho.icone ?? recompensaMock.icone,
-        descricao: itemGanho.descricao ?? recompensaMock.descricao,
-        // A resposta da API ainda não traz imagemUrl — reaproveita a do mock
-        // quando é o mesmo item. TODO: incluir imagemUrl em formatarItem
-        // (progresso.service.js) e remover esse remendo.
-        imagemUrl:
-          itemGanho.imagemUrl ??
-          (itemGanho.nome === recompensaMock.nome ? recompensaMock.imagemUrl : undefined),
-      }
-    : recompensaMock;
+  const item = resultadoApi?.itemGanho ?? null;
 
   const xpGanho = resultadoApi?.xpConcedidoAgora > 0 ? resultadoApi.xpConcedidoAgora : null;
+
+  // Tempo DESTA vitória, medido pelo cronômetro da tela de batalha e mandado
+  // no state da navegação. (O tempoSegundos da API é o da primeira
+  // conclusão, que fica gravado — num desafio rejogado mostraria o tempo
+  // antigo.) Tela aberta direto pela URL/recarregada: sem tempo, sem bloco.
+  const tempoSegundos = Number.isFinite(location.state?.tempoSegundos)
+    ? location.state.tempoSegundos
+    : null;
+  const faixaTempo = tempoSegundos !== null ? faixaDoTempo(tempoSegundos) : null;
   const falaMago = getFalaMagoPorDesafio(idNumerico, idMundo);
 
   // replace: o jogador não deve conseguir voltar pra tela de vitória pelo
@@ -220,23 +221,49 @@ export default function RecompensaDesafio() {
 
         <div className="recompensa-moldura">
           <div className="recompensa-moldura-interna">
-            <IconeItem
-              item={item}
-              classeImagem="recompensa-item-imagem"
-              classeEmoji="recompensa-item-emoji"
-            />
+            {item ? (
+              <IconeItem
+                item={item}
+                classeImagem="recompensa-item-imagem"
+                classeEmoji="recompensa-item-emoji"
+              />
+            ) : (
+              // Desafio sem item: a moldura mostra a coroa da vitória.
+              <i className="hn hn-crown-solid recompensa-sem-item-icone" aria-hidden="true" />
+            )}
           </div>
           <div className="recompensa-moldura-flash" aria-hidden="true" />
         </div>
       </div>
 
       <div className="recompensa-info">
-        <div className="recompensa-placa-nome">
-          <strong>{item.nome}</strong>
-        </div>
-        <span className="recompensa-etiqueta-tipo">◆ {rotuloTipoRecompensa(item.tipo)} ◆</span>
-        <p className="recompensa-descricao">{item.descricao}</p>
+        {item ? (
+          <>
+            <div className="recompensa-placa-nome">
+              <strong>{item.nome}</strong>
+            </div>
+            <span className="recompensa-etiqueta-tipo">◆ Item de Equipamento ◆</span>
+            {item.descricao && <p className="recompensa-descricao">{item.descricao}</p>}
+          </>
+        ) : (
+          <div className="recompensa-placa-nome">
+            <strong>Desafio concluído</strong>
+          </div>
+        )}
         {xpGanho && <p className="recompensa-xp">+{xpGanho} XP</p>}
+
+        {faixaTempo && (
+          <div className="recompensa-tempo">
+            <p className="recompensa-tempo-valor">
+              <i className="hn hn-clock-solid" aria-hidden="true" />
+              Você venceu em <strong>{formatarDuracao(tempoSegundos)}</strong>
+            </p>
+            <p className="recompensa-tempo-frase">
+              <i className={`hn ${faixaTempo.icone}`} aria-hidden="true" />
+              {faixaTempo.frase}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="recompensa-divisor" aria-hidden="true">

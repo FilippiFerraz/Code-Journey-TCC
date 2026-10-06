@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HardHat, Shield, Sword, Shirt, Medal, Award, Flame } from "lucide-react";
+import { HardHat, Shield, Sword, Shirt } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
 import { resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
@@ -29,31 +29,6 @@ const TIPOS_EQUIPAVEIS = [...SLOTS_ESQUERDA, ...SLOTS_DIREITA].map((slot) => slo
 // Quantidade de espaços do inventário (visual) — cresce se o jogador tiver
 // mais itens do que isso, pra nunca esconder um item real.
 const SLOTS_INVENTARIO = 24;
-
-// Conquistas de exemplo, no espírito do protótipo.
-// TODO: substituir por GET no backend quando o sistema de conquistas existir.
-// Mesmo caso dos slots acima: sem medalha/dragão na biblioteca pixelada, usa
-// lucide-react (Flame como substituto evocativo pro troféu do dragão).
-const CONQUISTAS = [
-  {
-    id: 1,
-    icone: Medal,
-    texto:
-      "50 perguntas respondidas com sucesso. Esta conquista mostra o quanto você evoluiu e domina os desafios do jogo.",
-  },
-  {
-    id: 2,
-    icone: Award,
-    texto:
-      "Você conquistou a Trilha da Sabedoria ao responder 100 perguntas com sucesso. Sua jornada está só começando!",
-  },
-  {
-    id: 3,
-    icone: Flame,
-    texto:
-      "A Cabeça do Dragão é sua recompensa por vencer 200 perguntas com precisão.",
-  },
-];
 
 function Slot({ slot, itemPersonagem, ocupado, onClicar }) {
   const item = itemPersonagem?.item;
@@ -302,19 +277,6 @@ function EditarPersonagem() {
             </div>
           )}
         </div>
-      </section>
-
-      {/* Conquistas */}
-      <h2 className="editar-titulo">Suas conquistas</h2>
-      <section className="editar-conquistas">
-        {CONQUISTAS.map((c) => (
-          <div className="editar-conquista" key={c.id}>
-            <div className="editar-conquista-icone">
-              <c.icone size={26} />
-            </div>
-            <p className="editar-conquista-texto">{c.texto}</p>
-          </div>
-        ))}
       </section>
     </div>
   );

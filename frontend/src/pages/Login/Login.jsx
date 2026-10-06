@@ -4,6 +4,7 @@ import logo from "../../assets/images/logo.png";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import CampoSenha from "../../components/CampoSenha";
+import { EMAIL_MAXIMO, SENHA_MAXIMO, validarEmail } from "../../utils/validacoes";
 import "./Login.css";
 
 function Login() {
@@ -26,11 +27,18 @@ function Login() {
       setErro("Preencha e-mail e senha.");
       return;
     }
+    // Só o formato do e-mail — a força da senha não é checada no login
+    // (contas antigas foram criadas com regras diferentes).
+    const erroEmail = validarEmail(email);
+    if (erroEmail) {
+      setErro(erroEmail);
+      return;
+    }
 
     try {
       setCarregando(true);
 
-      const resposta = await api.post("/auth/login", { email, senha });
+      const resposta = await api.post("/auth/login", { email: email.trim().toLowerCase(), senha });
 
       localStorage.setItem("token", resposta.data.token);
       navigate("/home");
@@ -73,6 +81,8 @@ function Login() {
             type="email"
             className="login-input"
             placeholder="seuemail@gmail.com"
+            maxLength={EMAIL_MAXIMO}
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -84,6 +94,8 @@ function Login() {
             id="senha"
             className="login-input"
             placeholder="••••••••••••"
+            maxLength={SENHA_MAXIMO}
+            autoComplete="current-password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />

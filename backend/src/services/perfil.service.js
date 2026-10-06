@@ -69,7 +69,6 @@ async function buscarPerfil(usuarioId) {
     tutorialVisto: usuario.tutorialVisto,
     role: usuario.role,
 
-    conquistas: 0, // TODO: sistema de conquistas ainda não existe no schema
     acertos,
     diasOfensiva: 0, // TODO: streak de dias — precisa agrupar Progresso.dataConclusao por dia
     ranking: { posicao: await posicaoDoUsuario(usuario.xpTotal) },
@@ -154,7 +153,6 @@ async function buscarPerfilPublico(usuarioId) {
     nomeUsuario,
     membroDesde: usuario.criadoEm,
 
-    conquistas: 0,
     acertos,
     diasOfensiva: 0,
     ranking: {

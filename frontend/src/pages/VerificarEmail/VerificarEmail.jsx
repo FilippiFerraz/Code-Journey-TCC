@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import logo from "../../assets/images/logo.png";
 import BotaoPixel from "../../components/BotaoPixel";
+import { EMAIL_MAXIMO, validarCodigo, validarEmail } from "../../utils/validacoes";
 import "../Login/Login.css";
 import "./VerificarEmail.css";
 
@@ -37,11 +38,16 @@ function VerificarEmail() {
       setErro("Informe o código que você recebeu por e-mail.");
       return;
     }
+    const erroCampo = validarEmail(email) || validarCodigo(codigo);
+    if (erroCampo) {
+      setErro(erroCampo);
+      return;
+    }
 
     try {
       setCarregando(true);
       const resposta = await api.post("/auth/verificar-email", {
-        email,
+        email: email.trim().toLowerCase(),
         codigo: codigo.trim(),
       });
 
@@ -62,10 +68,15 @@ function VerificarEmail() {
       setErro("Informe o e-mail que você cadastrou.");
       return;
     }
+    const erroEmail = validarEmail(email);
+    if (erroEmail) {
+      setErro(erroEmail);
+      return;
+    }
 
     try {
       setReenviando(true);
-      await api.post("/auth/reenviar-verificacao", { email });
+      await api.post("/auth/reenviar-verificacao", { email: email.trim().toLowerCase() });
       setAviso("Se essa conta ainda não foi confirmada, reenviamos o código.");
     } catch (err) {
       setErro(mensagemErro(err, "Não foi possível reenviar o código agora."));
@@ -94,6 +105,8 @@ function VerificarEmail() {
                 type="email"
                 className="login-input"
                 placeholder="seuemail@gmail.com"
+                maxLength={EMAIL_MAXIMO}
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />

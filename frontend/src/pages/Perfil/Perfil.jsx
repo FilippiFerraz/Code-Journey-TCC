@@ -104,15 +104,8 @@ function Perfil() {
         </p>
       </section>
 
-      {/* Estatísticas — 0 até existirem Progresso/Conquistas */}
+      {/* Estatísticas */}
       <section className="perfil-stats">
-        <div className="perfil-stat">
-          <span className="perfil-stat-icone">
-            <i className="hn hn-trophy" aria-hidden="true"></i>
-          </span>
-          <span className="perfil-stat-numero">{perfil.conquistas}</span>
-          <span className="perfil-stat-rotulo">Conquistas</span>
-        </div>
         <div className="perfil-stat">
           <span className="perfil-stat-icone">
             <i className="hn hn-check-circle" aria-hidden="true"></i>

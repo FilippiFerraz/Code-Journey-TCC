@@ -17,55 +17,31 @@ function gerarCodigo() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
-// Mínimo 6 caracteres, pelo menos 1 letra maiúscula e pelo menos 1 caractere
-// especial (não letra/dígito/espaço).
-const SENHA_REGEX = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9\s]).{6,}$/;
+// Formato, tamanho e força de nome/e-mail/senha/idade/código são validados
+// antes de chegar aqui, pelo middleware validar com os esquemas de
+// validacoes/esquemas.js (o e-mail já chega aparado e em minúsculas).
 
-function validarSenha(senha) {
-  if (!SENHA_REGEX.test(senha || "")) {
-    throw erroDeValidacao(
-      "A senha precisa ter no mínimo 6 caracteres, com pelo menos uma letra maiúscula e um caractere especial."
-    );
-  }
-}
-
-// Formato básico — só pra rejeitar besteira antes de tentar enviar o
-// e-mail de verificação. Quem realmente confirma que a caixa existe é o
-// código enviado logo abaixo, não este regex.
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function validarFormatoEmail(email) {
-  if (!EMAIL_REGEX.test(String(email || "").trim())) {
-    throw erroDeValidacao("Informe um e-mail válido.");
-  }
-}
-
-// Obrigatória no cadastro (mesmo a coluna sendo opcional no banco, pra não
-// quebrar contas criadas antes desse campo existir).
-function validarIdade(idade) {
-  const numero = Number(idade);
-  if (idade === undefined || idade === null || idade === "" || !Number.isInteger(numero)) {
-    throw erroDeValidacao("Informe sua idade.");
-  }
-  if (numero < 13 || numero > 120) {
-    throw erroDeValidacao("Informe uma idade válida.");
-  }
-  return numero;
+// Busca a conta pelo e-mail sem diferenciar maiúsculas/minúsculas — contas
+// criadas antes da normalização podem ter o e-mail gravado com maiúsculas,
+// e continuam entrando normalmente. Sem semFiltro, ignora contas excluídas
+// (soft delete, ver config/prisma.js).
+function buscarPorEmail(email, cliente = prisma) {
+  return cliente.usuario.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  });
 }
 
 async function cadastrar({ nome, email, senha, idade }) {
-  validarFormatoEmail(email);
-  const idadeValidada = validarIdade(idade);
-
-  const usuarioExistente = await prisma.usuario.findUnique({ where: { email } });
+  // semFiltro: o e-mail de uma conta excluída (soft delete) continua
+  // ocupado no banco (Usuario.email é único) — sem isso, o create abaixo
+  // estourava erro 500 em vez desta mensagem.
+  const usuarioExistente = await buscarPorEmail(email, prisma.semFiltro);
 
   if (usuarioExistente) {
     const erro = new Error("Este email já está cadastrado.");
     erro.status = 409;
     throw erro;
   }
-
-  validarSenha(senha);
 
   const senhaCriptografada = await bcrypt.hash(senha, SALT_ROUNDS);
   const codigo = gerarCodigo();
@@ -76,7 +52,7 @@ async function cadastrar({ nome, email, senha, idade }) {
       nome,
       email,
       senha: senhaCriptografada,
-      idade: idadeValidada,
+      idade,
       codigoVerificacao: codigo,
       codigoVerificacaoExpiraEm: expiraEm,
     },
@@ -116,13 +92,13 @@ async function login({ email, senha, ip, userAgent }) {
   // delete em config/prisma.js), então um usuário excluído cai aqui como
   // "não encontrado" — por isso a checagem extra abaixo, só pra dar uma
   // mensagem melhor nesse caso específico.
-  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  const usuario = await buscarPorEmail(email);
 
   if (!usuario) {
     // Busca sem o filtro de soft delete só pra saber se é uma conta
     // desativada (pra vincular usuarioId/nomeUsuario no histórico mesmo
     // nesse caso) — não muda a mensagem de erro nem o comportamento do login.
-    const usuarioExcluido = await prisma.semFiltro.usuario.findUnique({ where: { email } });
+    const usuarioExcluido = await buscarPorEmail(email, prisma.semFiltro);
 
     if (usuarioExcluido?.deletedAt) {
       await registrarTentativa({
@@ -205,16 +181,13 @@ async function login({ email, senha, ip, userAgent }) {
 // --- Confirmação de e-mail no cadastro ---
 
 async function verificarEmailCadastro({ email, codigo }) {
-  const emailNormalizado = String(email || "").trim();
-  const codigoInformado = String(codigo || "").trim();
-
-  const usuario = await prisma.usuario.findUnique({ where: { email: emailNormalizado } });
+  const usuario = await buscarPorEmail(email);
 
   if (!usuario || !usuario.codigoVerificacao || !usuario.codigoVerificacaoExpiraEm) {
     throw erroDeValidacao("Código inválido. Peça um novo código.");
   }
 
-  if (usuario.codigoVerificacao !== codigoInformado) {
+  if (usuario.codigoVerificacao !== codigo) {
     throw erroDeValidacao("Código incorreto.");
   }
 
@@ -252,7 +225,7 @@ async function reenviarVerificacaoEmail({ email }) {
     mensagem: "Se este e-mail tiver uma conta pendente de confirmação, reenviamos o código.",
   };
 
-  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  const usuario = await buscarPorEmail(email);
   if (!usuario || usuario.emailVerificado) return resposta;
 
   const codigo = gerarCodigo();
@@ -272,7 +245,7 @@ async function reenviarVerificacaoEmail({ email }) {
 
 // Gera um código de 6 dígitos, salva no banco com validade e envia por email
 async function esqueciSenha({ email }) {
-  const usuario = await prisma.usuario.findUnique({ where: { email } });
+  const usuario = await buscarPorEmail(email);
 
   // Resposta sempre igual, exista ou não o email — não revela quem tem conta
   const resposta = {
@@ -296,18 +269,13 @@ async function esqueciSenha({ email }) {
 
 // Busca o usuário e confere se o código bate e ainda está válido
 async function validarCodigoRecuperacao(email, codigo) {
-  const emailNormalizado = String(email || "").trim();
-  const codigoInformado = String(codigo || "").trim();
-
-  const usuario = await prisma.usuario.findUnique({
-    where: { email: emailNormalizado },
-  });
+  const usuario = await buscarPorEmail(email);
 
   if (!usuario || !usuario.codigoRecuperacao || !usuario.codigoExpiraEm) {
     throw erroDeValidacao("Código inválido. Solicite um novo código.");
   }
 
-  if (usuario.codigoRecuperacao !== codigoInformado) {
+  if (usuario.codigoRecuperacao !== codigo) {
     throw erroDeValidacao("Código incorreto.");
   }
 
@@ -324,8 +292,6 @@ async function verificarCodigo({ email, codigo }) {
 }
 
 async function redefinirSenha({ email, codigo, novaSenha }) {
-  validarSenha(novaSenha);
-
   const usuario = await validarCodigoRecuperacao(email, codigo);
   const senhaHash = await bcrypt.hash(novaSenha, SALT_ROUNDS);
 

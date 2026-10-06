@@ -354,58 +354,6 @@
   background: linear-gradient(180deg, #e05c5c, #b93a3a);
 }
 
-/* ---------- Conquistas ---------- */
-.editar-conquistas {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 20px;
-}
-
-.editar-conquista {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, var(--azul), var(--azul-escuro));
-  color: #ffffff;
-  box-shadow: 0 6px 14px rgba(31, 102, 168, 0.35);
-}
-
-.editar-conquista-icone {
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-/* cor própria por conquista — sem isso, os 3 ícones (todos brancos, por
-   herdar a cor do texto do card) ficariam indistinguíveis entre si */
-.editar-conquista:nth-child(1) .editar-conquista-icone svg {
-  color: #d9d9e0;
-}
-
-.editar-conquista:nth-child(2) .editar-conquista-icone svg {
-  color: #ffd84d;
-}
-
-.editar-conquista:nth-child(3) .editar-conquista-icone svg {
-  color: #ff8a5c;
-}
-
-.editar-conquista-texto {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  font-weight: 600;
-}
-
 /* respeita quem prefere menos animação (nada anima aqui, mas fica pronto) */
 @media (prefers-reduced-motion: reduce) {
   .editar * {

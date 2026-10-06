@@ -2,8 +2,6 @@ const prisma = require("../config/prisma");
 const { registrarLog } = require("./log.service");
 const { calcularDiferencas } = require("../utils/diff");
 
-const TIPOS_RECOMPENSA_VALIDOS = ["insignia", "item"];
-
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
   erro.status = 400;
@@ -26,8 +24,7 @@ async function listarDesafios() {
       dificuldade: true,
       numero: true,
       titulo: true,
-      tipoRecompensa: true,
-      nomeRecompensa: true,
+      itemRecompensa: { select: { nome: true, icone: true } },
     },
     orderBy: [{ mundoId: "asc" }, { dificuldade: "asc" }, { numero: "asc" }],
   });
@@ -42,9 +39,7 @@ async function buscarDesafioPorId(desafioId) {
   return desafio;
 }
 
-// Catálogo de itens pro seletor de recompensa em EditarDesafioAdmin.jsx —
-// mesmos campos que ele precisa pra preencher nome/ícone/descrição
-// automaticamente quando o admin escolhe um item.
+// Catálogo de itens pro seletor de recompensa em EditarDesafioAdmin.jsx.
 async function listarItensCatalogo() {
   return prisma.item.findMany({
     select: { id: true, nome: true, icone: true, descricao: true, tipo: true, raridade: true },
@@ -107,10 +102,6 @@ async function atualizarDesafio(desafioId, dados, admin) {
     dica,
     alternativas,
     xpConcedido,
-    tipoRecompensa,
-    nomeRecompensa,
-    descricaoRecompensa,
-    iconeRecompensa,
     itemRecompensaId,
   } = dados;
 
@@ -143,39 +134,22 @@ async function atualizarDesafio(desafioId, dados, admin) {
     atualizacoes.xpConcedido = xpNumero;
   }
 
-  // Recompensa: valida o conjunto final (tipo + item), não só o que veio
-  // nesta requisição, pra nunca deixar "tipo item" sem item selecionado
-  // mesmo que o admin só tenha mandado um dos dois campos.
-  if (tipoRecompensa !== undefined || itemRecompensaId !== undefined) {
-    const tipoFinal = tipoRecompensa !== undefined ? tipoRecompensa || null : desafio.tipoRecompensa;
-    const itemFinal = itemRecompensaId !== undefined ? itemRecompensaId : desafio.itemRecompensaId;
-
-    if (tipoFinal !== null && !TIPOS_RECOMPENSA_VALIDOS.includes(tipoFinal)) {
-      throw erroDeValidacao('Tipo de recompensa inválido — use "insignia" ou "item".');
-    }
-    if (tipoFinal === "item" && !itemFinal) {
-      throw erroDeValidacao("Selecione um item pra recompensa do tipo item.");
-    }
-
-    if (tipoRecompensa !== undefined) atualizacoes.tipoRecompensa = tipoRecompensa || null;
-
-    if (itemRecompensaId !== undefined) {
-      if (!itemRecompensaId) {
-        atualizacoes.itemRecompensaId = null;
-      } else {
-        const itemIdNumero = Number(itemRecompensaId);
-        const item = await prisma.item.findUnique({ where: { id: itemIdNumero } });
-        if (!item) throw erroNaoEncontrado("Item de recompensa não encontrado.");
-        atualizacoes.itemRecompensaId = itemIdNumero;
+  // Recompensa: a única recompensa personalizável de um desafio é um Item
+  // de equipamento, que entra no inventário na primeira conclusão. null =
+  // o desafio dá só XP.
+  if (itemRecompensaId !== undefined) {
+    if (!itemRecompensaId) {
+      atualizacoes.itemRecompensaId = null;
+    } else {
+      const itemIdNumero = Number(itemRecompensaId);
+      if (!Number.isInteger(itemIdNumero) || itemIdNumero < 1) {
+        throw erroDeValidacao("Item de recompensa inválido.");
       }
+      const item = await prisma.item.findUnique({ where: { id: itemIdNumero } });
+      if (!item) throw erroNaoEncontrado("Item de recompensa não encontrado.");
+      atualizacoes.itemRecompensaId = itemIdNumero;
     }
   }
-
-  if (nomeRecompensa !== undefined) atualizacoes.nomeRecompensa = nomeRecompensa?.trim() || null;
-  if (descricaoRecompensa !== undefined) {
-    atualizacoes.descricaoRecompensa = descricaoRecompensa?.trim() || null;
-  }
-  if (iconeRecompensa !== undefined) atualizacoes.iconeRecompensa = iconeRecompensa?.trim() || null;
 
   const atualizado = await prisma.desafio.update({ where: { id: desafioId }, data: atualizacoes });
 

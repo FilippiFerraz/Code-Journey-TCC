@@ -373,6 +373,7 @@ function formatarItem(item, quantidade) {
     raridade: item.raridade,
     descricao: item.descricao,
     icone: item.icone,
+    imagemUrl: item.imagemUrl,
     ...(quantidade !== undefined ? { quantidade } : {}),
   };
 }

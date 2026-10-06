@@ -1,6 +1,8 @@
 const { Router } = require("express");
 const { getBaus, postAbrirBau } = require("../controllers/bau.controller.js");
 const autenticar = require("../middlewares/auth.middleware.js");
+const validar = require("../middlewares/validacao.middleware.js");
+const { bau: esquemas } = require("../validacoes/esquemas.js");
 
 const router = Router();
 
@@ -13,6 +15,6 @@ router.get("/", autenticar, getBaus);
 // POST /api/baus/:mundoId/abrir — abre o baú de uma trilha concluída: sorteia
 // o item na roleta, credita no inventário e marca o baú como aberto (só
 // funciona uma vez por trilha). Body opcional: { dificuldade } (padrão "iniciante").
-router.post("/:mundoId/abrir", autenticar, postAbrirBau);
+router.post("/:mundoId/abrir", autenticar, validar(esquemas.abrir), postAbrirBau);
 
 module.exports = router;

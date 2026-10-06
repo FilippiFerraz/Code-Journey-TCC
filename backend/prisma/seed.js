@@ -1,7 +1,7 @@
 // prisma/seed.js
 //
 // Popula o banco com o conteúdo que hoje está hardcoded no frontend
-// (ResolverDesafio.jsx e data/recompensas.js), pra não depender de inserir
+// (ResolverDesafio.jsx), pra não depender de inserir
 // tudo manualmente pelo SQL Editor do Neon. Roda com `npx prisma db seed`
 // (ou automaticamente depois de `prisma migrate dev`, via a config
 // "prisma.seed" no package.json).
@@ -84,10 +84,6 @@ async function main() {
       ],
       // recompensa é um item real — entra no inventário (ItemPersonagem)
       // na primeira vez que o jogador conclui este desafio
-      tipoRecompensa: "item",
-      nomeRecompensa: peitoralDeFerro.nome,
-      descricaoRecompensa: peitoralDeFerro.descricao,
-      iconeRecompensa: peitoralDeFerro.icone,
       itemRecompensaId: peitoralDeFerro.id,
     },
     {
@@ -106,10 +102,6 @@ async function main() {
       ],
       // recompensa é um item real — entra no inventário (ItemPersonagem)
       // na primeira vez que o jogador conclui este desafio
-      tipoRecompensa: "item",
-      nomeRecompensa: chapeuGoblin.nome,
-      descricaoRecompensa: chapeuGoblin.descricao,
-      iconeRecompensa: chapeuGoblin.icone,
       itemRecompensaId: chapeuGoblin.id,
     },
     {
@@ -130,13 +122,6 @@ async function main() {
         ],
         ordemCorreta: ["b1", "b2", "b3", "b4"],
       },
-      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
-      // depende de nenhuma arte nova de item
-      tipoRecompensa: "insignia",
-      nomeRecompensa: "Contador de Variáveis",
-      descricaoRecompensa:
-        "Uma insígnia concedida a quem provou que sabe declarar variáveis, somar valores e exibir o resultado — a base de qualquer programa.",
-      iconeRecompensa: "🧮",
     },
     {
       // Exercício "avaliar_codigo": o jogador arrasta cada cartão pra
@@ -179,13 +164,6 @@ async function main() {
           },
         ],
       },
-      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
-      // depende de nenhuma arte nova de item
-      tipoRecompensa: "insignia",
-      nomeRecompensa: "Olho Crítico",
-      descricaoRecompensa:
-        "Uma insígnia concedida a quem provou que sabe reconhecer código certo de código quebrado — o instinto de quem revisa antes de rodar.",
-      iconeRecompensa: "🧐",
     },
     {
       // Exercício "montar_pocao": o jogador arrasta ingredientes de código
@@ -215,13 +193,6 @@ async function main() {
           { id: "d3", codigo: "console.log(receita);" },
         ],
       },
-      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
-      // depende de nenhuma arte nova de item
-      tipoRecompensa: "insignia",
-      nomeRecompensa: "Aprendiz de Poções",
-      descricaoRecompensa:
-        "Uma insígnia concedida a quem ajudou a Bruxa Sintática a montar a receita certa, ingrediente por ingrediente, na ordem exata.",
-      iconeRecompensa: "🧪",
     },
     {
       // Chefe da trilha (último desafio do portal — ver ID_DESAFIO_CHEFE em
@@ -287,13 +258,6 @@ async function main() {
           },
         ],
       },
-      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
-      // depende de nenhuma arte nova de item
-      tipoRecompensa: "insignia",
-      nomeRecompensa: "Coroa Derrubada",
-      descricaoRecompensa:
-        "Uma insígnia concedida a quem derrotou o Rei GoblinJS e provou domínio sobre tudo que o Portal 1 ensinou.",
-      iconeRecompensa: "👑",
     },
     {
       // Primeiro desafio do mundo 2 (portal "Acampamento Goblin" — ver
@@ -320,13 +284,6 @@ async function main() {
         ],
         ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
       },
-      // recompensa é uma insígnia (não ocupa espaço no inventário) — não
-      // depende de nenhuma arte nova de item
-      tipoRecompensa: "insignia",
-      nomeRecompensa: "Guardião das Condicionais",
-      descricaoRecompensa:
-        "Uma insígnia concedida a quem provou domínio sobre if/else — a lógica que decide os rumos de qualquer programa.",
-      iconeRecompensa: "🏅",
     },
     // Segundo desafio do mundo 2: resposta dissertativa corrigida por IA.
     // Conteúdo em prisma/desafios/desafioIA.js (também usado por

@@ -194,7 +194,7 @@ function ResolverDesafioPocao() {
 
   function irParaRecompensa() {
     navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
-      state: { resultado: recompensaApi },
+      state: { resultado: recompensaApi, tempoSegundos: segundosDecorridos },
     });
   }
 

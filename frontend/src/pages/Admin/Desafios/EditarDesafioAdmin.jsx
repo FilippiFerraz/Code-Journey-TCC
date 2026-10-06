@@ -30,11 +30,9 @@ function EditarDesafioAdmin() {
   const [blocosJson, setBlocosJson] = useState("");
 
   const [itensCatalogo, setItensCatalogo] = useState([]);
-  const [tipoRecompensa, setTipoRecompensa] = useState(""); // "" | "insignia" | "item"
+  // A única recompensa personalizável de um desafio é um item de
+  // equipamento. "" = o desafio dá só XP.
   const [itemRecompensaId, setItemRecompensaId] = useState("");
-  const [nomeRecompensa, setNomeRecompensa] = useState("");
-  const [descricaoRecompensa, setDescricaoRecompensa] = useState("");
-  const [iconeRecompensa, setIconeRecompensa] = useState("");
 
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -62,11 +60,7 @@ function EditarDesafioAdmin() {
           setBlocosJson(JSON.stringify(d.alternativas, null, 2));
         }
 
-        setTipoRecompensa(d.tipoRecompensa || "");
         setItemRecompensaId(d.itemRecompensaId ? String(d.itemRecompensaId) : "");
-        setNomeRecompensa(d.nomeRecompensa || "");
-        setDescricaoRecompensa(d.descricaoRecompensa || "");
-        setIconeRecompensa(d.iconeRecompensa || "");
 
         setItensCatalogo(resItens.data);
       })
@@ -97,16 +91,6 @@ function EditarDesafioAdmin() {
   // Ao escolher um item pra recompensa, pré-preenche nome/ícone/descrição a
   // partir do catálogo — o admin ainda pode ajustar o texto manualmente
   // depois, já que esses campos ficam salvos no próprio Desafio.
-  function selecionarItemRecompensa(id) {
-    setItemRecompensaId(id);
-    const item = itensCatalogo.find((it) => String(it.id) === id);
-    if (item) {
-      setNomeRecompensa(item.nome);
-      setIconeRecompensa(item.icone || "");
-      setDescricaoRecompensa(item.descricao || "");
-    }
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setErro("");
@@ -147,11 +131,6 @@ function EditarDesafioAdmin() {
       return;
     }
 
-    if (tipoRecompensa === "item" && !itemRecompensaId) {
-      setErro("Selecione um item pra recompensa.");
-      return;
-    }
-
     try {
       setSalvando(true);
 
@@ -161,11 +140,7 @@ function EditarDesafioAdmin() {
         dica: dica || null,
         alternativas: alternativasFinal,
         xpConcedido: xpNumero,
-        tipoRecompensa: tipoRecompensa || null,
-        itemRecompensaId: tipoRecompensa === "item" ? Number(itemRecompensaId) : null,
-        nomeRecompensa: tipoRecompensa ? nomeRecompensa || null : null,
-        descricaoRecompensa: tipoRecompensa ? descricaoRecompensa || null : null,
-        iconeRecompensa: tipoRecompensa ? iconeRecompensa || null : null,
+        itemRecompensaId: itemRecompensaId ? Number(itemRecompensaId) : null,
       });
 
       setSucesso("Alterações salvas com sucesso!");
@@ -323,78 +298,23 @@ function EditarDesafioAdmin() {
           <section className="admin-desafios-card">
             <header className="admin-desafios-card-topo">Recompensa</header>
             <div className="admin-desafios-card-corpo">
-              <label className="admin-desafios-label" htmlFor="tipoRecompensa">
-                Tipo de recompensa
+              <label className="admin-desafios-label" htmlFor="item">
+                Item de recompensa
               </label>
               <select
-                id="tipoRecompensa"
+                id="item"
                 className="admin-desafios-input"
-                value={tipoRecompensa}
-                onChange={(e) => setTipoRecompensa(e.target.value)}
+                value={itemRecompensaId}
+                onChange={(e) => setItemRecompensaId(e.target.value)}
               >
-                <option value="">Sem recompensa</option>
-                <option value="insignia">Insígnia</option>
-                <option value="item">Item de inventário</option>
+                <option value="">Nenhum — o desafio dá só XP</option>
+                {itensCatalogo.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.icone ? `${item.icone} ` : ""}
+                    {item.nome} ({item.tipo})
+                  </option>
+                ))}
               </select>
-
-              {tipoRecompensa === "item" && (
-                <>
-                  <label className="admin-desafios-label" htmlFor="item">
-                    Item
-                  </label>
-                  <select
-                    id="item"
-                    className="admin-desafios-input"
-                    value={itemRecompensaId}
-                    onChange={(e) => selecionarItemRecompensa(e.target.value)}
-                  >
-                    <option value="">Selecione um item…</option>
-                    {itensCatalogo.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.icone ? `${item.icone} ` : ""}
-                        {item.nome} ({item.tipo})
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
-
-              {tipoRecompensa && (
-                <>
-                  <label className="admin-desafios-label" htmlFor="nomeRecompensa">
-                    Nome exibido
-                  </label>
-                  <input
-                    id="nomeRecompensa"
-                    type="text"
-                    className="admin-desafios-input"
-                    value={nomeRecompensa}
-                    onChange={(e) => setNomeRecompensa(e.target.value)}
-                  />
-
-                  <label className="admin-desafios-label" htmlFor="descricaoRecompensa">
-                    Descrição
-                  </label>
-                  <textarea
-                    id="descricaoRecompensa"
-                    className="admin-desafios-textarea"
-                    rows={3}
-                    value={descricaoRecompensa}
-                    onChange={(e) => setDescricaoRecompensa(e.target.value)}
-                  />
-
-                  <label className="admin-desafios-label" htmlFor="iconeRecompensa">
-                    Ícone (emoji)
-                  </label>
-                  <input
-                    id="iconeRecompensa"
-                    type="text"
-                    className="admin-desafios-input admin-desafios-input--curto"
-                    value={iconeRecompensa}
-                    onChange={(e) => setIconeRecompensa(e.target.value)}
-                  />
-                </>
-              )}
             </div>
           </section>
 

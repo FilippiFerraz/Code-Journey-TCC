@@ -204,7 +204,7 @@ function DesafioChefe() {
 
   function irParaRecompensa() {
     navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
-      state: { resultado: recompensaApi },
+      state: { resultado: recompensaApi, tempoSegundos: segundosBatalha },
     });
   }
 

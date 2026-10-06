@@ -4,12 +4,17 @@ import logo from "../../assets/images/logo.png";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import CampoSenha from "../../components/CampoSenha";
+import {
+  DICA_SENHA,
+  EMAIL_MAXIMO,
+  NOME_MAXIMO,
+  SENHA_MAXIMO,
+  validarEmail,
+  validarIdade,
+  validarNome,
+  validarSenhaNova,
+} from "../../utils/validacoes";
 import "./Cadastro.css";
-
-// Mesma regra aplicada no backend (auth.service.js) — validar aqui também
-// só evita uma viagem ao servidor pra avisar algo que dá pra saber na hora.
-const SENHA_REGEX = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9\s]).{6,}$/;
-const DICA_SENHA = "Mínimo 6 caracteres, 1 letra maiúscula e 1 caractere especial.";
 
 function Cadastro() {
   const [nome, setNome] = useState("");
@@ -31,16 +36,15 @@ function Cadastro() {
       return;
     }
 
+    // Mesmas regras do backend (ver utils/validacoes.js) — só evita uma
+    // viagem ao servidor pra avisar algo que dá pra saber na hora.
+    const erroCampo =
+      validarNome(nome) || validarIdade(idade) || validarEmail(email) || validarSenhaNova(senha);
+    if (erroCampo) {
+      setErro(erroCampo);
+      return;
+    }
     const idadeNumero = Number(idade);
-    if (!Number.isInteger(idadeNumero) || idadeNumero < 13 || idadeNumero > 120) {
-      setErro("Informe uma idade válida (mínimo 13 anos).");
-      return;
-    }
-
-    if (!SENHA_REGEX.test(senha)) {
-      setErro(DICA_SENHA);
-      return;
-    }
 
     if (senha !== confirmarSenha) {
       setErro("As senhas não coincidem.");
@@ -50,11 +54,12 @@ function Cadastro() {
     try {
       setCarregando(true);
 
-      await api.post("/auth/cadastro", { nome, email, senha, idade: idadeNumero });
+      const emailLimpo = email.trim().toLowerCase();
+      await api.post("/auth/cadastro", { nome: nome.trim(), email: emailLimpo, senha, idade: idadeNumero });
 
       // Sem login automático — a conta só fica ativa depois de confirmar
       // o código enviado por e-mail.
-      navigate("/verificar-email", { state: { email } });
+      navigate("/verificar-email", { state: { email: emailLimpo } });
     } catch (err) {
       const mensagem = err.response?.data?.erro || "Não foi possível criar a conta. Tente novamente.";
       setErro(mensagem);
@@ -93,6 +98,8 @@ function Cadastro() {
             type="text"
             className="login-input"
             placeholder="Seu Username"
+            maxLength={NOME_MAXIMO}
+            autoComplete="nickname"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
           />
@@ -120,6 +127,8 @@ function Cadastro() {
             type="email"
             className="login-input"
             placeholder="seuemail@gmail.com"
+            maxLength={EMAIL_MAXIMO}
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -131,6 +140,8 @@ function Cadastro() {
             id="senha"
             className="login-input"
             placeholder="••••••••••••"
+            maxLength={SENHA_MAXIMO}
+            autoComplete="new-password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />
@@ -143,6 +154,8 @@ function Cadastro() {
             id="confirmarSenha"
             className="login-input"
             placeholder="••••••••••••"
+            maxLength={SENHA_MAXIMO}
+            autoComplete="new-password"
             value={confirmarSenha}
             onChange={(e) => setConfirmarSenha(e.target.value)}
           />

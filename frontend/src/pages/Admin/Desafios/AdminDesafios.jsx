@@ -59,9 +59,9 @@ function AdminDesafios() {
                 </div>
                 <strong className="admin-desafios-item-titulo">{desafio.titulo}</strong>
                 <span className="admin-desafios-item-recompensa">
-                  {desafio.tipoRecompensa
-                    ? `Recompensa: ${desafio.nomeRecompensa || "—"}`
-                    : "Sem recompensa definida"}
+                  {desafio.itemRecompensa
+                    ? `Item: ${desafio.itemRecompensa.icone ? `${desafio.itemRecompensa.icone} ` : ""}${desafio.itemRecompensa.nome}`
+                    : "Sem item — só XP"}
                 </span>
               </button>
             ))}

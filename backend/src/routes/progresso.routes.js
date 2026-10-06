@@ -4,6 +4,9 @@ const {
   listarProgresso,
 } = require("../controllers/progresso.controller.js");
 const autenticar = require("../middlewares/auth.middleware.js");
+const validar = require("../middlewares/validacao.middleware.js");
+const { progresso: esquemas } = require("../validacoes/esquemas.js");
+const { limitadorCorrecaoIA } = require("../middlewares/rateLimit.middleware.js");
 
 const router = Router();
 
@@ -17,10 +20,10 @@ const router = Router();
 // levou até essa resposta — só é usado (bônus de velocidade + primeira
 // tentativa em cima de Desafio.xpConcedido) na resposta que conclui o
 // desafio pela primeira vez, ver progresso.service.js.
-router.post("/", autenticar, responderDesafio);
+router.post("/", autenticar, validar(esquemas.responder), limitadorCorrecaoIA, responderDesafio);
 
 // GET /api/progresso — progresso do usuário logado, opcionalmente filtrado
 // por trilha via ?mundoId=&dificuldade=
-router.get("/", autenticar, listarProgresso);
+router.get("/", autenticar, validar(esquemas.listar), listarProgresso);
 
 module.exports = router;

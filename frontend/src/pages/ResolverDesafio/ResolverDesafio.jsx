@@ -380,7 +380,7 @@ function ResolverDesafio() {
   // tipos de exercício — é o onClick do botão "VER RECOMPENSA".
   function irParaRecompensa() {
     navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
-      state: { resultado: recompensaApi },
+      state: { resultado: recompensaApi, tempoSegundos: segundosDecorridos },
     });
   }
 

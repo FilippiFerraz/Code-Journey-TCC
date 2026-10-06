@@ -8,6 +8,8 @@ const {
   postExcluirConta,
 } = require("../controllers/conta.controller.js");
 const autenticar = require("../middlewares/auth.middleware.js");
+const validar = require("../middlewares/validacao.middleware.js");
+const { conta: esquemas } = require("../validacoes/esquemas.js");
 
 const router = Router();
 
@@ -18,20 +20,20 @@ const router = Router();
 router.get("/", autenticar, getConta);
 
 // PUT /api/conta/nome — body: { nome } (1 troca a cada 30 dias)
-router.put("/nome", autenticar, putNome);
+router.put("/nome", autenticar, validar(esquemas.nome), putNome);
 
 // POST /api/conta/email — body: { novoEmail, senha } — manda um código pro
 // e-mail novo; a troca só acontece em /email/confirmar (1 troca a cada 30 dias)
-router.post("/email", autenticar, postSolicitarTrocaEmail);
+router.post("/email", autenticar, validar(esquemas.solicitarTrocaEmail), postSolicitarTrocaEmail);
 
 // POST /api/conta/email/confirmar — body: { codigo }
-router.post("/email/confirmar", autenticar, postConfirmarTrocaEmail);
+router.post("/email/confirmar", autenticar, validar(esquemas.confirmarTrocaEmail), postConfirmarTrocaEmail);
 
 // DELETE /api/conta/email — cancela a troca de e-mail pendente
 router.delete("/email", autenticar, deleteTrocaEmail);
 
 // POST /api/conta/excluir — body: { senha, confirmacao: "EXCLUIR" } — soft
 // delete (só marca deletedAt; um administrador pode reativar)
-router.post("/excluir", autenticar, postExcluirConta);
+router.post("/excluir", autenticar, validar(esquemas.excluir), postExcluirConta);
 
 module.exports = router;
