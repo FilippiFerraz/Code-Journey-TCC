@@ -1,5 +1,9 @@
 # Logs
-logs
+# "/logs" (com a barra) = só a pasta logs na raiz do frontend. Sem a barra,
+# a regra pegava QUALQUER pasta chamada logs — inclusive
+# src/pages/Admin/Logs (o git no Windows ignora maiúsculas), e a tela de
+# logs do painel de admin nunca chegava no repositório.
+/logs
 *.log
 npm-debug.log*
 yarn-debug.log*
