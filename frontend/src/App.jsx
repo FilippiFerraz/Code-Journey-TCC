@@ -14,7 +14,7 @@ import DesafioIntroPocao from "./pages/DesafioIntroPocao/DesafioIntroPocao";
 import ResolverDesafioPocao from "./pages/ResolverDesafioPocao/ResolverDesafioPocao";
 import Perfil from "./pages/Perfil/Perfil";
 import Ranking from "./pages/Ranking/Ranking";
-import EditarPersonagem from "./pages/EditarPersonagem/EditarPersonagem";
+import EditarPersonagem from "./pages/Editarpersonagem/EditarPersonagem";
 import RecompensaDesafio from './pages/RecompensaDesafio/RecompensaDesafio';
 import BauDaSorte from "./pages/BauDaSorte/BauDaSorte";
 import Configuracoes from "./pages/Configuracoes/Configuracoes";
