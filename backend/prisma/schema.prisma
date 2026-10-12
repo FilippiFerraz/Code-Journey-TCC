@@ -94,7 +94,7 @@ model LoginHistorico {
   // Nulo quando a tentativa falha com um e-mail que não corresponde a
   // nenhuma conta — não há usuário pra vincular, mas emailTentado guarda o
   // texto digitado mesmo assim, pra dar pra pesquisar.
-  usuarioId Int?
+  usuarioId    Int?
   // "Retrato" do momento da tentativa (não um join) — mesmo motivo do
   // LogAdmin: se o usuário for renomeado depois, o histórico continua
   // mostrando o nome de então. Fica null quando o e-mail não bate com
@@ -102,7 +102,7 @@ model LoginHistorico {
   nomeUsuario  String?
   emailTentado String
 
-  sucesso Boolean
+  sucesso     Boolean
   // Motivo da falha (ex: "Senha incorreta", "E-mail não cadastrado",
   // "Conta desativada", "E-mail não verificado") — null quando sucesso = true.
   motivoFalha String?
@@ -206,15 +206,20 @@ model Progresso {
   usuarioId Int
   desafioId Int
 
-  concluido     Boolean   @default(false)
-  tentativas    Int       @default(0)
-  xpGanho       Int       @default(0)
-  dataConclusao DateTime?
+  concluido        Boolean   @default(false)
+  tentativas       Int       @default(0)
+  xpGanho          Int       @default(0)
+  dataConclusao    DateTime?
   // Tempo (em segundos) que o jogador levou até acertar, gravado só na
   // conclusão (igual dataConclusao) — usado pro bônus de velocidade em
   // xpGanho (ver progresso.service.js::responderDesafio). Null em desafios
   // concluídos antes desse campo existir.
-  tempoSegundos Int?
+  tempoSegundos    Int?
+  // Desafios com várias etapas (alternativas.tipo = "etapas", ver
+  // services/etapas.service.js): quantas etapas o jogador já venceu. O
+  // servidor só aceita a etapa seguinte, e o desafio só fica "concluido"
+  // quando todas forem vencidas. Desafios de etapa única não usam (fica 0).
+  etapasConcluidas Int       @default(0)
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt

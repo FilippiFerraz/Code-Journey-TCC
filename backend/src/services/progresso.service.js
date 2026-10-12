@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
-const { concederItem } = require("./personagem.service");
+const { concederItemSeNaoTiver } = require("./personagem.service");
 const { corrigirRespostaDissertativa } = require("./ia.service");
+const { temVariasEtapas, totalDeEtapas } = require("./etapas.service");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -213,6 +214,7 @@ async function responderDesafio({
   respostas,
   respostaTexto,
   tempoSegundos,
+  etapa,
 }) {
   const numeroDesafio = Number(numero);
 
@@ -250,6 +252,17 @@ async function responderDesafio({
   }
 
   await verificarDesafioLiberado(usuarioId, desafio);
+
+  // Desafio com várias etapas (portal 3): regra própria — ver responderEtapa.
+  if (temVariasEtapas(desafio.alternativas)) {
+    return responderEtapa({
+      usuarioId,
+      desafio,
+      etapa,
+      resposta: { opcaoId, ordem, classificacoes, ingredientes, respostas, respostaTexto },
+      tempoSegundos,
+    });
+  }
 
   const idDesafio = desafio.id;
 
@@ -334,16 +347,17 @@ async function responderDesafio({
     });
   }
 
-  // Recompensa em item só é concedida (some ao inventário) na primeira
-  // conclusão — mas o item continua sendo informado em respostas seguintes
-  // (rejogar um desafio já vencido), só que sem mexer no inventário de novo.
-  // Sem isso, a tela de recompensa não tinha como saber qual é o item certo
-  // numa segunda tentativa e caía no conteúdo antigo hardcoded do frontend.
+  // Recompensa em item: entra no inventário se o jogador ainda não tem esse
+  // item — não depende de ser a primeira conclusão. Antes só a primeira
+  // conclusão concedia, e quem tinha vencido o desafio ANTES de ele ganhar
+  // um item via a recompensa na tela ao rejogar, mas nunca no inventário.
+  // Rejogar com o item já no inventário não duplica (concederItemSeNaoTiver).
   let itemGanho = null;
+  let recompensaJaRecebida = false;
   if (correta && desafio.itemRecompensaId) {
-    itemGanho = primeiraVezConcluindo
-      ? await concederItemAoPersonagem(usuarioId, desafio.itemRecompensa)
-      : formatarItem(desafio.itemRecompensa);
+    const resultado = await concederItemAoPersonagem(usuarioId, desafio.itemRecompensa);
+    itemGanho = resultado.item;
+    recompensaJaRecebida = !resultado.concedido;
   }
 
   return {
@@ -360,7 +374,148 @@ async function responderDesafio({
     acertouDePrimeira: primeiraVezConcluindo ? acertouDePrimeira : false,
     tempoSegundos: progresso.tempoSegundos,
     itemGanho,
+    // Desafio REFEITO: já tinha sido concluído antes desta resposta (a tela
+    // de recompensa mostra um elogio por ter vencido de novo).
+    jaConcluidoAntes: correta && jaEstavaConcluido,
+    // O item do desafio já estava no inventário — nada foi acrescentado.
+    recompensaJaRecebida,
     // Só nos desafios dissertativos: explicação da IA sobre a correção.
+    feedbackIA,
+  };
+}
+
+// ---- Desafios com várias etapas (portal 3) ----
+//
+// Cada resposta vale para UMA etapa (body.etapa, a partir de 1). Regras:
+// - as etapas são feitas em ordem: o servidor só aceita a próxima etapa
+//   (Progresso.etapasConcluidas + 1) — não dá pra pular direto pra última;
+// - errar conta tentativa, mas não volta etapa nenhuma;
+// - acertar a ÚLTIMA etapa conclui o desafio: XP (com bônus de velocidade e
+//   de "sem errar nenhuma etapa") e o item de recompensa, como nos outros;
+// - desafio já concluído pode ser refeito: qualquer etapa é aceita, sem XP
+//   de novo, e a recompensa não acumula (ver concederItemSeNaoTiver).
+
+// Mesmos validadores dos desafios de etapa única — cada etapa usa um dos
+// formatos de sempre (múltipla escolha guarda as opções em "opcoes").
+function avaliarEtapa(etapa, resposta) {
+  if (etapa.tipo === "multipla_escolha") return avaliarMultiplaEscolha(etapa.opcoes, resposta.opcaoId);
+  return avaliarResposta(etapa, resposta);
+}
+
+function erroDeConflito(mensagem) {
+  const erro = new Error(mensagem);
+  erro.status = 409;
+  return erro;
+}
+
+async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegundos }) {
+  const etapas = desafio.alternativas.etapas;
+  const totalEtapas = etapas.length;
+  const numeroEtapa = Number(etapa);
+  if (!Number.isInteger(numeroEtapa) || numeroEtapa < 1 || numeroEtapa > totalEtapas) {
+    throw erroDeValidacao(`Informe a etapa respondida (de 1 a ${totalEtapas}).`);
+  }
+
+  const chave = { usuarioId_desafioId: { usuarioId, desafioId: desafio.id } };
+  const progressoAnterior = await prisma.progresso.findUnique({ where: chave });
+  const jaConcluido = progressoAnterior?.concluido ?? false;
+  const etapasFeitas = progressoAnterior?.etapasConcluidas ?? 0;
+
+  if (!jaConcluido && numeroEtapa !== etapasFeitas + 1) {
+    throw erroDeConflito(
+      numeroEtapa <= etapasFeitas
+        ? `Você já venceu a etapa ${numeroEtapa}. Siga para a etapa ${etapasFeitas + 1}.`
+        : `Vença a etapa ${etapasFeitas + 1} antes de responder a etapa ${numeroEtapa}.`
+    );
+  }
+
+  // Corrige a etapa (dissertativa vai pra IA — se ela falhar, o erro sobe
+  // antes de gravar a tentativa, como nos desafios de etapa única).
+  const dadosEtapa = etapas[numeroEtapa - 1];
+  let correta;
+  let feedbackIA = null;
+  if (dadosEtapa.tipo === "dissertativa") {
+    if (typeof resposta.respostaTexto !== "string") {
+      throw erroDeValidacao("Esta etapa espera uma resposta escrita.");
+    }
+    const correcao = await corrigirRespostaDissertativa({
+      enunciado: dadosEtapa.enunciado,
+      codigo: dadosEtapa.codigo,
+      criterios: dadosEtapa.criterios,
+      respostaReferencia: dadosEtapa.respostaReferencia,
+      resposta: resposta.respostaTexto,
+    });
+    correta = correcao.correta;
+    feedbackIA = correcao.feedback;
+  } else {
+    correta = avaliarEtapa(dadosEtapa, resposta);
+  }
+
+  const ultimaEtapa = numeroEtapa === totalEtapas;
+  const concluiAgora = correta && !jaConcluido && ultimaEtapa;
+  // Sem errar nenhuma etapa: cada resposta conta 1 tentativa, então até
+  // aqui o número de tentativas é exatamente o de etapas já vencidas.
+  const semErros = (progressoAnterior?.tentativas ?? 0) === etapasFeitas;
+
+  const dados = { tentativas: (progressoAnterior?.tentativas ?? 0) + 1 };
+  if (correta && !jaConcluido) dados.etapasConcluidas = numeroEtapa;
+
+  let xpBase = 0;
+  let bonusVelocidade = 0;
+  let bonusPrimeiraTentativa = 0;
+  if (concluiAgora) {
+    xpBase = desafio.xpConcedido;
+    // tempoSegundos é o tempo TOTAL do desafio; a régua de bônus é por etapa.
+    bonusVelocidade = calcularBonusVelocidade(Number(tempoSegundos) / totalEtapas);
+    bonusPrimeiraTentativa = semErros ? BONUS_PRIMEIRA_TENTATIVA : 0;
+
+    dados.concluido = true;
+    dados.xpGanho = xpBase + bonusVelocidade + bonusPrimeiraTentativa;
+    dados.dataConclusao = new Date();
+    dados.tempoSegundos = Number.isFinite(Number(tempoSegundos))
+      ? Math.max(0, Math.round(Number(tempoSegundos)))
+      : null;
+  }
+
+  const progresso = progressoAnterior
+    ? await prisma.progresso.update({ where: chave, data: dados })
+    : await prisma.progresso.create({ data: { usuarioId, desafioId: desafio.id, ...dados } });
+
+  if (concluiAgora) {
+    await prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { xpTotal: { increment: dados.xpGanho } },
+    });
+  }
+
+  // Recompensa só ao vencer a última etapa (primeira vez ou refazendo).
+  let itemGanho = null;
+  let recompensaJaRecebida = false;
+  if (correta && ultimaEtapa && desafio.itemRecompensaId) {
+    const resultado = await concederItemAoPersonagem(usuarioId, desafio.itemRecompensa);
+    itemGanho = resultado.item;
+    recompensaJaRecebida = !resultado.concedido;
+  }
+
+  return {
+    correta,
+    etapa: numeroEtapa,
+    totalEtapas,
+    etapasConcluidas: progresso.etapasConcluidas,
+    // true quando ESTA resposta venceu a última etapa (primeira vez ou refazendo)
+    desafioConcluido: correta && ultimaEtapa,
+    concluido: progresso.concluido,
+    tentativas: progresso.tentativas,
+    xpGanho: progresso.xpGanho,
+    xpConcedidoAgora: dados.xpGanho ?? 0,
+    xpBase,
+    bonusVelocidade,
+    bonusPrimeiraTentativa,
+    acertouDePrimeira: concluiAgora ? semErros : false,
+    tempoSegundos: progresso.tempoSegundos,
+    itemGanho,
+    jaConcluidoAntes: correta && ultimaEtapa && jaConcluido,
+    recompensaJaRecebida,
     feedbackIA,
   };
 }
@@ -378,11 +533,11 @@ function formatarItem(item, quantidade) {
   };
 }
 
-// Adiciona o item ao inventário do personagem (ver concederItem em
-// personagem.service.js — mesma regra usada pelo baú de fim de mundo).
+// Adiciona o item ao inventário do personagem, se ele ainda não tiver (ver
+// concederItemSeNaoTiver em personagem.service.js). Devolve { item, concedido }.
 async function concederItemAoPersonagem(usuarioId, item) {
-  const quantidade = await concederItem(usuarioId, item.id);
-  return formatarItem(item, quantidade);
+  const { quantidade, concedido } = await concederItemSeNaoTiver(usuarioId, item.id);
+  return { item: formatarItem(item, quantidade), concedido };
 }
 
 // Progresso do usuário cruzado com os desafios cadastrados — é a fonte de
@@ -397,7 +552,7 @@ async function listarProgresso({ usuarioId, mundoId, dificuldade }) {
   const desafios = await prisma.desafio.findMany({
     where: filtroTrilha,
     orderBy: [{ mundoId: "asc" }, { dificuldade: "asc" }, { numero: "asc" }],
-    select: { id: true, mundoId: true, dificuldade: true, numero: true },
+    select: { id: true, mundoId: true, dificuldade: true, numero: true, alternativas: true },
   });
 
   const progressos = await prisma.progresso.findMany({
@@ -413,7 +568,11 @@ async function listarProgresso({ usuarioId, mundoId, dificuldade }) {
     numero: desafio.numero,
     concluido: progressoPorDesafio.get(desafio.id)?.concluido ?? false,
     tentativas: progressoPorDesafio.get(desafio.id)?.tentativas ?? 0,
+    // Desafios com várias etapas (portal 3) — a lista usa isso pra abrir a
+    // tela de etapas e mostrar o avanço (ex: 2/3). Etapa única = 1.
+    totalEtapas: totalDeEtapas(desafio.alternativas),
+    etapasConcluidas: progressoPorDesafio.get(desafio.id)?.etapasConcluidas ?? 0,
   }));
 }
 
-module.exports = { responderDesafio, listarProgresso };
+module.exports = { responderDesafio, listarProgresso, verificarDesafioLiberado };

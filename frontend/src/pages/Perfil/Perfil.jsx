@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
 import "./Perfil.css";
-import { usePersonagemAvatar, resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
+import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import IconeItem from "../../components/IconeItem";
 import BotaoPixel from "../../components/BotaoPixel";
 import fundoPersonagemPerfil from "../../assets/images/Fundo_Personagem_Perfil.png";
@@ -27,10 +28,10 @@ function Perfil() {
   const [perfil, setPerfil] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
-  // Só usado no modo "meu perfil" — no modo visita o sprite vem dos itens
-  // equipados de QUEM está sendo visitado, devolvidos junto do perfil
-  // público (ver perfil.itensEquipados abaixo).
-  const avatarProprio = usePersonagemAvatar();
+  // Só usado no modo "meu perfil" — no modo visita o guerreiro é montado
+  // com os itens equipados de QUEM está sendo visitado, devolvidos junto do
+  // perfil público (ver perfil.itensEquipados abaixo).
+  const itensEquipadosProprios = usePersonagemAvatar();
 
   useEffect(() => {
     let ativo = true;
@@ -61,7 +62,7 @@ function Perfil() {
   const membroDesde = formatarMesAno(perfil.membroDesde);
   const posicao = perfil.ranking?.posicao;
   const itens = perfil.itensDestaque ?? [];
-  const avatar = modoVisita ? resolverAvatarPersonagem(perfil.itensEquipados) : avatarProprio;
+  const itensEquipados = modoVisita ? perfil.itensEquipados ?? [] : itensEquipadosProprios;
 
   return (
     <div className="perfil">
@@ -85,12 +86,7 @@ function Perfil() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <img
-          src={avatar}
-          alt="Personagem"
-          className="perfil-avatar"
-          draggable={false}
-        />
+        <AvatarPersonagem itensEquipados={itensEquipados} className="perfil-avatar" alt="Personagem" />
       </div>
 
       {/* Identidade — dados reais do banco */}

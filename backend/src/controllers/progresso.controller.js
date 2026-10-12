@@ -14,6 +14,7 @@ async function responderDesafio(req, res, next) {
       respostas,
       respostaTexto,
       tempoSegundos,
+      etapa,
     } = req.body;
 
     const resultado = await progressoService.responderDesafio({
@@ -28,6 +29,7 @@ async function responderDesafio(req, res, next) {
       respostas,
       respostaTexto,
       tempoSegundos,
+      etapa,
     });
 
     return res.status(200).json(resultado);

@@ -26,6 +26,7 @@ import EditarDesafioAdmin from "./pages/Admin/Desafios/EditarDesafioAdmin";
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
 import AdminLogs from "./pages/Admin/Logs/AdminLogs";
 import AdminLoginHistorico from "./pages/Admin/LoginHistorico/AdminLoginHistorico";
+import DesafioEtapas from "./pages/DesafioEtapas/DesafioEtapas";
 import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica } from "./components/Rotas";
 
 
@@ -59,6 +60,8 @@ function App() {
             <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioChefe /></RotaDesafio>} />
             <Route path="/desafio-pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioIntroPocao /></RotaDesafio>} />
             <Route path="/pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><ResolverDesafioPocao /></RotaDesafio>} />
+            {/* Desafios com várias etapas (portal 3): tela genérica, conteúdo vindo da API */}
+            <Route path="/etapas/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioEtapas /></RotaDesafio>} />
             <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="concluido"><RecompensaDesafio /></RotaDesafio>} />
             <Route path="/bau/:mundoId/:dificuldade" element={<RotaDesafio exigir="mundo"><BauDaSorte /></RotaDesafio>} />
             <Route path="/perfil" element={<Perfil />} />

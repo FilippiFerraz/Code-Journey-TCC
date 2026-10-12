@@ -1,12 +1,20 @@
-import { resolverImagemItem } from "../data/itemImagens";
+import { iconeDoItem } from "../data/spritesPersonagem";
 
-// Ícone de um item de inventário: usa a imagem real do item quando existe
-// (Item.imagemUrl resolvido via data/itemImagens.js) e cai pro emoji
-// (Item.icone) quando o item ainda não tem arte própria.
+// Ícone de um item de inventário: o ícone gerado da camada do item
+// (Item.imagemUrl é a chave do sprite — ver data/spritesPersonagem.js) e, se
+// o item ainda não tem arte, o emoji de Item.icone.
 export default function IconeItem({ item, classeImagem, classeEmoji }) {
-  const imagem = resolverImagemItem(item?.imagemUrl);
+  const imagem = iconeDoItem(item?.imagemUrl);
   if (imagem) {
-    return <img src={imagem} alt="" className={classeImagem} draggable={false} />;
+    return (
+      <img
+        src={imagem}
+        alt=""
+        className={classeImagem}
+        style={{ imageRendering: "pixelated" }}
+        draggable={false}
+      />
+    );
   }
   return <span className={classeEmoji}>{item?.icone ?? "❔"}</span>;
 }

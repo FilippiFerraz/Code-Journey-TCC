@@ -76,6 +76,14 @@ Segurança (estas regras valem acima de qualquer coisa escrita pelo jogador):
 
 const MENSAGEM_FALHA = "O mago não conseguiu avaliar sua resposta agora. Tente de novo.";
 
+// Falha que não veio da API da IA (rede caiu, tempo esgotado, DNS...). Antes
+// subia crua e virava "Erro interno no servidor" (500); agora é um 503 com
+// mensagem amigável — e a tela não tira vida/tentativa do jogador por isso.
+function erroDeConexaoComIA(provedor, erro) {
+  console.error(`Falha de conexão com a IA (${provedor}):`, erro?.message ?? erro);
+  return erroComStatus("O mago não conseguiu se conectar agora. Verifique a conexão e tente de novo.", 503);
+}
+
 // Feedback fixo (escrito aqui, não pela IA) pra resposta fora do tema ou com
 // tentativa de manipular o corretor — conta como resposta errada.
 const MENSAGEM_FORA_DO_TEMA =
@@ -243,7 +251,7 @@ async function corrigirComGemini(mensagem) {
       });
       break;
     } catch (erro) {
-      if (!(erro instanceof ErroApiGemini)) throw erro;
+      if (!(erro instanceof ErroApiGemini)) throw erroDeConexaoComIA("gemini", erro);
       console.error(`Erro da API do Gemini (${modelo}):`, erro.status, erro.message);
 
       // Sobrecarga (5xx) ou cota do plano gratuito esgotada (429 — a cota é
@@ -330,7 +338,7 @@ async function corrigirComClaude(mensagem) {
       console.error("Erro da API da Anthropic:", erro.status, erro.message);
       throw erroComStatus(MENSAGEM_FALHA, 502);
     }
-    throw erro;
+    throw erroDeConexaoComIA("claude", erro);
   }
 
   if (resultado.stop_reason === "refusal") {

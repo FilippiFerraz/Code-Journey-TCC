@@ -475,6 +475,54 @@
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
 }
 
+/* ---------- Desafio refeito ---------- */
+
+/* Mesma plaquinha do tempo da vitória, com borda dourada: aparece quando o
+   jogador vence de novo um desafio que já tinha concluído. */
+.recompensa-refeito {
+  max-width: calc(100% - 28px);
+  margin-top: 4px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--rec-roxo-escuro);
+  border: 2px solid var(--rec-dourado);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+  text-align: left;
+}
+
+.recompensa-refeito-aviso,
+.recompensa-refeito-elogio {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.recompensa-refeito-aviso {
+  font-size: 0.76rem;
+  color: var(--rec-creme);
+}
+
+.recompensa-refeito-aviso strong {
+  color: var(--rec-dourado);
+}
+
+.recompensa-refeito-elogio {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rec-pergaminho);
+}
+
+.recompensa-refeito-aviso i,
+.recompensa-refeito-elogio i {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--rec-dourado);
+}
+
 /* ---------- Tempo da vitória ---------- */
 
 /* Plaquinha escura com borda roxa, no mesmo padrão do diálogo do mago —

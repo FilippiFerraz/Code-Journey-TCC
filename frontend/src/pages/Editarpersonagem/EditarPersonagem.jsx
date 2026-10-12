@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HardHat, Shield, Sword, Shirt } from "lucide-react";
+import { HardHat, Shield, Sword, Shirt, Footprints } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
-import { resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
+import { itensEquipadosDoPersonagem } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import IconeItem from "../../components/IconeItem";
 import BotaoPixel from "../../components/BotaoPixel";
 
@@ -12,7 +13,7 @@ import BotaoPixel from "../../components/BotaoPixel";
 // "icone" é o componente do lucide-react (não uma instância) — a biblioteca
 // pixelada do resto do app não tem ícones de fantasia (capacete, peitoral,
 // espada...), então esses slots usam lucide-react só nesses casos.
-// Só esses 4 tipos podem ser equipados — o backend recusa qualquer outro
+// Só esses 5 tipos podem ser equipados — o backend recusa qualquer outro
 // (ver TIPOS_EQUIPAVEIS em backend/src/services/personagem.service.js).
 const SLOTS_ESQUERDA = [
   { id: "capacete", nome: "Capacete", icone: HardHat },
@@ -22,6 +23,7 @@ const SLOTS_ESQUERDA = [
 const SLOTS_DIREITA = [
   { id: "arma", nome: "Arma", icone: Sword },
   { id: "costas", nome: "Costas", icone: Shirt },
+  { id: "botas", nome: "Botas", icone: Footprints },
 ];
 
 const TIPOS_EQUIPAVEIS = [...SLOTS_ESQUERDA, ...SLOTS_DIREITA].map((slot) => slot.id);
@@ -140,7 +142,7 @@ function EditarPersonagem() {
 
   const itens = personagem.itens ?? [];
   const itemDoSlot = (slotId) => itens.find((ip) => ip.equipado && ip.item.tipo === slotId);
-  const avatar = resolverAvatarPersonagem(itens);
+  const itensEquipados = itensEquipadosDoPersonagem(itens);
 
   // itens reais primeiro, depois células vazias até completar a grade
   // (ou além dela, se o jogador tiver mais itens do que SLOTS_INVENTARIO)
@@ -174,12 +176,7 @@ function EditarPersonagem() {
           })}
         </div>
 
-        <img
-          src={avatar}
-          alt="Personagem"
-          className="editar-avatar"
-          draggable={false}
-        />
+        <AvatarPersonagem itensEquipados={itensEquipados} className="editar-avatar" alt="Personagem" />
 
         <div className="editar-slots">
           {SLOTS_DIREITA.map((slot) => {

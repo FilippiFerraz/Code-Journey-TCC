@@ -8,6 +8,7 @@ import detalheDesafios from "../../assets/images/Detalhe_desafios.png";
 import api from "../../services/api";
 import { desafioConcluido, desafioLiberado } from "../../data/progresso";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 
 // Ids dos desafios da trilha. Quem está liberado ou não é calculado a partir
 // do progresso REAL do usuário (GET /api/progresso — ver desafioLiberado em
@@ -47,13 +48,12 @@ const ICONES_DESAFIOS = {
   6: "👑",
 };
 
-// Cena do topo por mundo (o avatar do jogador aparece sempre por cima).
-// Sem `imagem`, cai no placeholder: céu + grama desenhados em CSS, com o
-// título da cena numa plaquinha.
-// TODO: artes dos mundos 2 e 3 (e mover as cenas pra assets/images/cenas/).
-const CENAS_POR_MUNDO = {
-  1: { titulo: "Campo de Treino", imagem: fundoPersonagem },
-};
+// Cena do topo (o avatar do jogador aparece sempre por cima). Todos os
+// portais usam a mesma arte do Campo de Treino — se um mundo ganhar arte
+// própria, basta adicionar ele em CENAS_POR_MUNDO; quem não estiver lá cai
+// na CENA_PADRAO.
+const CENA_PADRAO = { titulo: "Campo de Treino", imagem: fundoPersonagem };
+const CENAS_POR_MUNDO = {};
 
 // Etiqueta da dificuldade atual (vinda de :dificuldade). As trilhas reais
 // hoje são "iniciante" e "guerreiro" (ver SelecionarDificuldade.jsx); a
@@ -83,7 +83,7 @@ function IconeDesafio({ icone }) {
 function Desafios() {
   const { mundoId, dificuldade } = useParams();
   const navigate = useNavigate();
-  const guerreiro = usePersonagemAvatar();
+  const itensEquipados = usePersonagemAvatar();
   // Começa vazio — enquanto não chega (ou se a chamada falhar), só o
   // desafio 1 aparece liberado, nunca o contrário.
   const [progresso, setProgresso] = useState([]);
@@ -125,16 +125,24 @@ function Desafios() {
     if (desafioConcluido(progresso, mundoId, dificuldade, id)) estado = "concluido";
     else if (desafioLiberado(progresso, mundoId, dificuldade, id)) estado = "disponivel";
 
+    // Desafios com várias etapas (portal 3) vêm marcados no progresso da API
+    // (totalEtapas > 1) e abrem a tela genérica de etapas.
+    const doProgresso = progresso.find(
+      (p) => Number(p.mundoId) === Number(mundoId) && p.dificuldade === dificuldade && p.numero === id
+    );
+
     return {
       id,
       numero: id,
       icone: ICONES_DESAFIOS[id],
       estado,
       chefe: id === ID_DESAFIO_CHEFE,
+      totalEtapas: doProgresso?.totalEtapas ?? 1,
+      etapasConcluidas: doProgresso?.etapasConcluidas ?? 0,
     };
   });
 
-  const cena = CENAS_POR_MUNDO[mundoId];
+  const cena = CENAS_POR_MUNDO[mundoId] ?? CENA_PADRAO;
   const infoDificuldade = DIFICULDADES[dificuldade] ?? { nome: dificuldade, cor: "neutra" };
 
   function avisarBloqueado(desafio) {
@@ -157,7 +165,9 @@ function Desafios() {
       avisarBloqueado(desafio);
       return;
     }
-    if (desafio.chefe) {
+    if (desafio.totalEtapas > 1) {
+      navigate(`/etapas/${mundoId}/${dificuldade}/${desafio.id}`);
+    } else if (desafio.chefe) {
       navigate(`/desafio-chefe/${mundoId}/${dificuldade}/${desafio.id}`);
     } else if (ehDesafioPocao(mundoId, desafio.id)) {
       navigate(`/desafio-pocao/${mundoId}/${dificuldade}/${desafio.id}`);
@@ -167,7 +177,7 @@ function Desafios() {
   }
 
   return (
-    <MainLayout titulo="DESAFIOS - ATO 1">
+    <MainLayout titulo={`DESAFIOS - ATO ${mundoId}`}>
       <div className="desafios-container">
         {/* Fundo do salão (parede, tochas, folhagem) desenhado em CSS.
             TODO: trocar por imagem de fundo em pixel art quando existir
@@ -179,21 +189,16 @@ function Desafios() {
           <span className="desafios-folhagem desafios-folhagem--direita" />
         </div>
 
-        {/* Cena do topo, com a barra (voltar + placa "ATO 1") por cima */}
+        {/* Cena do topo, com a barra (voltar + placa "ATO <portal>") por cima */}
         <div className="desafios-cena">
           <div
-            className={`desafios-cena-fundo ${cena?.imagem ? "" : "desafios-cena-fundo--placeholder"}`}
-            style={cena?.imagem ? { backgroundImage: `url(${cena.imagem})` } : undefined}
+            className="desafios-cena-fundo"
+            style={{ backgroundImage: `url(${cena.imagem})` }}
             role="img"
-            aria-label={cena?.titulo ?? "Cena do mundo"}
+            aria-label={cena.titulo}
           >
-            <img src={guerreiro} alt="Seu personagem" className="desafios-cena-personagem" />
+            <AvatarPersonagem itensEquipados={itensEquipados} className="desafios-cena-personagem" />
           </div>
-
-          {/* a arte real já traz a placa desenhada; só o placeholder precisa */}
-          {!cena?.imagem && (
-            <span className="desafios-cena-placa">{cena?.titulo ?? `Mundo ${mundoId}`}</span>
-          )}
 
           <div className="desafios-barra">
             <BotaoPixel
@@ -206,7 +211,7 @@ function Desafios() {
             </BotaoPixel>
 
             <div className="desafios-placa-ato">
-              <span>ATO 1</span>
+              <span>ATO {mundoId}</span>
             </div>
 
             {/* espaço do tamanho do botão de voltar, só pra centralizar a placa */}
@@ -273,7 +278,12 @@ function Desafios() {
                           {bloqueado && <span className="desafio-card-cadeado">🔒</span>}
                         </span>
                         <span className="desafio-card-rodape">
-                          <span>DESAFIO {desafio.numero}</span>
+                          <span>
+                            DESAFIO {desafio.numero}
+                            {desafio.totalEtapas > 1 && desafio.estado !== "concluido" && (
+                              <> · {desafio.etapasConcluidas}/{desafio.totalEtapas}</>
+                            )}
+                          </span>
                           {!bloqueado && <span className="desafio-card-seta">›</span>}
                         </span>
                       </span>

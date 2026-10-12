@@ -1,7 +1,7 @@
 /* ============================================================
    Desafios.css — seleção de desafios da trilha (dentro do MainLayout).
 
-   De cima pra baixo: cena do mundo (com a barra voltar + "ATO 1" por
+   De cima pra baixo: cena do mundo (com a barra voltar + "ATO <portal>" por
    cima) -> painel de pergaminho (faixa "DESAFIOS", dificuldade, grid 2x3
    de cards, emblema) sobre um salão de pedra desenhado em CSS.
 
@@ -159,16 +159,10 @@
   image-rendering: pixelated;
 }
 
-/* mundo sem arte própria: céu + faixa de grama */
-.desafios-cena-fundo--placeholder {
-  background:
-    linear-gradient(180deg, transparent 0 68%, #4f8f3a 68% 74%, #3b6e2c 74%),
-    linear-gradient(180deg, #5aa7e8 0%, #9fd0f5 68%);
-}
-
 .desafios-cena-personagem {
+  /* quadrado: o guerreiro é montado em camadas de 64x64 (AvatarPersonagem) */
   height: 130px;
-  width: auto;
+  width: 130px;
   display: block;
   image-rendering: pixelated;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
@@ -184,26 +178,6 @@
   height: 90px;
   background: linear-gradient(180deg, transparent, #2a2138);
   pointer-events: none;
-}
-
-/* placa de madeira com o nome da cena (só no placeholder — a arte real já
-   traz a placa desenhada) */
-.desafios-cena-placa {
-  position: absolute;
-  top: 72px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 12px;
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: var(--des-creme);
-  background: linear-gradient(180deg, var(--des-madeira-clara), var(--des-madeira));
-  border: 2px solid var(--des-dourado-sombra);
-  text-shadow: 1px 1px 0 #000;
-  z-index: 1;
 }
 
 /* ---------- Barra superior (sobre a cena) ---------- */

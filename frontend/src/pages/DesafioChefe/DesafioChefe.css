@@ -283,7 +283,9 @@
 /* de costas, olhando pro chefe — igual às batalhas de treinador Pokémon */
 .chefe-sprite-heroi {
   left: 14%;
+  /* quadrado: o guerreiro é montado em camadas de 64x64 (AvatarPersonagem) */
   width: 96px;
+  height: 96px;
   transform: scaleX(-1);
 }
 

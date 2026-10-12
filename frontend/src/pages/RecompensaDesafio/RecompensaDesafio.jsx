@@ -78,6 +78,15 @@ function faixaDoTempo(segundos) {
   return FAIXAS_DE_TEMPO.find((faixa) => segundos <= faixa.ate);
 }
 
+// Elogios pra quem refaz um desafio que já tinha vencido — um é sorteado
+// a cada vitória repetida.
+const ELOGIOS_DESAFIO_REFEITO = [
+  'Mandou bem de novo! Refazer um desafio é o jeito mais certeiro de fixar o conhecimento.',
+  'Vencer duas vezes o mesmo desafio? Esse conceito já é seu, aventureiro!',
+  'Treino de mestre! Quem revisa o que aprendeu nunca é pego desprevenido.',
+  'O inimigo nem acreditou: você venceu de novo, e com estilo!',
+];
+
 export default function RecompensaDesafio() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,6 +140,14 @@ export default function RecompensaDesafio() {
     ? location.state.tempoSegundos
     : null;
   const faixaTempo = tempoSegundos !== null ? faixaDoTempo(tempoSegundos) : null;
+
+  // Desafio refeito (já tinha sido vencido antes): recompensas não acumulam,
+  // então em vez de comemorar um item "novo", avisa que ele já está no
+  // inventário e elogia o jogador por ter vencido de novo.
+  const desafioRefeito = Boolean(resultadoApi?.jaConcluidoAntes);
+  const [elogioRefeito] = useState(
+    () => ELOGIOS_DESAFIO_REFEITO[Math.floor(Math.random() * ELOGIOS_DESAFIO_REFEITO.length)]
+  );
   const falaMago = getFalaMagoPorDesafio(idNumerico, idMundo);
 
   // replace: o jogador não deve conseguir voltar pra tela de vitória pelo
@@ -196,8 +213,12 @@ export default function RecompensaDesafio() {
         <div className="recompensa-faixa-corpo">
           <i className="hn hn-crown-solid recompensa-faixa-coroa" aria-hidden="true" />
           <div className="recompensa-faixa-textos">
-            <h2 className="recompensa-faixa-titulo">VITÓRIA ÉPICA!</h2>
-            <p className="recompensa-faixa-subtitulo">O CÓDIGO VENCEU A FERA!</p>
+            <h2 className="recompensa-faixa-titulo">
+              {desafioRefeito ? 'VENCEU DE NOVO!' : 'VITÓRIA ÉPICA!'}
+            </h2>
+            <p className="recompensa-faixa-subtitulo">
+              {desafioRefeito ? 'A FERA CAIU MAIS UMA VEZ!' : 'O CÓDIGO VENCEU A FERA!'}
+            </p>
           </div>
         </div>
       </div>
@@ -242,7 +263,9 @@ export default function RecompensaDesafio() {
             <div className="recompensa-placa-nome">
               <strong>{item.nome}</strong>
             </div>
-            <span className="recompensa-etiqueta-tipo">◆ Item de Equipamento ◆</span>
+            <span className="recompensa-etiqueta-tipo">
+              {resultadoApi?.recompensaJaRecebida ? '◆ Já está no seu inventário ◆' : '◆ Item de Equipamento ◆'}
+            </span>
             {item.descricao && <p className="recompensa-descricao">{item.descricao}</p>}
           </>
         ) : (
@@ -251,6 +274,26 @@ export default function RecompensaDesafio() {
           </div>
         )}
         {xpGanho && <p className="recompensa-xp">+{xpGanho} XP</p>}
+
+        {desafioRefeito && (
+          <div className="recompensa-refeito">
+            <p className="recompensa-refeito-aviso">
+              <i className="hn hn-check-circle" aria-hidden="true" />
+              {item && resultadoApi?.recompensaJaRecebida ? (
+                <span>
+                  Você já recebeu a recompensa deste desafio: <strong>{item.nome}</strong>. Cada
+                  recompensa é entregue uma vez só.
+                </span>
+              ) : (
+                <span>Você já tinha concluído este desafio antes.</span>
+              )}
+            </p>
+            <p className="recompensa-refeito-elogio">
+              <i className="hn hn-star-solid" aria-hidden="true" />
+              {elogioRefeito}
+            </p>
+          </div>
+        )}
 
         {faixaTempo && (
           <div className="recompensa-tempo">

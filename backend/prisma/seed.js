@@ -14,28 +14,71 @@
 
 const { PrismaClient } = require("@prisma/client");
 const desafioIA = require("./desafios/desafioIA");
+const desafiosPortal3 = require("./desafios/portal3");
+const { validarAlternativas } = require("../src/services/etapas.service");
 
 const prisma = new PrismaClient();
 
 const MUNDO_ID = 1;
 const DIFICULDADE = "iniciante";
 
-// Itens reais de equipamento, concedidos como recompensa ao concluir um
-// desafio (ver Desafio.itemRecompensaId). O "tipo" precisa bater com um
-// slot de EditarPersonagem.jsx: capacete|peitoral|arma|costas.
+// ---------- Itens de equipamento ----------
+//
+// O personagem é montado em camadas (ver frontend/src/data/spritesPersonagem.js):
+// cada FORMA (elmo, armadura...) é desenhada uma vez e recolorida em um
+// MATERIAL por portal pelo script frontend/scripts/gerarItensPersonagem.mjs.
+// Item.imagemUrl guarda a CHAVE do sprite gerado ("peitoral/armadura--ferro").
+//
+// "tipo" é o slot de EditarPersonagem.jsx: capacete|peitoral|arma|costas|botas.
+const FORMAS = {
+  elmo: { tipo: "capacete", icone: "🪖", descricao: "Protege a cabeça nas batalhas de código.", bonus: { bonusDefesa: 2 } },
+  armadura: { tipo: "peitoral", icone: "🛡️", descricao: "Uma armadura que aguenta os golpes mais traiçoeiros.", bonus: { bonusDefesa: 5 } },
+  espada: { tipo: "arma", icone: "🗡️", descricao: "Uma lâmina afiada para cortar bugs pela raiz.", bonus: { bonusAtaque: 3 } },
+  capa: { tipo: "costas", icone: "🧣", descricao: "Tremula ao vento a cada desafio vencido.", bonus: { bonusDefesa: 1 } },
+  botas: { tipo: "botas", icone: "🥾", descricao: "Passos firmes em qualquer trilha.", bonus: { bonusDefesa: 1 } },
+};
+
+// Um material por portal (mesmos ids de frontend/scripts/materiais.json).
+// "nivel" multiplica os bônus da forma.
+const MATERIAIS = {
+  ferro: { nivel: 1, raridade: "comum", frase: "Feito de ferro simples e confiável." },
+  elfico: { nivel: 2, raridade: "raro", frase: "Forjado com a leveza das artes élficas." },
+  dourado: { nivel: 3, raridade: "epico", frase: "Banhado no ouro da Arena do Dragão." },
+};
+
+const NOMES = {
+  elmo: { ferro: "Elmo de Ferro", elfico: "Elmo Élfico", dourado: "Elmo Dourado" },
+  armadura: { ferro: "Peitoral de Ferro", elfico: "Peitoral Élfico", dourado: "Peitoral Dourado" },
+  espada: { ferro: "Espada de Ferro", elfico: "Espada Élfica", dourado: "Espada Dourada" },
+  capa: { ferro: "Capa do Escudeiro", elfico: "Capa Élfica", dourado: "Capa Dourada" },
+  botas: { ferro: "Botas de Ferro", elfico: "Botas Élficas", dourado: "Botas Douradas" },
+};
+
+// Descrições que já existiam antes das camadas e continuam valendo.
+const DESCRICOES_ORIGINAIS = {
+  "Peitoral de Ferro":
+    "Uma armadura simples, mas resistente — prova de que você sobreviveu ao seu primeiro combate de código.",
+};
+
 const itens = [
-  {
-    nome: "Peitoral de Ferro",
-    tipo: "peitoral",
-    raridade: "comum",
-    descricao:
-      "Uma armadura simples, mas resistente — prova de que você sobreviveu ao seu primeiro combate de código.",
-    icone: "🛡️",
-    // nome do arquivo em frontend/src/assets/images — ver data/itemImagens.js,
-    // que resolve isso pra imagem estática real (não é uma URL de verdade)
-    imagemUrl: "Item_Peitoral.png",
-    bonusDefesa: 5,
-  },
+  ...Object.entries(FORMAS).flatMap(([forma, dadosForma]) =>
+    Object.entries(MATERIAIS).map(([material, dadosMaterial]) => {
+      const nome = NOMES[forma][material];
+      const bonus = Object.fromEntries(
+        Object.entries(dadosForma.bonus).map(([campo, valor]) => [campo, valor * dadosMaterial.nivel])
+      );
+      return {
+        nome,
+        tipo: dadosForma.tipo,
+        raridade: dadosMaterial.raridade,
+        descricao: DESCRICOES_ORIGINAIS[nome] ?? `${dadosForma.descricao} ${dadosMaterial.frase}`,
+        icone: dadosForma.icone,
+        imagemUrl: `${dadosForma.tipo}/${forma}--${material}`,
+        ...bonus,
+      };
+    })
+  ),
+  // Item único (desenho próprio, sem variações de material).
   {
     nome: "Chapéu Goblin",
     tipo: "capacete",
@@ -43,10 +86,74 @@ const itens = [
     descricao:
       "Um chapéu esfarrapado tomado do Goblin derrotado — nem toda vitória vem com um troféu bonito, mas essa você ganhou.",
     icone: "🎩",
-    imagemUrl: "chapeu_goblin.png",
+    imagemUrl: "capacete/chapeu-goblin",
     bonusDefesa: 2,
   },
+  // Ícones originais em frontend/src/assets/images (Item_espada.png e
+  // Item_bota.png); as camadas do personagem foram derivadas deles.
+  {
+    nome: "Espada de Cristal",
+    tipo: "arma",
+    raridade: "raro",
+    descricao: "Uma lâmina de cristal azul que brilha mais forte a cada bug derrotado.",
+    icone: "🗡️",
+    imagemUrl: "arma/espada-de-cristal",
+    bonusAtaque: 4,
+  },
+  {
+    nome: "Botas Arcanas",
+    tipo: "botas",
+    raridade: "raro",
+    descricao: "Botas encantadas que deixam o passo leve como um código bem indentado.",
+    icone: "🥾",
+    imagemUrl: "botas/botas-arcanas",
+    bonusDefesa: 2,
+  },
+  // Importados com `npm run itens:importar` a partir de Item_asas.png e
+  // Item_espada_2.png (frontend/src/assets/images).
+  {
+    nome: "Asas Flamejantes",
+    tipo: "costas",
+    raridade: "epico",
+    descricao: "Asas em chamas que só se abrem para quem domina a contagem de variáveis.",
+    icone: "🔥",
+    imagemUrl: "costas/asas-flamejantes",
+    bonusDefesa: 3,
+  },
+  {
+    nome: "Espada Flamejante",
+    tipo: "arma",
+    raridade: "lendario",
+    descricao: "A lâmina incandescente arrancada do Rei GoblinJS — prova de que o chefe do portal caiu.",
+    icone: "⚔️",
+    imagemUrl: "arma/espada-flamejante",
+    bonusAtaque: 6,
+  },
 ];
+
+// Qual item cada desafio dá ao ser concluído pela primeira vez, por
+// "mundoId/numero" (trilha iniciante). Em cada portal, os itens são do
+// material daquele portal. Desafio que ainda não existe no banco é ignorado
+// e recebe o item quando for cadastrado (rodando o seed de novo, ou pelo
+// painel de admin). O desafio 6 do portal 2 em diante leva ao baú.
+const RECOMPENSAS_POR_DESAFIO = {
+  "1/1": "Peitoral de Ferro",
+  "1/2": "Chapéu Goblin",
+  "1/3": "Asas Flamejantes",
+  "1/4": "Espada de Cristal",
+  "1/5": "Botas Arcanas",
+  "1/6": "Espada Flamejante",
+  "2/1": "Botas Élficas",
+  "2/2": "Peitoral Élfico",
+  "2/3": "Espada Élfica",
+  "2/4": "Capa Élfica",
+  "2/5": "Elmo Élfico",
+  "3/1": "Botas Douradas",
+  "3/2": "Peitoral Dourado",
+  "3/3": "Espada Dourada",
+  "3/4": "Capa Dourada",
+  "3/5": "Elmo Dourado",
+};
 
 // Item não tem uma coluna @unique (só "id"), então o upsert por nome é
 // manual aqui em vez de usar prisma.item.upsert.
@@ -65,8 +172,6 @@ async function main() {
     console.log(`Item "${item.nome}" semeado.`);
   }
 
-  const peitoralDeFerro = itensSemeados["Peitoral de Ferro"];
-  const chapeuGoblin = itensSemeados["Chapéu Goblin"];
 
   const desafios = [
     {
@@ -82,9 +187,6 @@ async function main() {
         { id: "c", texto: 'System.out.println("Olá, mundo!")', correta: false },
         { id: "d", texto: 'echo "Olá, mundo!"', correta: false },
       ],
-      // recompensa é um item real — entra no inventário (ItemPersonagem)
-      // na primeira vez que o jogador conclui este desafio
-      itemRecompensaId: peitoralDeFerro.id,
     },
     {
       mundoId: MUNDO_ID,
@@ -100,9 +202,6 @@ async function main() {
         { id: "c", texto: "51 (number)", correta: false },
         { id: "d", texto: "NaN (number)", correta: false },
       ],
-      // recompensa é um item real — entra no inventário (ItemPersonagem)
-      // na primeira vez que o jogador conclui este desafio
-      itemRecompensaId: chapeuGoblin.id,
     },
     {
       mundoId: MUNDO_ID,
@@ -289,7 +388,21 @@ async function main() {
     // Conteúdo em prisma/desafios/desafioIA.js (também usado por
     // scripts/criarDesafioIA.js, que cadastra só ele).
     desafioIA,
+
+    // Portal 3 — Arena do Dragão: 6 desafios avançados, cada um com 3 etapas
+    // (ver prisma/desafios/portal3.js e src/services/etapas.service.js).
+    ...desafiosPortal3,
   ];
+
+  // Confere o formato de todo conteúdo antes de gravar qualquer desafio —
+  // um erro de digitação aqui viraria um desafio impossível de vencer.
+  for (const desafio of desafios) {
+    try {
+      validarAlternativas(desafio.alternativas);
+    } catch (erro) {
+      throw new Error(`Desafio ${desafio.mundoId}/${desafio.numero} (${desafio.titulo}): ${erro.message}`);
+    }
+  }
 
   for (const desafio of desafios) {
     await prisma.desafio.upsert({
@@ -304,6 +417,17 @@ async function main() {
       create: desafio,
     });
     console.log(`Desafio ${desafio.numero} (${desafio.titulo}) semeado.`);
+  }
+
+  // Recompensas: aplicadas depois dos desafios pra valer também pros que
+  // foram cadastrados fora deste seed (ex: scripts/criarDesafioIA.js).
+  for (const [chave, nomeItem] of Object.entries(RECOMPENSAS_POR_DESAFIO)) {
+    const [mundoId, numero] = chave.split("/").map(Number);
+    const { count } = await prisma.desafio.updateMany({
+      where: { mundoId, dificuldade: DIFICULDADE, numero },
+      data: { itemRecompensaId: itensSemeados[nomeItem].id },
+    });
+    if (count > 0) console.log(`Recompensa do desafio ${chave}: ${nomeItem}.`);
   }
 }
 

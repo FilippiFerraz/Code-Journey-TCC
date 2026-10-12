@@ -44,11 +44,5 @@ module.exports = {
       'Aparece "Você pode comprar o escudo!". O programa testa as condições em ordem: 7 não é maior ou igual a 10, então o primeiro bloco é pulado; 7 é maior ou igual a 5, então o else if é executado e mostra a mensagem do escudo. Como uma condição já foi verdadeira, o else não roda.',
   },
   xpConcedido: 15,
-  // mesma insígnia já prevista no frontend pra este desafio (ver
-  // recompensasPorMundo[2][2] em frontend/src/data/recompensas.js)
-  tipoRecompensa: "insignia",
-  nomeRecompensa: "Voz do Sábio",
-  descricaoRecompensa:
-    "Uma insígnia concedida a quem sabe não só escrever código, mas explicar o que ele faz — a marca de quem realmente entende.",
-  iconeRecompensa: "📜",
+  // O item de recompensa é definido em seed.js (RECOMPENSAS_POR_DESAFIO).
 };

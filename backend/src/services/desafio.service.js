@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const { registrarLog } = require("./log.service");
 const { calcularDiferencas } = require("../utils/diff");
+const { validarAlternativas } = require("./etapas.service");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -47,46 +48,9 @@ async function listarItensCatalogo() {
   });
 }
 
-// Aceita os dois formatos usados em ResolverDesafio.jsx (ver comentário em
-// schema.prisma): array de alternativas de múltipla escolha, ou objeto de
-// "ordenar blocos". Qualquer outra coisa é rejeitada antes de chegar no banco.
-function validarAlternativas(alternativas) {
-  if (Array.isArray(alternativas)) {
-    if (alternativas.length < 2) {
-      throw erroDeValidacao("Inclua ao menos duas alternativas.");
-    }
-    if (!alternativas.some((alt) => alt.correta === true)) {
-      throw erroDeValidacao("Marque qual alternativa é a correta.");
-    }
-    for (const alt of alternativas) {
-      if (!alt.id || typeof alt.texto !== "string" || !alt.texto.trim()) {
-        throw erroDeValidacao("Cada alternativa precisa de id e texto.");
-      }
-    }
-    return;
-  }
-
-  if (alternativas && alternativas.tipo === "ordenar_blocos") {
-    if (!Array.isArray(alternativas.blocos) || alternativas.blocos.length === 0) {
-      throw erroDeValidacao("Informe ao menos um bloco de código.");
-    }
-    if (
-      !Array.isArray(alternativas.ordemCorreta) ||
-      alternativas.ordemCorreta.length !== alternativas.blocos.length
-    ) {
-      throw erroDeValidacao("A ordem correta precisa ter o mesmo tanto de itens que os blocos.");
-    }
-    const idsBlocos = new Set(alternativas.blocos.map((bloco) => bloco.id));
-    if (!alternativas.ordemCorreta.every((id) => idsBlocos.has(id))) {
-      throw erroDeValidacao("A ordem correta cita um bloco que não existe na lista de blocos.");
-    }
-    return;
-  }
-
-  throw erroDeValidacao(
-    'Formato de alternativas inválido — use uma lista de alternativas ou um objeto "ordenar_blocos".'
-  );
-}
+// Formato do conteúdo (Desafio.alternativas): validado por
+// etapas.service.js::validarAlternativas, que aceita os 6 tipos de exercício
+// e os desafios com várias etapas (portal 3).
 
 // Atualiza só os campos vindos no corpo da requisição — mesmo padrão de
 // "patch parcial" usado em perfil.service.js::atualizarPerfil. "admin" é

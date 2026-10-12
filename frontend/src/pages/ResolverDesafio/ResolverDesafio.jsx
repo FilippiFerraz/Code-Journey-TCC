@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
@@ -240,7 +241,7 @@ function falaDerrota(nomeInimigo) {
 function ResolverDesafio() {
   const { mundoId, dificuldade, desafioId } = useParams();
   const navigate = useNavigate();
-  const guerreiro = usePersonagemAvatar();
+  const itensEquipados = usePersonagemAvatar();
 
   const desafio = DESAFIOS[mundoId]?.[desafioId] || DESAFIOS[1][1];
   const ehOrdenarBlocos = desafio.tipo === "ordenar_blocos";
@@ -1029,18 +1030,28 @@ function ResolverDesafio() {
         {/* palco = tudo que sofre o zoom da "câmera" */}
         <div className={`cena-palco ${focoSlime ? "cena-palco--foco" : ""}`}>
           {/* sem chão desenhado em CSS: cada imagem de fundo já traz o piso */}
-          <img
-            // key muda a cada golpe pra forçar o navegador a reiniciar o
-            // GIF do quadro zero, e volta pra uma key fixa quando parado
-            key={golpeHeroi ? `heroi-ataque-${cicloAtaque}` : "heroi-parado"}
-            src={golpeHeroi ? guerreiroAtaque : guerreiro}
-            alt="Guerreiro"
-            className={`cena-heroi ${
-              tomandoGolpe ? "cena-heroi--atingido" : ""
-            } ${golpeHeroi ? "cena-heroi--golpeando" : ""}`}
-            style={{ width: 120, imageRendering: "pixelated" }}
-            draggable={false}
-          />
+          {golpeHeroi ? (
+            // Durante o golpe: GIF de ataque (ainda sem as camadas de
+            // equipamento — animar camadas é trabalho futuro). A key muda a
+            // cada golpe pra forçar o navegador a reiniciar o GIF do quadro zero.
+            <img
+              key={`heroi-ataque-${cicloAtaque}`}
+              src={guerreiroAtaque}
+              alt="Guerreiro"
+              className={`cena-heroi cena-heroi--golpeando ${
+                tomandoGolpe ? "cena-heroi--atingido" : ""
+              }`}
+              style={{ width: 120, height: 120, imageRendering: "pixelated" }}
+              draggable={false}
+            />
+          ) : (
+            <AvatarPersonagem
+              itensEquipados={itensEquipados}
+              alt="Guerreiro"
+              className={`cena-heroi ${tomandoGolpe ? "cena-heroi--atingido" : ""}`}
+              style={{ width: 120, height: 120 }}
+            />
+          )}
 
           <img
             src={desafio.inimigo.imagem}

@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:seed": "prisma db seed",
     "reset:baus": "node scripts/resetBaus.js",
-    "desafio:ia": "node scripts/criarDesafioIA.js"
+    "desafio:ia": "node scripts/criarDesafioIA.js",
+    "recompensas:sincronizar": "node scripts/sincronizarRecompensas.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

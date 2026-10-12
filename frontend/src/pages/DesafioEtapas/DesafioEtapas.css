@@ -1,0 +1,184 @@
+/* Desafios com várias etapas (Portal 3). Quase todo o visual vem dos
+   desafios prontos — ResolverDesafio.css (cena, painel, opções, blocos,
+   cartões), DesafioChefe.css (arena e menu de ataques), DesafioIntro.css
+   (introdução) e ResolverDesafioPocao.css (caldeirão). Aqui fica só o que
+   é próprio das etapas. */
+
+.etapas-carregando {
+  padding: 60px 16px;
+  text-align: center;
+  color: #d8d2ea;
+}
+
+.etapas-erro-carregar {
+  margin: 80px 16px 0;
+}
+
+/* ---------- Introdução: lista das etapas no card do enunciado ---------- */
+.etapas-intro-lista {
+  list-style: none;
+  margin: 4px 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.etapas-intro-lista li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.etapas-intro-lista li span {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  font-size: 0.72rem;
+}
+
+.etapas-intro-lista--feita {
+  opacity: 0.6;
+}
+
+.etapas-intro-lista--feita span {
+  background: #4caf6e;
+  border-color: #4caf6e;
+  color: #ffffff;
+}
+
+.etapas-intro-aviso {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffe08a;
+}
+
+/* ---------- Vida do inimigo na cena comum (um segmento por etapa) ---------- */
+/* Embaixo do cronômetro, do lado do inimigo — no topo central ela encostava
+   no cronômetro em telas de celular. */
+.etapas-hud-inimigo {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 6px;
+  background: rgba(20, 14, 32, 0.72);
+  border: 2px solid #f4c542;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+  max-width: 60%;
+}
+
+.etapas-hud-nome {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f3e9d2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.etapas-hud-barra {
+  display: flex;
+  gap: 3px;
+}
+
+.etapas-hud-segmento {
+  width: 26px;
+  height: 7px;
+  background: #e04848;
+  border: 1px solid #000000;
+}
+
+.etapas-hud-segmento--vazio {
+  background: #3a2a3a;
+}
+
+/* Inimigo sentindo o golpe de uma etapa vencida (sem morrer) */
+.etapas-inimigo--ferido {
+  animation: etapas-ferido 0.6s ease-out;
+}
+
+@keyframes etapas-ferido {
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: none;
+  }
+  20% {
+    transform: translateX(8px);
+    filter: brightness(2.2) saturate(0.4);
+  }
+  40% {
+    transform: translateX(-6px);
+  }
+  60% {
+    transform: translateX(4px);
+    filter: brightness(1.6);
+  }
+}
+
+/* Herói levando dano na arena do chefe (a arena original não tinha dano) */
+.etapas-heroi--atingido {
+  animation: etapas-ferido 0.6s ease-out;
+}
+
+/* Corações dentro do card do jogador, na arena do chefe */
+.chefe-card-jogador .cena-vida {
+  position: static;
+}
+
+/* ---------- Painel ---------- */
+.etapas-tag {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #2a1a0a;
+  background: #f4c542;
+  border: 2px solid #8a5a12;
+}
+
+.etapas-salvo {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* ---------- Poção dentro do painel ---------- */
+/* position: relative — o fantasma do arraste é absolute relativo a isto */
+.etapas-pocao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.etapas-pocao-receita {
+  margin: 0;
+}
+
+/* Código dentro do diálogo do chefe: a caixa é estreita (grid do
+   DesafioChefe.css), então o código quebra a linha em vez de cortar. */
+.chefe-caixa-dialogo .dissertativa-codigo {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.78rem;
+}

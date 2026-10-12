@@ -28,4 +28,7 @@ router.use("/itens", itemRoutes);
 const contaRoutes = require("./conta.routes.js");
 router.use("/conta", contaRoutes);
 
+const desafiosRoutes = require("./desafios.routes.js");
+router.use("/desafios", desafiosRoutes);
+
 module.exports = router;

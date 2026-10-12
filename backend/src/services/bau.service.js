@@ -1,5 +1,5 @@
 const prisma = require("../config/prisma");
-const { concederItem } = require("./personagem.service");
+const { concederItemSeNaoTiver, buscarOuCriarPersonagem } = require("./personagem.service");
 
 // Quantos itens vão em "slots" na resposta de abrirBau — pode repetir itens
 // do catálogo se o jogo ainda não tiver esse tanto de itens distintos. A
@@ -105,15 +105,25 @@ function sortearPorRaridade(itens) {
 // Sorteia o item ganho e monta os SLOTS_ROLETA itens exibidos na roleta — o
 // item sorteado sempre ocupa um deles, no índice retornado em
 // "indiceVencedor" (é nesse slot que a animação do frontend deve parar).
-async function sortearRoleta() {
+// Recompensas não acumulam (ver concederItemSeNaoTiver), então o sorteio é
+// feito só entre os itens que o jogador AINDA NÃO TEM — o baú sempre dá algo
+// novo. Se ele já tiver todos, sorteia entre todos (e nada se duplica).
+async function sortearRoleta(usuarioId) {
   const itensDisponiveis = await prisma.item.findMany();
   if (itensDisponiveis.length === 0) {
     throw erroDeValidacao("Ainda não há itens cadastrados para dar como recompensa.");
   }
 
+  const personagem = await buscarOuCriarPersonagem(usuarioId);
+  const jaTem = new Set(
+    (await prisma.itemPersonagem.findMany({ where: { personagemId: personagem.id }, select: { itemId: true } }))
+      .map((ip) => ip.itemId)
+  );
+  const itensNovos = itensDisponiveis.filter((item) => !jaTem.has(item.id));
+
   const sortear = () => itensDisponiveis[Math.floor(Math.random() * itensDisponiveis.length)];
 
-  const itemGanho = sortearPorRaridade(itensDisponiveis);
+  const itemGanho = sortearPorRaridade(itensNovos.length > 0 ? itensNovos : itensDisponiveis);
   const slots = Array.from({ length: SLOTS_ROLETA }, sortear);
   const indiceVencedor = Math.floor(Math.random() * SLOTS_ROLETA);
   slots[indiceVencedor] = itemGanho;
@@ -144,8 +154,8 @@ async function abrirBau(usuarioId, mundoId, dificuldade) {
     throw erroDeValidacao("Termine todos os desafios desta trilha para abrir o baú.");
   }
 
-  const { itemGanho, slots, indiceVencedor } = await sortearRoleta();
-  const quantidade = await concederItem(usuarioId, itemGanho.id);
+  const { itemGanho, slots, indiceVencedor } = await sortearRoleta(usuarioId);
+  const { quantidade } = await concederItemSeNaoTiver(usuarioId, itemGanho.id);
 
   await prisma.bauMundo.create({
     data: { usuarioId, mundoId: mundoIdNumero, dificuldade, itemGanhoId: itemGanho.id },

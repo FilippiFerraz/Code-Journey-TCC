@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
 import { pararSom, tocarSom } from "../../utils/sons";
@@ -105,7 +106,7 @@ const CHEFES = {
 function DesafioChefe() {
   const { mundoId, dificuldade, desafioId } = useParams();
   const navigate = useNavigate();
-  const guerreiro = usePersonagemAvatar();
+  const itensEquipados = usePersonagemAvatar();
 
   const chefe = CHEFES[mundoId] || CHEFES[1];
 
@@ -352,13 +353,7 @@ function DesafioChefe() {
         <div className="chefe-palco">
           {/* De costas, como nas batalhas Pokémon — TODO: sprite dedicado
               de costas; por ora espelha o sprite padrão do personagem. */}
-          <img
-            src={guerreiro}
-            alt="Seu personagem"
-            className="chefe-sprite-heroi"
-            style={{ imageRendering: "pixelated" }}
-            draggable={false}
-          />
+          <AvatarPersonagem itensEquipados={itensEquipados} className="chefe-sprite-heroi" />
 
           <img
             src={chefe.imagem}

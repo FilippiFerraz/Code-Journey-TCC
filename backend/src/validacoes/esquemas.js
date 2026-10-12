@@ -132,6 +132,8 @@ const progresso = {
       ),
       // Até 24h — acima disso não é tempo de resolução real.
       tempoSegundos: campo("tempo", r.opcional(r.numero({ min: 0, max: 86400 }))),
+      // Desafios com várias etapas (portal 3): qual etapa está sendo respondida.
+      etapa: campo("etapa", r.opcional(r.inteiro({ min: 1, max: 20 }))),
     },
   },
   listar: {
@@ -194,4 +196,28 @@ const admin = {
   },
 };
 
-module.exports = { auth, conta, perfil, personagem, progresso, bau, admin };
+// ---------- /api/desafios (conteúdo pra jogar) ----------
+
+const paramsDesafio = {
+  mundoId: campo("mundo", r.idPositivo),
+  dificuldade: campo("dificuldade", r.umDe(DIFICULDADES)),
+  numero: campo("número do desafio", r.idPositivo),
+};
+
+const desafioJogo = {
+  buscar: { params: paramsDesafio },
+  verificar: {
+    params: paramsDesafio,
+    body: {
+      etapa: campo("etapa", r.inteiro({ min: 1, max: 20 })),
+      indiceCarta: campo("cartão", r.opcional(r.inteiro({ min: 0, max: 50 }))),
+      marcouCerto: campo("classificação", r.opcional(r.booleano)),
+      posicao: campo("posição", r.opcional(r.inteiro({ min: 0, max: 50 }))),
+      ingredienteId: campo("ingrediente", r.opcional(r.identificador)),
+      perguntaId: campo("pergunta", r.opcional(r.identificador)),
+      opcaoId: campo("opção", r.opcional(r.identificador)),
+    },
+  },
+};
+
+module.exports = { auth, conta, perfil, personagem, progresso, bau, admin, desafioJogo };

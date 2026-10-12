@@ -1,0 +1,300 @@
+PROMPTS DE IMAGEM - PORTAL 3 (ARENA DO DRAGAO) - CODE JOURNEY
+=================================================================
+
+COMO USAR
+- Cada bloco entre as linhas ">>>>> COPIAR" e "<<<<< FIM" e um prompt completo e
+  independente: copie so o que esta dentro, sem os marcadores.
+- Os prompts estao em ingles (geradores de imagem entendem melhor), mas cada
+  secao tem um titulo em portugues pra voce se localizar.
+- Gere 2 a 4 variacoes de cada e escolha a que combina com os fundos e
+  inimigos que o jogo ja tem (pixel art sombria de fantasia, bem detalhada).
+- Se o gerador pedir "negative prompt", use o bloco NEGATIVO no fim do arquivo.
+
+ESPECIFICACOES TECNICAS
+- FUNDOS: quadrado 1:1, 1254 x 1254 px (qualquer quadrado serve, o jogo corta
+  pra caber). Topo livre (fica o HUD: coracoes, cronometro, barra de vida),
+  chao na parte de baixo (onde o heroi e o inimigo pisam), SEM personagens.
+- INIMIGOS: PNG com fundo transparente, 1254 x 1254 px (ou proporcao parecida),
+  UM personagem so, de corpo inteiro, virado para a ESQUERDA (ele fica do lado
+  direito da tela, de frente para o heroi), apoiado na base da imagem.
+- Se o gerador nao entregar PNG transparente, peca "flat solid bright green
+  background (#00FF00)" e remova a cor depois (remove.bg, Photoshop, GIMP).
+
+ESTILO COMUM (ja incluido dentro de cada prompt abaixo)
+Pixel art de fantasia sombria e pintada, muito detalhada, paleta rica com
+contraste forte e luz dramatica, no mesmo estilo dos fundos e inimigos ja
+existentes do jogo (cemiterio, vila de mercado, floresta, torre).
+
+IDENTIDADE DO PORTAL 3
+Arena do Dragao: fogo, brasas, ouro e pedra escura. Os itens deste portal sao
+dourados ("banhados no ouro da Arena do Dragao"), entao ouro + chamas combinam
+com a identidade. Cada desafio tem um tema de JavaScript (escopo, closures,
+arrays, event loop, igualdade/tipos, recursao), citado em cada secao.
+
+
+=================================================================
+DESAFIO 1 - O LABIRINTO DO ESCOPO
+Tema JS: escopo, hoisting, zona morta do let, const
+Inimigo: Guardiao do Labirinto
+=================================================================
+
+--- FUNDO DESAFIO 1 ---
+>>>>> COPIAR
+Dark fantasy pixel art, highly detailed painterly pixel art style, 1:1 square
+composition. The entrance of an ancient stone labyrinth at dusk: tall mossy
+stone hedge-walls and carved stone doors, some doors open and some sealed shut
+with glowing runes, corridors that branch and fade into shadow, floating
+dust and faint ember sparks. Moody purple and deep teal sky with warm orange
+torch light on the walls. Flat dirt-and-stone path on the lower third of the
+image where characters would stand. Keep the top 25% of the image calm and
+free of important details (UI will be placed there). No characters, no text,
+no logos, no UI. Side-view game background, wide readable scene, strong depth,
+high contrast.
+<<<<< FIM
+
+--- INIMIGO DESAFIO 1 ---
+>>>>> COPIAR
+Dark fantasy pixel art game enemy sprite, highly detailed painterly pixel art,
+single character, full body, facing left, centered, standing on the bottom edge
+of the image, transparent background (or flat solid #00FF00 green background).
+The Labyrinth Guardian: a tall armored guardian made of ancient carved stone
+and rusted iron, wearing a heavy horned helmet with a glowing blue rune on the
+chest, one hand holding a large iron key like a weapon, the other hand
+resting on a stone door slab used as a shield, faint spectral blue light
+leaking from the armor seams. Imposing but not huge, menacing pose ready to
+attack. No ground shadow, no text, no background scenery.
+<<<<< FIM
+
+
+=================================================================
+DESAFIO 2 - AS GARRAS DAS CLOSURES
+Tema JS: closures (funcoes que lembram do escopo onde nasceram)
+Inimigo: Goblin das Garras
+=================================================================
+
+--- FUNDO DESAFIO 2 ---
+>>>>> COPIAR
+Dark fantasy pixel art, highly detailed painterly pixel art style, 1:1 square
+composition. A forgotten goblin lair carved into a rocky cave mouth at twilight:
+walls covered with deep claw scratches, hanging bone charms, glowing jars and
+relics stored on shelves and in nooks ("memories"), roots and tangled vines,
+a few pairs of glowing yellow eyes in the dark background. Warm orange
+lantern light mixed with cold purple shadows. Flat packed-earth floor on the
+lower third of the image where characters would stand. Keep the top 25% of the
+image calm and free of important details (UI will be placed there). No
+characters, no text, no logos, no UI. Side-view game background, strong
+depth, high contrast.
+<<<<< FIM
+
+--- INIMIGO DESAFIO 2 ---
+>>>>> COPIAR
+Dark fantasy pixel art game enemy sprite, highly detailed painterly pixel art,
+single character, full body, facing left, centered, standing on the bottom edge
+of the image, transparent background (or flat solid #00FF00 green background).
+The Claw Goblin: a lean, hunched goblin with oversized razor-sharp metal claws
+on both hands, ragged leather armor covered in tiny trinkets, bone charms and
+pouches (he "remembers everything he has seen"), glowing yellow eyes, a sly
+snarling grin, crouched in an aggressive pose ready to leap. Green skin with
+battle scars. No ground shadow, no text, no background scenery.
+<<<<< FIM
+
+
+=================================================================
+DESAFIO 3 - O MESTRE DOS ARRAYS
+Tema JS: map, filter, reduce (listas transformadas num encadeamento)
+Inimigo: Mestre dos Arrays
+=================================================================
+
+--- FUNDO DESAFIO 3 ---
+>>>>> COPIAR
+Dark fantasy pixel art, highly detailed painterly pixel art style, 1:1 square
+composition. A busy medieval fantasy market street at dusk inside the Dragon
+Arena walls: long rows of wooden shelves and crates holding neatly lined-up
+goods, conveyor-like wooden chutes and funnels that sort items from one lane
+to another, hanging lanterns, banners with gold trim, barrels and sacks. Warm
+golden lantern light against deep blue-purple shadows. Flat cobblestone road
+on the lower third of the image where characters would stand. Keep the top
+25% of the image calm and free of important details (UI will be placed there).
+No characters, no text, no logos, no UI. Side-view game background, strong
+depth, high contrast.
+<<<<< FIM
+
+--- INIMIGO DESAFIO 3 ---
+>>>>> COPIAR
+Dark fantasy pixel art game enemy sprite, highly detailed painterly pixel art,
+single character, full body, facing left, centered, standing on the bottom edge
+of the image, transparent background (or flat solid #00FF00 green background).
+The Array Master: an elegant but sinister merchant-wizard in a long dark
+violet and gold coat with many pockets, a tall hat, holding a fan of glowing
+magical cards or ledger pages in one hand and a long wooden measuring staff
+with a funnel-shaped crystal on top in the other, several small floating
+crates orbiting him in a neat row, confident smirk. Rich gold embroidery.
+No ground shadow, no text, no background scenery.
+<<<<< FIM
+
+
+=================================================================
+DESAFIO 4 - O RELOGIO DO EVENT LOOP
+Tema JS: event loop, Promises, setTimeout, async/await (a ordem do tempo)
+Inimigo: Bruxa do Relogio
+=================================================================
+
+--- FUNDO DESAFIO 4 ---
+>>>>> COPIAR
+Dark fantasy pixel art, highly detailed painterly pixel art style, 1:1 square
+composition. The top of an ancient clock tower courtyard at night: a gigantic
+brass clock face with spinning gears glowing in the background, enormous
+interlocking cogs and chains, floating hourglasses and glowing sand,
+stairs and stone balconies with a long queue-like row of lit candles, soft
+magical blue and gold light, drifting sparks. Deep midnight blue sky with
+starlight. Flat stone floor on the lower third of the image where characters
+would stand. Keep the top 25% of the image calm and free of important
+details (UI will be placed there). No characters, no text, no numbers on the
+clock, no logos, no UI. Side-view game background, strong depth, high contrast.
+<<<<< FIM
+
+--- INIMIGO DESAFIO 4 ---
+>>>>> COPIAR
+Dark fantasy pixel art game enemy sprite, highly detailed painterly pixel art,
+single character, full body, facing left, centered, standing on the bottom edge
+of the image, transparent background (or flat solid #00FF00 green background).
+The Clock Witch: a tall, thin witch in a long dark blue robe decorated with
+clock gears and golden Roman-numeral-like symbols, a pointed hat with a small
+clock face on it, long white hair floating, holding a staff topped with a
+glowing hourglass, a floating ring of tiny gears and sand around her, eyes
+glowing gold, sinister calm expression. Time-magic aura. No ground shadow, no
+text, no background scenery.
+<<<<< FIM
+
+
+=================================================================
+DESAFIO 5 - AS ARMADILHAS DA IGUALDADE
+Tema JS: == x ===, coercao de tipos, NaN, objetos por referencia, spread
+Inimigo: Slime dos Espelhos
+=================================================================
+
+--- FUNDO DESAFIO 5 ---
+>>>>> COPIAR
+Dark fantasy pixel art, highly detailed painterly pixel art style, 1:1 square
+composition. A grand hall of mirrors inside the Dragon Arena: tall ornate
+gold-framed mirrors on both sides reflecting the room in slightly distorted,
+mismatched ways (the reflections do not perfectly match each other), cracked
+and shimmering glass, a checkerboard marble floor, candles and drifting
+glowing particles. Cool silver-blue and violet light with golden accents.
+Flat reflective floor on the lower third of the image where characters would
+stand. Keep the top 25% of the image calm and free of important details (UI
+will be placed there). No characters, no text, no logos, no UI. Side-view
+game background, strong depth, high contrast.
+<<<<< FIM
+
+--- INIMIGO DESAFIO 5 ---
+>>>>> COPIAR
+Dark fantasy pixel art game enemy sprite, highly detailed painterly pixel art,
+single character, full body, facing left, centered, standing on the bottom edge
+of the image, transparent background (or flat solid #00FF00 green background).
+The Mirror Slime: a glossy translucent slime with a shiny mirror-like
+silver-and-violet surface that reflects light, with a smaller faint "ghost
+copy" of itself slightly offset behind it (representing a deceptive
+duplicate), cracks of light across its body, two angry glowing eyes, wobbling
+menacing pose. Medium size, cute but threatening. No ground shadow, no text,
+no background scenery.
+<<<<< FIM
+
+
+=================================================================
+DESAFIO 6 - O DRAGAO DO CODIGO  (CHEFE FINAL DO JOGO)
+Tema JS: recursao, this, coercao de tipos, tipos e desestruturacao
+Inimigo: Dragao do Codigo
+=================================================================
+
+CONTEXTO DO CHEFE
+- E o chefe final do jogo. As 3 etapas do desafio acontecem contra o MESMO
+  desenho, na arena do chefe, e a barra de vida dele tem 3 segmentos.
+- Ele aparece grande na introducao ("O chao treme. O centro da arena se abre
+  em chamas... O Dragao do Codigo desperta") e na arena, bem MAIOR que o heroi.
+- Anterior: o chefe do portal 1 e o Rei GoblinJS (um orc/goblin coroado).
+- Ideia: um dragao ancestral cujo corpo tem runas e simbolos de codigo
+  ({ } => ... ===) brilhando nas escamas e nas chamas.
+
+--- FUNDO DESAFIO 6 (ARENA DO DRAGAO) ---
+>>>>> COPIAR
+Dark fantasy pixel art, highly detailed painterly pixel art style, 1:1 square
+composition. The final boss arena of the Dragon Arena: a vast circular
+volcanic stone arena with cracked obsidian floor and glowing lava veins,
+ruined towering pillars and broken statues around the edge, a huge
+dragon-skull gate and mountains of gold coins and treasure in the distance,
+a fiery red-orange sky with dark smoke clouds and drifting embers, faint
+glowing runes carved into the floor. Dramatic epic lighting, gold and lava
+orange against deep charcoal and crimson. Flat cracked stone floor on the
+lower third of the image where characters would stand, with enough open
+space on the right side for a very large boss. Keep the top 25% of the image
+calm and free of important details (UI will be placed there). No characters,
+no dragon, no text, no logos, no UI. Side-view game background, strong depth,
+high contrast.
+<<<<< FIM
+
+--- DRAGAO DO CODIGO (SPRITE PRINCIPAL) ---
+>>>>> COPIAR
+Dark fantasy pixel art game boss sprite, highly detailed painterly pixel art,
+single character, full body, facing left, centered, standing on the bottom edge
+of the image, transparent background (or flat solid #00FF00 green background).
+The Code Dragon, final boss: a massive ancient dragon standing upright on its
+hind legs in a menacing pose, large spread wings, a horned crowned head with
+glowing golden eyes and sharp fangs, thick dark charcoal and deep crimson
+scales with gold-plated armor pieces and glowing golden runes shaped like
+code symbols ({ } => ... ===) glowing along the scales and wings, a mouth
+with fire building inside, a long spiked tail curled behind him, small
+embers drifting around his body. Imposing, legendary, much larger and more
+detailed than a normal enemy, fills most of the image height. No ground
+shadow, no text, no background scenery.
+<<<<< FIM
+
+--- DRAGAO DO CODIGO (VARIANTE FERIDO - OPCIONAL) ---
+(Util se quiserem mostrar o dragao machucado quando 1 ou 2 etapas ja foram
+vencidas. Exigiria uma pequena mudanca no codigo depois.)
+>>>>> COPIAR
+Same exact character as the Code Dragon boss sprite (same pose, size, colors
+and composition), but wounded: cracked and missing scales, glowing golden code
+runes flickering and partly dimmed, a few bleeding-lava wounds, smoke rising
+from his body, one wing slightly torn, heavier breathing posture. Dark
+fantasy pixel art, highly detailed painterly pixel art, single character,
+full body, facing left, centered, standing on the bottom edge of the image,
+transparent background (or flat solid #00FF00 green background). No ground
+shadow, no text, no background scenery.
+<<<<< FIM
+
+--- DRAGAO DO CODIGO (TELA DE INTRODUCAO - OPCIONAL) ---
+(A introducao usa o mesmo sprite do chefe, entao este prompt nao e necessario.
+Use so se quiserem uma pose de "despertar" diferente.)
+>>>>> COPIAR
+Same exact character as the Code Dragon boss sprite, but in an "awakening"
+pose: rising up from a pit of fire with wings fully spread wide, head lifted
+and roaring, flames bursting upward behind him. Dark fantasy pixel art, highly
+detailed painterly pixel art, single character, full body, facing left,
+centered, standing on the bottom edge of the image, transparent background (or
+flat solid #00FF00 green background). No text, no background scenery.
+<<<<< FIM
+
+
+=================================================================
+NEGATIVO (se o gerador aceitar "negative prompt")
+=================================================================
+
+>>>>> COPIAR
+text, letters, words, numbers, logo, watermark, signature, UI, health bar,
+frame, border, blurry, low resolution, jpeg artifacts, extra limbs, multiple
+characters, cropped body, photorealistic, 3d render, anime style, cartoon
+style, flat colors, overexposed, bad anatomy
+<<<<< FIM
+
+
+=================================================================
+DICAS FINAIS
+=================================================================
+- Para manter o MESMO estilo entre as imagens, use uma imagem que voces ja
+  tem (por exemplo Fundo_desafio_3_P1.png ou rei_goblin_inimigo.png) como
+  referencia de estilo ("style reference" / "image prompt") no gerador.
+- Gere o dragao primeiro e aprove; depois gere o fundo do desafio 6 pensando
+  no tamanho dele (espaco aberto a direita).
+- Onde colocar os arquivos: frontend/src/assets/images/ e trocar os imports em
+  frontend/src/data/cenasPortal3.js (campos "inimigo.imagem" e "fundo").

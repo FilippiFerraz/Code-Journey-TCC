@@ -77,8 +77,9 @@
 
 .ranking-eu-avatar {
   flex-shrink: 0;
+  /* quadrado: o guerreiro é montado em camadas de 64x64 (AvatarPersonagem) */
   height: 36px;
-  width: auto;
+  width: 36px;
   image-rendering: pixelated;
   filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
 }

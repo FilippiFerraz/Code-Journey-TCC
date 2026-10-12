@@ -1,0 +1,32 @@
+{
+  "_comentario": "Um material por portal. As formas (src/assets/personagem/formas) são desenhadas com 4 tons-chave de cinza; o script gerarItensPersonagem.mjs troca cada tom-chave pela cor do material correspondente. Qualquer outra cor do desenho (couro, gemas) fica igual em todos os materiais.",
+  "tonsChave": {
+    "sombra": "#222222",
+    "escuro": "#555555",
+    "medio": "#999999",
+    "brilho": "#dddddd"
+  },
+  "materiais": {
+    "ferro": {
+      "portal": 1,
+      "sombra": "#1e2230",
+      "escuro": "#4a5266",
+      "medio": "#8a93a6",
+      "brilho": "#d0d6e2"
+    },
+    "elfico": {
+      "portal": 2,
+      "sombra": "#0e2a1f",
+      "escuro": "#1f6b4a",
+      "medio": "#3fae7a",
+      "brilho": "#a8ecc4"
+    },
+    "dourado": {
+      "portal": 3,
+      "sombra": "#3a2508",
+      "escuro": "#8a5a12",
+      "medio": "#d99a1e",
+      "brilho": "#f8de7e"
+    }
+  }
+}

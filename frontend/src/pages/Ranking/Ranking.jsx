@@ -3,6 +3,7 @@ import { Shield } from "lucide-react";
 import MainLayout from "../../layouts/MainLayout";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import "./Ranking.css";
 
 function classePorPosicao(posicao) {
@@ -26,7 +27,7 @@ function Ranking() {
   const [ranking, setRanking] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
-  const avatar = usePersonagemAvatar();
+  const itensEquipados = usePersonagemAvatar();
 
   useEffect(() => {
     let ativo = true;
@@ -77,7 +78,7 @@ function Ranking() {
 
         {/* Resumo do jogador logado — sempre visível, esteja ele no top ou não */}
         <div className="ranking-eu">
-          <img src={avatar} alt="" className="ranking-eu-avatar" draggable={false} />
+          <AvatarPersonagem itensEquipados={itensEquipados} className="ranking-eu-avatar" alt="" />
           <span className="ranking-eu-nome">{eu.nome}</span>
           <span className="ranking-eu-posicao">#{eu.posicao.toLocaleString("pt-BR")}</span>
         </div>

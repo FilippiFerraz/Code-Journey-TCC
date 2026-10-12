@@ -23,10 +23,21 @@ async function montarItensDestaque(personagem) {
     id: item.id,
     nome: item.nome,
     icone: item.icone,
-    // nome do arquivo em frontend/src/assets/images — ver data/itemImagens.js,
-    // que resolve isso pra imagem estática real (não é uma URL de verdade)
+    // chave do sprite do item — ver frontend/src/data/spritesPersonagem.js
     imagemUrl: item.imagemUrl,
   }));
+}
+
+// TODOS os itens equipados (sem o limite de itensDestaque), com o slot
+// (tipo) — é o que o frontend precisa pra montar o guerreiro em camadas
+// (AvatarPersonagem.jsx), inclusive no perfil de outro jogador.
+async function montarItensEquipados(personagem) {
+  if (!personagem) return [];
+  const equipados = await prisma.itemPersonagem.findMany({
+    where: { personagemId: personagem.id, equipado: true },
+    include: { item: { select: { tipo: true, imagemUrl: true } } },
+  });
+  return equipados.map(({ item }) => ({ tipo: item.tipo, imagemUrl: item.imagemUrl }));
 }
 
 // Busca os dados do perfil do usuário logado.
@@ -60,6 +71,7 @@ async function buscarPerfil(usuarioId) {
 
   const personagem = await prisma.personagem.findUnique({ where: { usuarioId } });
   const itensDestaque = await montarItensDestaque(personagem);
+  const itensEquipados = await montarItensEquipados(personagem);
 
   return {
     id: usuario.id,
@@ -73,6 +85,7 @@ async function buscarPerfil(usuarioId) {
     diasOfensiva: 0, // TODO: streak de dias — precisa agrupar Progresso.dataConclusao por dia
     ranking: { posicao: await posicaoDoUsuario(usuario.xpTotal) },
     itensDestaque,
+    itensEquipados,
   };
 }
 
@@ -135,17 +148,9 @@ async function buscarPerfilPublico(usuarioId) {
 
   const personagem = await prisma.personagem.findUnique({ where: { usuarioId } });
   const itensDestaque = await montarItensDestaque(personagem);
-
-  // Itens equipados (não só os em destaque) — pra Perfil.jsx montar o
-  // sprite de QUEM está sendo visitado, em vez do personagem de quem está
-  // olhando (ver resolverAvatarPersonagem em hooks/usePersonagemAvatar.js,
-  // que espera esse mesmo formato [{ equipado, item: { tipo, nome } }]).
-  const itensEquipados = personagem
-    ? await prisma.itemPersonagem.findMany({
-        where: { personagemId: personagem.id, equipado: true },
-        include: { item: true },
-      })
-    : [];
+  // Pra Perfil.jsx montar o guerreiro de QUEM está sendo visitado, não o de
+  // quem está olhando.
+  const itensEquipados = await montarItensEquipados(personagem);
 
   return {
     id: usuario.id,
@@ -159,10 +164,7 @@ async function buscarPerfilPublico(usuarioId) {
       posicao: usuario.rankingVisivel ? await posicaoDoUsuario(usuario.xpTotal) : null,
     },
     itensDestaque,
-    itensEquipados: itensEquipados.map((itemPersonagem) => ({
-      equipado: true,
-      item: { tipo: itemPersonagem.item.tipo, nome: itemPersonagem.item.nome },
-    })),
+    itensEquipados,
   };
 }
 

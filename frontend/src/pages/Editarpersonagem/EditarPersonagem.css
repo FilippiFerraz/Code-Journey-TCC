@@ -124,8 +124,9 @@
 }
 
 .editar-avatar {
+  /* quadrado: o guerreiro é montado em camadas de 64x64 (AvatarPersonagem) */
   height: 150px;
-  width: auto;
+  width: 150px;
   image-rendering: pixelated;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5));
 }

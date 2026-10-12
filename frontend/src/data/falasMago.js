@@ -64,14 +64,72 @@ const falasPorMundo = {
       [{ texto: 'Quem entende o porquê das coisas nunca fica sem saída numa batalha.' }],
     ],
   },
+  // Portal 3 — Arena do Dragão (desafios de 3 etapas, ver
+  // backend/prisma/desafios/portal3.js).
   3: {
     1: [
       [
-        { texto: 'Formidável, aventureiro! Você dominou os ' },
-        { texto: 'Laços de Repetição', destaque: true },
-        { texto: ' e fez o código trabalhar por você.' },
+        { texto: 'Impressionante! Você atravessou o labirinto dominando ' },
+        { texto: 'escopo', destaque: true },
+        { texto: ', ' },
+        { texto: 'hoisting', destaque: true },
+        { texto: ' e a ' },
+        { texto: 'zona morta temporal', destaque: true },
+        { texto: '.' },
       ],
-      [{ texto: 'Um único comando repetido com sabedoria vale mais que mil golpes escritos à mão!' }],
+      [{ texto: 'Saber onde uma variável vive é o primeiro passo para nunca ser pego de surpresa.' }],
+    ],
+    2: [
+      [
+        { texto: 'As garras foram cortadas! Agora você entende as ' },
+        { texto: 'closures', destaque: true },
+        { texto: ': funções que lembram do lugar onde nasceram.' },
+      ],
+      [{ texto: 'Fábricas de funções e contadores independentes são poderes de quem domina o escopo.' }],
+    ],
+    3: [
+      [
+        { texto: 'O Mestre dos Arrays se curvou! ' },
+        { texto: 'map', destaque: true },
+        { texto: ', ' },
+        { texto: 'filter', destaque: true },
+        { texto: ' e ' },
+        { texto: 'reduce', destaque: true },
+        { texto: ' agora obedecem a você.' },
+      ],
+      [{ texto: 'Um bom encadeamento transforma uma lista inteira em uma única linha de feitiço.' }],
+    ],
+    4: [
+      [
+        { texto: 'O relógio voltou a girar certo! Você decifrou o ' },
+        { texto: 'event loop', destaque: true },
+        { texto: ' e a ordem entre código síncrono, ' },
+        { texto: 'Promises', destaque: true },
+        { texto: ' e timers.' },
+      ],
+      [{ texto: 'Quem entende o tempo do JavaScript nunca mais se perde no assíncrono.' }],
+    ],
+    5: [
+      [
+        { texto: 'Os espelhos se quebraram! Você viu através da ' },
+        { texto: 'coerção de tipos', destaque: true },
+        { texto: ' e das armadilhas de ' },
+        { texto: 'referência', destaque: true },
+        { texto: '.' },
+      ],
+      [{ texto: 'Comparar com === e copiar com spread é a marca de quem desconfia na medida certa.' }],
+    ],
+    6: [
+      [
+        { texto: 'INACREDITÁVEL! O ' },
+        { texto: 'Dragão do Código', destaque: true },
+        { texto: ' caiu diante de você!' },
+      ],
+      [
+        { texto: 'Recursão, ' },
+        { texto: 'this', destaque: true },
+        { texto: ' e as manhas da linguagem: você dominou o JavaScript avançado da Arena do Dragão.' },
+      ],
     ],
   },
 };

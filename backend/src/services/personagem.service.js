@@ -67,7 +67,7 @@ async function buscarItemDoPersonagem(personagemId, itemPersonagemId) {
 // Tipos de item (Item.tipo) que têm slot no personagem — mesmos slots de
 // EditarPersonagem.jsx. Itens de outros tipos podem existir no inventário,
 // mas não podem ser equipados.
-const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas"];
+const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas", "botas"];
 
 // Equipa um item, desequipando antes qualquer outro item do mesmo slot
 // (Item.tipo) — EditarPersonagem.jsx só tem uma posição por slot.
@@ -112,25 +112,34 @@ async function desequiparItem(usuarioId, itemPersonagemId) {
 }
 
 // Adiciona um item ao inventário do personagem (cria o personagem se for o
-// primeiro acesso) — se ele já tinha esse item, só soma quantidade em vez
-// de duplicar a linha em ItemPersonagem. Devolve a quantidade que ficou.
+// primeiro acesso). Recompensas NUNCA acumulam: cada item é único no
+// inventário, então quem já tem o item continua com 1 — refazer um desafio
+// ou o baú sortear um item repetido não gera cópias. Vale também pra quem
+// concluiu um desafio antes de ele ganhar esse item (pelo seed ou pelo
+// painel de admin): recebe ao refazer, ou via `npm run recompensas:sincronizar`.
+// Devolve { quantidade, concedido } — concedido = false quando já tinha.
 // Usado pela recompensa de desafio (progresso.service) e pelo baú de fim
 // de mundo (bau.service).
-async function concederItem(usuarioId, itemId) {
+async function concederItemSeNaoTiver(usuarioId, itemId) {
   const personagem = await buscarOuCriarPersonagem(usuarioId);
+  const chave = { personagemId_itemId: { personagemId: personagem.id, itemId } };
 
-  const itemPersonagem = await prisma.itemPersonagem.upsert({
-    where: { personagemId_itemId: { personagemId: personagem.id, itemId } },
-    update: { quantidade: { increment: 1 } },
+  const existente = await prisma.itemPersonagem.findUnique({ where: chave });
+  if (existente) return { quantidade: existente.quantidade, concedido: false };
+
+  // upsert (e não create): duas respostas simultâneas não estouram a
+  // restrição única de (personagemId, itemId) nem criam cópia.
+  const criado = await prisma.itemPersonagem.upsert({
+    where: chave,
+    update: {},
     create: { personagemId: personagem.id, itemId },
   });
-
-  return itemPersonagem.quantidade;
+  return { quantidade: criado.quantidade, concedido: true };
 }
 
 module.exports = {
   buscarOuCriarPersonagem,
-  concederItem,
+  concederItemSeNaoTiver,
   buscarPersonagem,
   atualizarPersonagem,
   equiparItem,
