@@ -1,7 +1,8 @@
 const prisma = require("../config/prisma");
 const { concederItemSeNaoTiver } = require("./personagem.service");
 const { corrigirRespostaDissertativa } = require("./ia.service");
-const { temVariasEtapas, totalDeEtapas } = require("./etapas.service");
+const { temVariasEtapas } = require("./etapas.service");
+const { listarDesafiosResumo } = require("./desafiosCache");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -151,45 +152,49 @@ function erroDeDesafioTrancado(mensagem) {
 // mundo > 1 só com todos os desafios da trilha padrão do mundo anterior
 // concluídos.
 async function verificarDesafioLiberado(usuarioId, desafio) {
-  if (desafio.numero > 1) {
-    const anterior = await prisma.desafio.findUnique({
-      where: {
-        mundoId_dificuldade_numero: {
-          mundoId: desafio.mundoId,
-          dificuldade: desafio.dificuldade,
-          numero: desafio.numero - 1,
-        },
-      },
-      select: { id: true },
-    });
-    const progressoAnterior = anterior
-      ? await prisma.progresso.findUnique({
+  // A lista de desafios vem da memória (desafiosCache.js) e as duas consultas
+  // de progresso saem juntas — antes eram 4 consultas, uma depois da outra.
+  const resumo = await listarDesafiosResumo();
+
+  const anterior =
+    desafio.numero > 1
+      ? resumo.find(
+          (d) =>
+            d.mundoId === desafio.mundoId &&
+            d.dificuldade === desafio.dificuldade &&
+            d.numero === desafio.numero - 1
+        )
+      : null;
+  const idsMundoAnterior =
+    desafio.mundoId > 1
+      ? resumo
+          .filter((d) => d.mundoId === desafio.mundoId - 1 && d.dificuldade === DIFICULDADE_PADRAO)
+          .map((d) => d.id)
+      : null;
+
+  const [progressoAnterior, concluidosMundoAnterior] = await Promise.all([
+    anterior
+      ? prisma.progresso.findUnique({
           where: { usuarioId_desafioId: { usuarioId, desafioId: anterior.id } },
           select: { concluido: true },
         })
-      : null;
+      : null,
+    idsMundoAnterior && idsMundoAnterior.length > 0
+      ? prisma.progresso.count({
+          where: { usuarioId, concluido: true, desafioId: { in: idsMundoAnterior } },
+        })
+      : 0,
+  ]);
 
-    if (!progressoAnterior?.concluido) {
-      throw erroDeDesafioTrancado("Conclua o desafio anterior antes de responder este.");
-    }
+  if (desafio.numero > 1 && !progressoAnterior?.concluido) {
+    throw erroDeDesafioTrancado("Conclua o desafio anterior antes de responder este.");
   }
 
-  if (desafio.mundoId > 1) {
-    const desafiosMundoAnterior = await prisma.desafio.findMany({
-      where: { mundoId: desafio.mundoId - 1, dificuldade: DIFICULDADE_PADRAO },
-      select: { id: true },
-    });
-    const concluidos = await prisma.progresso.count({
-      where: {
-        usuarioId,
-        concluido: true,
-        desafioId: { in: desafiosMundoAnterior.map((d) => d.id) },
-      },
-    });
-
-    if (desafiosMundoAnterior.length === 0 || concluidos < desafiosMundoAnterior.length) {
-      throw erroDeDesafioTrancado("Conclua o mundo anterior antes de responder este desafio.");
-    }
+  if (
+    idsMundoAnterior &&
+    (idsMundoAnterior.length === 0 || concluidosMundoAnterior < idsMundoAnterior.length)
+  ) {
+    throw erroDeDesafioTrancado("Conclua o mundo anterior antes de responder este desafio.");
   }
 }
 
@@ -545,21 +550,26 @@ async function concederItemAoPersonagem(usuarioId, item) {
 // localStorage em data/progresso.js). Sem mundoId/dificuldade, devolve o
 // progresso em todos os desafios do usuário.
 async function listarProgresso({ usuarioId, mundoId, dificuldade }) {
-  const filtroTrilha = mundoId && dificuldade
-    ? { mundoId: Number(mundoId), dificuldade }
-    : undefined;
+  const filtrar = mundoId && dificuldade;
+  const mundoNumero = Number(mundoId);
 
-  const desafios = await prisma.desafio.findMany({
-    where: filtroTrilha,
-    orderBy: [{ mundoId: "asc" }, { dificuldade: "asc" }, { numero: "asc" }],
-    select: { id: true, mundoId: true, dificuldade: true, numero: true, alternativas: true },
-  });
-
-  const progressos = await prisma.progresso.findMany({
-    where: { usuarioId, desafioId: { in: desafios.map((d) => d.id) } },
-  });
+  // Lista de desafios (memória) e progresso do jogador saem juntos; o
+  // progresso já vem filtrado pela trilha direto no banco.
+  const [resumo, progressos] = await Promise.all([
+    listarDesafiosResumo(),
+    prisma.progresso.findMany({
+      where: {
+        usuarioId,
+        ...(filtrar ? { desafio: { mundoId: mundoNumero, dificuldade } } : {}),
+      },
+      select: { desafioId: true, concluido: true, tentativas: true, etapasConcluidas: true },
+    }),
+  ]);
 
   const progressoPorDesafio = new Map(progressos.map((p) => [p.desafioId, p]));
+  const desafios = filtrar
+    ? resumo.filter((d) => d.mundoId === mundoNumero && d.dificuldade === dificuldade)
+    : resumo;
 
   return desafios.map((desafio) => ({
     desafioId: desafio.id,
@@ -570,7 +580,7 @@ async function listarProgresso({ usuarioId, mundoId, dificuldade }) {
     tentativas: progressoPorDesafio.get(desafio.id)?.tentativas ?? 0,
     // Desafios com várias etapas (portal 3) — a lista usa isso pra abrir a
     // tela de etapas e mostrar o avanço (ex: 2/3). Etapa única = 1.
-    totalEtapas: totalDeEtapas(desafio.alternativas),
+    totalEtapas: desafio.totalEtapas,
     etapasConcluidas: progressoPorDesafio.get(desafio.id)?.etapasConcluidas ?? 0,
   }));
 }

@@ -1,14 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Fonte pixel usada só pelo Temporizador (components/Temporizador.css) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-    <title>frontend</title>
+    <meta name="theme-color" content="#2f6fed" />
+    <title>Code Journey</title>
+    <meta name="description" content="Code Journey: aprenda JavaScript numa aventura de pixel art." />
+
+    <!-- Ícones (gerados da logo por: npm run icones:gerar) -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Prévia ao compartilhar o link (WhatsApp, Discord, redes sociais) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Code Journey" />
+    <meta property="og:title" content="Code Journey" />
+    <meta property="og:description" content="Aprenda JavaScript numa aventura de pixel art." />
+    <meta property="og:image" content="https://code-journey-two.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://code-journey-two.vercel.app/og-image.png" />
+
+    <!-- A fonte pixel (Silkscreen, usada pelo Temporizador) é servida junto do
+         site via @fontsource (ver main.jsx). Antes vinha de um serviço externo
+         (Google Fonts): um CSS externo que BLOQUEAVA a primeira renderização e
+         ainda exigia conexões extras com outros servidores. -->
   </head>
   <body>
     <div id="root"></div>

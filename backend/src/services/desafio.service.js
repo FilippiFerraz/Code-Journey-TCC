@@ -2,6 +2,7 @@ const prisma = require("../config/prisma");
 const { registrarLog } = require("./log.service");
 const { calcularDiferencas } = require("../utils/diff");
 const { validarAlternativas } = require("./etapas.service");
+const { limparCacheDesafios } = require("./desafiosCache");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -42,7 +43,9 @@ async function buscarDesafioPorId(desafioId) {
 
 // Catálogo de itens pro seletor de recompensa em EditarDesafioAdmin.jsx.
 async function listarItensCatalogo() {
+  // itens exclusivos de baú (de módulo ou Real) não podem ser recompensa de desafio
   return prisma.item.findMany({
+    where: { exclusivoBau: false, exclusivoRei: false },
     select: { id: true, nome: true, icone: true, descricao: true, tipo: true, raridade: true },
     orderBy: { nome: "asc" },
   });
@@ -111,11 +114,15 @@ async function atualizarDesafio(desafioId, dados, admin) {
       }
       const item = await prisma.item.findUnique({ where: { id: itemIdNumero } });
       if (!item) throw erroNaoEncontrado("Item de recompensa não encontrado.");
+      if (item.exclusivoBau || item.exclusivoRei) {
+        throw erroDeValidacao("Este item é exclusivo de um baú e não pode ser recompensa de desafio.");
+      }
       atualizacoes.itemRecompensaId = itemIdNumero;
     }
   }
 
   const atualizado = await prisma.desafio.update({ where: { id: desafioId }, data: atualizacoes });
+  limparCacheDesafios();
 
   if (admin && Object.keys(atualizacoes).length > 0) {
     const alteracoes = calcularDiferencas(desafio, atualizado, Object.keys(atualizacoes));

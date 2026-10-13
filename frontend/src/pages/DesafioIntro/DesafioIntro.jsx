@@ -6,9 +6,9 @@ import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import "./DesafioIntro.css";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
-import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.png";
-import mercadorInimigo from "../../assets/images/mercador_inimigo.png";
-import bruxaInimigo from "../../assets/images/bruxa_inimigo.png";
+import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.webp";
+import mercadorInimigo from "../../assets/images/mercador_inimigo.webp";
+import bruxaInimigo from "../../assets/images/bruxa_inimigo.webp";
 
 // Enquanto a rota de desafios não existe no backend, o conteúdo fica aqui,
 // espelhando os desafios definidos em ResolverDesafio.jsx (mesmo mundo,

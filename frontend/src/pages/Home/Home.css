@@ -230,3 +230,163 @@
     animation: none;
   }
 }
+/* Personagem caminhando até o portal clicado (PersonagemNoMapa.jsx). left/top
+   são atualizados a cada quadro, em % do mapa; os pés ficam no ponto. */
+.home-viajante {
+  position: absolute;
+  z-index: 3; /* acima dos portais e do baú */
+  /* acompanha a largura do mapa (no desktop o mapa é bem maior) */
+  width: clamp(64px, 13%, 112px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -82%);
+  pointer-events: none;
+  animation: home-viajante-surgir 0.25s ease-out;
+}
+
+/* sombra nos pés */
+.home-viajante::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  width: 55%;
+  height: 14%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* separado do avatar: o espelhamento (scaleX) é aplicado aqui pelo JS e a
+   animação de passo fica no avatar, sem uma sobrescrever a outra */
+.home-viajante-direcao {
+  width: 100%;
+  height: 100%;
+}
+
+.home-viajante-avatar {
+  width: 100%;
+  height: 100%;
+  /* contorno claro pra não sumir na estrada escura */
+  filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px rgba(255, 255, 255, 0.55));
+  animation: home-viajante-passo 0.32s ease-in-out infinite alternate;
+}
+
+.home-viajante--entrando::before {
+  display: none;
+}
+
+.home-viajante--entrando .home-viajante-avatar {
+  animation: home-viajante-entrar 0.55s ease-in forwards;
+}
+
+@keyframes home-viajante-surgir {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes home-viajante-passo {
+  from {
+    transform: translateY(0) rotate(-3deg);
+  }
+  to {
+    transform: translateY(-4px) rotate(3deg);
+  }
+}
+
+/* sugado pelo portal: gira, encolhe e some num brilho roxo */
+@keyframes home-viajante-entrar {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px rgba(255, 255, 255, 0.55));
+  }
+  40% {
+    transform: scale(1.1) rotate(-20deg);
+    filter: drop-shadow(0 0 10px rgba(190, 90, 255, 0.95)) brightness(1.4);
+  }
+  100% {
+    transform: scale(0.1) rotate(300deg);
+    opacity: 0;
+    filter: drop-shadow(0 0 16px rgba(190, 90, 255, 1)) brightness(2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-viajante-avatar {
+    animation: none;
+  }
+}
+
+/* Castelo do mapa -> Desafio do Rei. O botão cobre o desenho do castelo
+   (sem fundo); a placa fica no pé dele. */
+.home-castelo {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-castelo-placa {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: -6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #2a1a0a;
+  white-space: nowrap;
+  background: #f4c542;
+  border: 2px solid #8a5a12;
+  box-shadow: 0 0 10px rgba(244, 197, 66, 0.75);
+  animation: home-castelo-brilho 1.8s ease-in-out infinite;
+}
+
+.home-castelo-icone {
+  font-size: 12px;
+}
+
+.home-castelo:hover .home-castelo-placa,
+.home-castelo:focus-visible .home-castelo-placa {
+  background: #ffd96a;
+}
+
+.home-castelo:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.home-castelo--bloqueado .home-castelo-placa {
+  color: #e9e4f2;
+  background: #4a4458;
+  border-color: #2b2338;
+  box-shadow: none;
+  animation: none;
+}
+
+@keyframes home-castelo-brilho {
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(244, 197, 66, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(244, 197, 66, 0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-castelo-placa {
+    animation: none;
+  }
+}

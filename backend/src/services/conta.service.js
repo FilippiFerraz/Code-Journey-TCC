@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const prisma = require("../config/prisma");
+const { esquecerConta } = require("../utils/sessaoCache");
 const { enviarEmailTrocaEmail } = require("./email.service");
 
 // Tela "Minha Conta" (frontend/src/pages/Configuracoes/Conta): troca de nome,
@@ -214,6 +215,7 @@ async function excluirConta(usuarioId, { senha, confirmacao }) {
   await conferirSenha(usuario, senha);
 
   await prisma.usuario.delete({ where: { id: usuarioId } });
+  esquecerConta(usuarioId);
   return { excluida: true };
 }
 

@@ -7,19 +7,21 @@ const { posicaoDoUsuario } = require("./ranking.service.js");
 // recentes primeiro — ver Perfil.jsx, seção "Itens em destaque").
 const LIMITE_ITENS_DESTAQUE = 3;
 
-// Itens equipados de um personagem, no formato usado em "itensDestaque" —
-// compartilhado por buscarPerfil (dono) e buscarPerfilPublico (visita).
-async function montarItensDestaque(personagem) {
-  const itensEquipados = personagem
-    ? await prisma.itemPersonagem.findMany({
-        where: { personagemId: personagem.id, equipado: true },
-        include: { item: true },
-        orderBy: { obtidoEm: "desc" },
-        take: LIMITE_ITENS_DESTAQUE,
-      })
-    : [];
+// Itens equipados de um usuário, numa consulta só e filtrando direto pelo dono
+// (antes: buscar o personagem, depois os itens em destaque, depois os
+// equipados — três idas ao banco, uma depois da outra).
+function buscarEquipados(usuarioId) {
+  return prisma.itemPersonagem.findMany({
+    where: { equipado: true, personagem: { usuarioId } },
+    include: { item: true },
+    orderBy: { obtidoEm: "desc" },
+  });
+}
 
-  return itensEquipados.map(({ item }) => ({
+// Itens em "itensDestaque" — compartilhado por buscarPerfil (dono) e
+// buscarPerfilPublico (visita).
+function itensDestaqueDe(equipados) {
+  return equipados.slice(0, LIMITE_ITENS_DESTAQUE).map(({ item }) => ({
     id: item.id,
     nome: item.nome,
     icone: item.icone,
@@ -31,29 +33,29 @@ async function montarItensDestaque(personagem) {
 // TODOS os itens equipados (sem o limite de itensDestaque), com o slot
 // (tipo) — é o que o frontend precisa pra montar o guerreiro em camadas
 // (AvatarPersonagem.jsx), inclusive no perfil de outro jogador.
-async function montarItensEquipados(personagem) {
-  if (!personagem) return [];
-  const equipados = await prisma.itemPersonagem.findMany({
-    where: { personagemId: personagem.id, equipado: true },
-    include: { item: { select: { tipo: true, imagemUrl: true } } },
-  });
+function itensEquipadosDe(equipados) {
   return equipados.map(({ item }) => ({ tipo: item.tipo, imagemUrl: item.imagemUrl }));
 }
 
 // Busca os dados do perfil do usuário logado.
 async function buscarPerfil(usuarioId) {
-  const usuario = await prisma.usuario.findUnique({
-    where: { id: usuarioId },
-    select: {
-      id: true,
-      nome: true,
-      email: true,
-      criadoEm: true,
-      xpTotal: true,
-      tutorialVisto: true,
-      role: true,
-    },
-  });
+  // Consultas independentes saem juntas (antes: uma depois da outra).
+  const [usuario, acertos, equipados] = await Promise.all([
+    prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        criadoEm: true,
+        xpTotal: true,
+        tutorialVisto: true,
+        role: true,
+      },
+    }),
+    prisma.progresso.count({ where: { usuarioId, concluido: true } }),
+    buscarEquipados(usuarioId),
+  ]);
 
   if (!usuario) {
     const erro = new Error("Usuário não encontrado.");
@@ -65,13 +67,7 @@ async function buscarPerfil(usuarioId) {
   // Futuro: coluna própria "nomeUsuario" na fase de personalização.
   const nomeUsuario = usuario.email.split("@")[0];
 
-  const acertos = await prisma.progresso.count({
-    where: { usuarioId, concluido: true },
-  });
-
-  const personagem = await prisma.personagem.findUnique({ where: { usuarioId } });
-  const itensDestaque = await montarItensDestaque(personagem);
-  const itensEquipados = await montarItensEquipados(personagem);
+  const posicao = await posicaoDoUsuario(usuario.xpTotal);
 
   return {
     id: usuario.id,
@@ -83,9 +79,9 @@ async function buscarPerfil(usuarioId) {
 
     acertos,
     diasOfensiva: 0, // TODO: streak de dias — precisa agrupar Progresso.dataConclusao por dia
-    ranking: { posicao: await posicaoDoUsuario(usuario.xpTotal) },
-    itensDestaque,
-    itensEquipados,
+    ranking: { posicao },
+    itensDestaque: itensDestaqueDe(equipados),
+    itensEquipados: itensEquipadosDe(equipados),
   };
 }
 
@@ -122,17 +118,21 @@ async function buscarUsuariosPorNome(usuarioIdAtual, termo) {
 // posição, quem visita não vê — mas ele próprio sempre vê a sua, em
 // buscarPerfil).
 async function buscarPerfilPublico(usuarioId) {
-  const usuario = await prisma.usuario.findUnique({
-    where: { id: usuarioId },
-    select: {
-      id: true,
-      nome: true,
-      email: true,
-      criadoEm: true,
-      xpTotal: true,
-      rankingVisivel: true,
-    },
-  });
+  const [usuario, acertos, equipados] = await Promise.all([
+    prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        criadoEm: true,
+        xpTotal: true,
+        rankingVisivel: true,
+      },
+    }),
+    prisma.progresso.count({ where: { usuarioId, concluido: true } }),
+    buscarEquipados(usuarioId),
+  ]);
 
   if (!usuario) {
     const erro = new Error("Usuário não encontrado.");
@@ -141,16 +141,7 @@ async function buscarPerfilPublico(usuarioId) {
   }
 
   const nomeUsuario = usuario.email.split("@")[0];
-
-  const acertos = await prisma.progresso.count({
-    where: { usuarioId, concluido: true },
-  });
-
-  const personagem = await prisma.personagem.findUnique({ where: { usuarioId } });
-  const itensDestaque = await montarItensDestaque(personagem);
-  // Pra Perfil.jsx montar o guerreiro de QUEM está sendo visitado, não o de
-  // quem está olhando.
-  const itensEquipados = await montarItensEquipados(personagem);
+  const posicao = usuario.rankingVisivel ? await posicaoDoUsuario(usuario.xpTotal) : null;
 
   return {
     id: usuario.id,
@@ -160,11 +151,11 @@ async function buscarPerfilPublico(usuarioId) {
 
     acertos,
     diasOfensiva: 0,
-    ranking: {
-      posicao: usuario.rankingVisivel ? await posicaoDoUsuario(usuario.xpTotal) : null,
-    },
-    itensDestaque,
-    itensEquipados,
+    ranking: { posicao },
+    // itensEquipados: pra Perfil.jsx montar o guerreiro de QUEM está sendo
+    // visitado, não o de quem está olhando.
+    itensDestaque: itensDestaqueDe(equipados),
+    itensEquipados: itensEquipadosDe(equipados),
   };
 }
 

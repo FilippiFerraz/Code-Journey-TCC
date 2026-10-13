@@ -1,5 +1,13 @@
-const Anthropic = require("@anthropic-ai/sdk");
-const { GoogleGenAI, ApiError: ErroApiGemini } = require("@google/genai");
+// Os SDKs de IA são pesados (centenas de milissegundos cada pra carregar) e a
+// maioria das requisições nem usa IA, então só são carregados na primeira
+// correção — assim a função da Vercel parte mais rápido.
+function sdkGemini() {
+  return require("@google/genai");
+}
+function sdkAnthropic() {
+  const Anthropic = require("@anthropic-ai/sdk");
+  return Anthropic.default ?? Anthropic;
+}
 
 // Correção de respostas dissertativas por IA. Dois provedores possíveis,
 // escolhidos no backend/.env:
@@ -17,8 +25,6 @@ const { GoogleGenAI, ApiError: ErroApiGemini } = require("@google/genai");
 // Sem IA_PROVEDOR, usa o Gemini — a não ser que só a chave do Claude exista.
 // A chave fica SÓ no backend: o frontend manda a resposta do jogador pra
 // POST /api/progresso, e é o servidor que conversa com a IA.
-
-const ClienteAnthropic = Anthropic.default ?? Anthropic;
 
 const MODELO_PADRAO_CLAUDE = "claude-opus-5";
 // Apelidos que o Google aponta sempre pro modelo mais novo de cada linha —
@@ -213,7 +219,7 @@ async function corrigirComGemini(mensagem) {
     );
   }
   if (!clienteGemini) {
-    clienteGemini = new GoogleGenAI({
+    clienteGemini = new (sdkGemini().GoogleGenAI)({
       apiKey: process.env.GEMINI_API_KEY,
       httpOptions: {
         // Sobrecarga momentânea do Google (5xx) é comum no plano gratuito:
@@ -251,7 +257,7 @@ async function corrigirComGemini(mensagem) {
       });
       break;
     } catch (erro) {
-      if (!(erro instanceof ErroApiGemini)) throw erroDeConexaoComIA("gemini", erro);
+      if (!(erro instanceof sdkGemini().ApiError)) throw erroDeConexaoComIA("gemini", erro);
       console.error(`Erro da API do Gemini (${modelo}):`, erro.status, erro.message);
 
       // Sobrecarga (5xx) ou cota do plano gratuito esgotada (429 — a cota é
@@ -307,6 +313,7 @@ async function corrigirComClaude(mensagem) {
       503
     );
   }
+  const ClienteAnthropic = sdkAnthropic();
   if (!clienteClaude) clienteClaude = new ClienteAnthropic();
 
   let resultado;

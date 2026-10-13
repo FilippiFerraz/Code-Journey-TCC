@@ -21,13 +21,17 @@ async function buscarOuCriarPersonagem(usuarioId) {
 }
 
 async function buscarPersonagem(usuarioId) {
-  const personagem = await buscarOuCriarPersonagem(usuarioId);
-
-  const itens = await prisma.itemPersonagem.findMany({
-    where: { personagemId: personagem.id },
-    include: { item: true },
-    orderBy: { obtidoEm: "desc" },
-  });
+  // Os itens são buscados pelo dono (usuarioId) ao mesmo tempo que o
+  // personagem, em vez de esperar o personagem ficar pronto. Personagem
+  // recém-criado não tem item nenhum, então a lista vazia também está certa.
+  const [personagem, itens] = await Promise.all([
+    buscarOuCriarPersonagem(usuarioId),
+    prisma.itemPersonagem.findMany({
+      where: { personagem: { usuarioId } },
+      include: { item: true },
+      orderBy: { obtidoEm: "desc" },
+    }),
+  ]);
 
   return { ...personagem, itens };
 }

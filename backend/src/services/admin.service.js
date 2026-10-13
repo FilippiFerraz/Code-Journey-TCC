@@ -1,5 +1,5 @@
-const ExcelJS = require("exceljs");
 const prisma = require("../config/prisma");
+const { esquecerConta } = require("../utils/sessaoCache");
 const { registrarLog } = require("./log.service");
 
 const PAPEIS_VALIDOS = ["jogador", "administrador"];
@@ -134,6 +134,7 @@ async function alterarAtivo(admin, usuarioId, ativo) {
     where: { id: usuarioId },
     data: { deletedAt: ativo ? null : new Date() },
   });
+  esquecerConta(usuarioId);
 
   if (ativo !== ativoAntes) {
     await registrarLog({
@@ -231,6 +232,9 @@ async function exportarUsuariosXlsx({ busca }) {
     orderBy: { criadoEm: "desc" },
   });
 
+  // exceljs é pesado: só é carregado quando alguém exporta a planilha (não
+  // pesa no tempo de partida da função).
+  const ExcelJS = require("exceljs");
   const workbook = new ExcelJS.Workbook();
   const planilha = workbook.addWorksheet("Usuários");
 

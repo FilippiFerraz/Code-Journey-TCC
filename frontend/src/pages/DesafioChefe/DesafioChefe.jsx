@@ -11,8 +11,8 @@ import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFala
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
-import reiGoblinInimigo from "../../assets/images/rei_goblin_inimigo.png";
-import fundoDesafio6P1 from "../../assets/images/Fundo_desafio_6_P1.png";
+import reiGoblinInimigo from "../../assets/images/rei_goblin_inimigo.webp";
+import fundoDesafio6P1 from "../../assets/images/Fundo_desafio_6_P1.webp";
 import "./DesafioChefe.css";
 
 // TODO: nome real do jogador viria do contexto de personagem/perfil (mesmo

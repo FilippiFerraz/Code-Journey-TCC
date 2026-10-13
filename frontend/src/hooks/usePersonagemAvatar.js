@@ -12,8 +12,12 @@ export function itensEquipadosDoPersonagem(itens = []) {
 // tela que mostra o guerreiro (Desafios, Perfil, Ranking, batalhas).
 // EditarPersonagem já carrega o personagem sozinho (pra montar os slots),
 // então ali é só chamar itensEquipadosDoPersonagem(itens) direto.
+// Último equipamento conhecido: a próxima tela já abre com o guerreiro
+// equipado, em vez de aparecer sem item até a API responder.
+let ultimosEquipados = [];
+
 export function usePersonagemAvatar() {
-  const [itensEquipados, setItensEquipados] = useState([]);
+  const [itensEquipados, setItensEquipados] = useState(ultimosEquipados);
 
   useEffect(() => {
     let ativo = true;
@@ -21,7 +25,8 @@ export function usePersonagemAvatar() {
     api
       .get("/personagem")
       .then((res) => {
-        if (ativo) setItensEquipados(itensEquipadosDoPersonagem(res.data.itens));
+        ultimosEquipados = itensEquipadosDoPersonagem(res.data.itens);
+        if (ativo) setItensEquipados(ultimosEquipados);
       })
       .catch(() => {
         // sem personagem carregado (ex: offline) — mostra só a base

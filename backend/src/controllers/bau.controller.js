@@ -26,4 +26,20 @@ async function postAbrirBau(req, res, next) {
   }
 }
 
-module.exports = { getBaus, postAbrirBau };
+async function getBauRei(req, res, next) {
+  try {
+    res.status(200).json(await bauService.situacaoBauRei(idUsuario(req)));
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function postAbrirBauRei(req, res, next) {
+  try {
+    res.status(200).json(await bauService.abrirBauRei(idUsuario(req)));
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getBaus, postAbrirBau, getBauRei, postAbrirBauRei };

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { instalarCache, limparCacheApi } from "./cacheApi";
 
 // Endereço da API: em produção (Vercel) vem de VITE_API_URL, definida no painel
 // do projeto (ex: https://meu-backend.vercel.app/api). Sem ela, vale o backend
@@ -13,6 +14,10 @@ function tirarBarraFinal(endereco) {
 const api = axios.create({
   baseURL: tirarBarraFinal(import.meta.env.VITE_API_URL || "http://localhost:3333/api"),
 });
+
+// Leituras repetidas viram uma chamada só e ficam guardadas por poucos segundos
+// (ver cacheApi.js); qualquer escrita limpa o cache.
+instalarCache(api);
 
 // Anexa o token JWT automaticamente em toda requisição, se existir
 api.interceptors.request.use((config) => {
@@ -33,6 +38,7 @@ api.interceptors.response.use(
     const ehRotaAuth = erro.config?.url?.startsWith("/auth");
     if (erro.response?.status === 401 && !ehRotaAuth) {
       localStorage.removeItem("token");
+      limparCacheApi();
       if (window.location.pathname !== "/") window.location.replace("/");
     }
     return Promise.reject(erro);

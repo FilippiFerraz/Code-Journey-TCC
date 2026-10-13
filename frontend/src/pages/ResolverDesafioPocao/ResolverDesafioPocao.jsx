@@ -8,7 +8,7 @@ import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
-import caldeirao from "../../assets/images/caldeirao.png";
+import caldeirao from "../../assets/images/caldeirao.webp";
 import "./ResolverDesafioPocao.css";
 
 // Enquanto a rota de desafios não existe no backend, o conteúdo fica aqui —

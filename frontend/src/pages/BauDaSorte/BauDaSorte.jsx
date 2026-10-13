@@ -6,11 +6,12 @@ import IconeItem from "../../components/IconeItem";
 import { tocarSom } from "../../utils/sons";
 // Mesma arte da tela de Seleção de Dificuldade. Se o baú ganhar uma arte
 // própria no futuro, basta trocar este import.
-import fundoTela from "../../assets/images/fundo_tela_selcionardesafio.png";
+import fundoTela from "../../assets/images/fundo_tela_selcionardesafio.webp";
 import "./BauDaSorte.css";
 
 // Tela cheia (sem MainLayout), aberta ao concluir um módulo (vitória no
-// desafio-chefe). Os itens da roleta são os REAIS do jogo (GET /api/itens) e
+// desafio-chefe). Os itens da roleta são os exclusivos do baú (GET /api/itens
+// — só itens com Item.exclusivoBau, que não saem em nenhum desafio) e
 // o prêmio é sorteado, creditado no inventário e travado contra reabertura
 // pelo backend (POST /api/baus/:mundoId/abrir — ver bau.service.js). A
 // animação só "encena" um resultado que já foi decidido antes do giro.
@@ -78,7 +79,8 @@ function prefereMenosMovimento() {
 // GET /api/baus pra saber o motivo: baú já aberto antes (mostra o prêmio
 // que saiu na época) ou módulo ainda não concluído. Erros de rede/servidor
 // sobem como exceção e viram a fase "erro".
-async function abrirOuRecuperarBau(mundoId, dificuldade) {
+async function abrirOuRecuperarBau(mundoId, dificuldade, bauRei) {
+  if (bauRei) return abrirOuRecuperarBauRei();
   try {
     const res = await api.post(`/baus/${mundoId}/abrir`, { dificuldade });
     return { situacao: "aberto", premio: res.data.itemGanho };
@@ -99,7 +101,28 @@ async function abrirOuRecuperarBau(mundoId, dificuldade) {
   }
 }
 
-function BauDaSorte() {
+// Mesmo fluxo pro Baú Real (Desafio do Rei), com as rotas próprias dele.
+async function abrirOuRecuperarBauRei() {
+  try {
+    const res = await api.post("/baus/rei/abrir");
+    return { situacao: "aberto", premio: res.data.itemGanho };
+  } catch (erro) {
+    if (erro.response?.status !== 400) throw erro;
+
+    const resBau = await api.get("/baus/rei");
+    if (resBau.data.aberto && resBau.data.itemGanho) {
+      return { situacao: "jaAberto", premio: resBau.data.itemGanho };
+    }
+    return {
+      situacao: "bloqueado",
+      mensagem: erro.response.data?.erro || "O Baú Real ainda está trancado.",
+    };
+  }
+}
+
+// bauRei: abre o Baú Real do Desafio do Rei (rota /bau-rei) em vez do baú
+// de fim de módulo — muda só de onde vêm os itens e o prêmio.
+function BauDaSorte({ bauRei = false }) {
   const navigate = useNavigate();
   const { mundoId, dificuldade } = useParams();
 
@@ -137,13 +160,13 @@ function BauDaSorte() {
     setJaAbertoAntes(false);
     giroRef.current = { iniciado: false, finalizado: false };
 
-    const chave = `${mundoId}:${dificuldade}:${tentativa}`;
+    const chave = `${bauRei ? "rei" : `${mundoId}:${dificuldade}`}:${tentativa}`;
     if (aberturaRef.current.chave !== chave) {
-      aberturaRef.current = { chave, promessa: abrirOuRecuperarBau(mundoId, dificuldade) };
+      aberturaRef.current = { chave, promessa: abrirOuRecuperarBau(mundoId, dificuldade, bauRei) };
     }
 
     Promise.all([
-      api.get("/itens", { signal: controlador.signal }),
+      api.get(bauRei ? "/itens/rei" : "/itens", { signal: controlador.signal }),
       aberturaRef.current.promessa,
     ])
       .then(([resItens, abertura]) => {
@@ -184,7 +207,7 @@ function BauDaSorte() {
       ativo = false;
       controlador.abort();
     };
-  }, [mundoId, dificuldade, tentativa]);
+  }, [mundoId, dificuldade, tentativa, bauRei]);
 
   // ---------- Posição da fita ----------
 
@@ -390,12 +413,13 @@ function BauDaSorte() {
             </div>
           </div>
           <div className="sorte-faixa-corpo">
-            <h1 className="sorte-faixa-titulo">MÓDULO CONCLUÍDO!</h1>
+            <h1 className="sorte-faixa-titulo">{bauRei ? "BAÚ REAL!" : "MÓDULO CONCLUÍDO!"}</h1>
           </div>
         </div>
 
         <p className="sorte-subtitulo">
-          <span aria-hidden="true">✦</span> Você ganhou uma recompensa!{" "}
+          <span aria-hidden="true">✦</span>{" "}
+          {bauRei ? "Asas da coleção do Rei Tiribyte!" : "Você ganhou uma recompensa!"}{" "}
           <span aria-hidden="true">✦</span>
         </p>
 

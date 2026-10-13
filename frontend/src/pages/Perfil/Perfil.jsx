@@ -6,7 +6,7 @@ import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import IconeItem from "../../components/IconeItem";
 import BotaoPixel from "../../components/BotaoPixel";
-import fundoPersonagemPerfil from "../../assets/images/Fundo_Personagem_Perfil.png";
+import fundoPersonagemPerfil from "../../assets/images/Fundo_Personagem_Perfil.webp";
 
 // "2024-04-10..." -> "abril de 2024"
 function formatarMesAno(dataIso) {

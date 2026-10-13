@@ -6,7 +6,7 @@ import BotaoPixel from '../../components/BotaoPixel';
 import IconeItem from '../../components/IconeItem';
 import { tocarSom } from '../../utils/sons';
 import { formatarDuracao } from '../../utils/tempo';
-import mago from '../../assets/images/Mago.png';
+import mago from '../../assets/images/Mago.webp';
 import './RecompensaDesafio.css';
 
 // Tela cheia (sem MainLayout), igual às telas de batalha — é a continuação

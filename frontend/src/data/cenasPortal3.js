@@ -8,17 +8,17 @@
 // ARTES PROVISÓRIAS: o portal 3 ainda não tem inimigos nem cenários
 // próprios, então reaproveita os do Portal 1. Quando as artes existirem,
 // basta trocar os imports abaixo — nenhuma tela precisa mudar.
-import inimigo1Portal3 from "../assets/images/inimigo_1_portal3.png";
-import fundo1Portal3 from "../assets/images/fundo_batalha_1_portal_3.jpg";
+import inimigo1Portal3 from "../assets/images/inimigo_1_portal3.webp";
+import fundo1Portal3 from "../assets/images/fundo_batalha_1_portal_3.webp";
 import goblinJS from "../assets/images/GoblinJS.png";
-import mercadorInimigo from "../assets/images/mercador_inimigo.png";
-import bruxaInimigo from "../assets/images/bruxa_inimigo.png";
+import mercadorInimigo from "../assets/images/mercador_inimigo.webp";
+import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
 import slime from "../assets/images/Slime.png";
-import reiGoblinInimigo from "../assets/images/rei_goblin_inimigo.png";
+import reiGoblinInimigo from "../assets/images/rei_goblin_inimigo.webp";
 import fundoBatalha from "../assets/images/Fundo_batalha.png";
-import fundoBatalha2 from "../assets/images/Fundo_batalha2.png";
-import fundoDesafio4P1 from "../assets/images/Fundo_desafio_4_P1.png";
-import fundoDesafio6P1 from "../assets/images/Fundo_desafio_6_P1.png";
+import fundoBatalha2 from "../assets/images/Fundo_batalha2.webp";
+import fundoDesafio4P1 from "../assets/images/Fundo_desafio_4_P1.webp";
+import fundoDesafio6P1 from "../assets/images/Fundo_desafio_6_P1.webp";
 
 // Por número do desafio (1 a 6). "chefe: true" usa a arena de chefe (sprite
 // grande, barra de vida no topo) — mesmo visual de DesafioChefe.jsx.

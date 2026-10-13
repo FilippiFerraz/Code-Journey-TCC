@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import BotaoPixel from "../../components/BotaoPixel";
 import "./TutorialHome.css";
-import mago from "../../assets/images/Mago.png";
+import mago from "../../assets/images/Mago.webp";
 
 // Cada passo aponta pra um elemento real da tela via [data-tutorial-alvo]
 // (portal na Home, ícones no rodapé de MainLayout.jsx). O tutorial mede a

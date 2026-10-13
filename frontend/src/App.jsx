@@ -1,35 +1,20 @@
+import { Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login/Login";
-import Cadastro from "./pages/Cadastro/Cadastro";
-import VerificarEmail from "./pages/VerificarEmail/VerificarEmail";
-import EsqueciSenha from "./pages/EsqueciSenha/EsqueciSenha";
-import Home from "./pages/Home/Home";
-import SelecionarDificuldade from "./pages/SelecionarDificuldade/SelecionarDificuldade";
-import Desafios from "./pages/Desafios/Desafios";
-import DesafioIntro from "./pages/DesafioIntro/DesafioIntro";
-import ResolverDesafio from "./pages/ResolverDesafio/ResolverDesafio";
-import DesafioChefe from "./pages/DesafioChefe/DesafioChefe";
-import DesafioIntroPocao from "./pages/DesafioIntroPocao/DesafioIntroPocao";
-import ResolverDesafioPocao from "./pages/ResolverDesafioPocao/ResolverDesafioPocao";
-import Perfil from "./pages/Perfil/Perfil";
-import Ranking from "./pages/Ranking/Ranking";
-import EditarPersonagem from "./pages/Editarpersonagem/EditarPersonagem";
-import RecompensaDesafio from './pages/RecompensaDesafio/RecompensaDesafio';
-import BauDaSorte from "./pages/BauDaSorte/BauDaSorte";
-import Configuracoes from "./pages/Configuracoes/Configuracoes";
-import Conta from "./pages/Configuracoes/Conta/Conta";
-import Admin from "./pages/Admin/Admin";
-import AdminUsuarios from "./pages/Admin/Usuarios/AdminUsuarios";
-import AdminDesafios from "./pages/Admin/Desafios/AdminDesafios";
-import EditarDesafioAdmin from "./pages/Admin/Desafios/EditarDesafioAdmin";
-import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
-import AdminLogs from "./pages/Admin/Logs/AdminLogs";
-import AdminLoginHistorico from "./pages/Admin/LoginHistorico/AdminLoginHistorico";
-import DesafioEtapas from "./pages/DesafioEtapas/DesafioEtapas";
+import { telas } from "./telas";
+import TelaCarregando from "./components/TelaCarregando";
 import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica } from "./components/Rotas";
 
-
+// Cada tela é um arquivo à parte, baixado só quando o jogador entra nela
+// (ver telas.js) — o Login, primeira tela, continua no pacote principal.
+const {
+  Cadastro, VerificarEmail, EsqueciSenha, Home, SelecionarDificuldade, Desafios,
+  DesafioIntro, ResolverDesafio, DesafioChefe, DesafioIntroPocao, ResolverDesafioPocao,
+  DesafioEtapas, Perfil, Ranking, EditarPersonagem, RecompensaDesafio, BauDaSorte, DesafioRei,
+  Configuracoes, Conta, Admin, AdminUsuarios, AdminDesafios, EditarDesafioAdmin,
+  AdminDashboard, AdminLogs, AdminLoginHistorico,
+} = telas;
 
 function App() {
   return (
@@ -41,6 +26,7 @@ function App() {
           moldura estreita ali causava o "aplicativo bugado" com barras
           laterais enormes (ver .app-frame:has(...) em App.css). */}
       <div className="app-frame">
+        <Suspense fallback={<TelaCarregando />}>
         <Routes>
           {/* Só para quem NÃO está logado — logado vai direto pra Home */}
           <Route element={<RotaPublica />}>
@@ -64,6 +50,10 @@ function App() {
             <Route path="/etapas/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioEtapas /></RotaDesafio>} />
             <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="concluido"><RecompensaDesafio /></RotaDesafio>} />
             <Route path="/bau/:mundoId/:dificuldade" element={<RotaDesafio exigir="mundo"><BauDaSorte /></RotaDesafio>} />
+            {/* Desafio do Rei (castelo do mapa) e o Baú Real dele — a própria
+                tela e o backend conferem se os dois primeiros portais foram concluídos */}
+            <Route path="/desafio-do-rei" element={<DesafioRei />} />
+            <Route path="/bau-rei" element={<BauDaSorte bauRei />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/perfil/:usuarioId" element={<Perfil />} />
             <Route path="/ranking" element={<Ranking />} />
@@ -86,6 +76,7 @@ function App() {
           {/* URL que não existe: volta pro início (Login, ou Home se logado) */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </div>
     </BrowserRouter>
   );

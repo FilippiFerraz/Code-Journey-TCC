@@ -116,7 +116,7 @@
   color: var(--texto);
   background: var(--branco);
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
 .conta-input:focus {

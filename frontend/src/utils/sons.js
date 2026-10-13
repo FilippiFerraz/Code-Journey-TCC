@@ -37,6 +37,21 @@ export function tocarSom(nome) {
   }
 }
 
+// Cria (e começa a baixar) todos os sons de uma vez, quando o navegador está
+// ocioso. Antes o arquivo só começava a baixar NA PRIMEIRA VEZ que o som
+// tocava — em rede lenta, o primeiro acerto/erro ficava mudo ou atrasado.
+let precarregado = false;
+export function precarregarSons() {
+  if (precarregado) return;
+  precarregado = true;
+  const rodar = () => Object.keys(ARQUIVOS).forEach((nome) => obterAudio(nome).load());
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(rodar, { timeout: 5000 });
+  } else {
+    setTimeout(rodar, 2000);
+  }
+}
+
 export function pararSom(nome) {
   const audio = cache[nome];
   if (!audio) return;

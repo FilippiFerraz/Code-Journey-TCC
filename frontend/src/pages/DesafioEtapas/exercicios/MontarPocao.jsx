@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { tocarSom } from "../../../utils/sons";
-import caldeirao from "../../../assets/images/caldeirao.png";
+import caldeirao from "../../../assets/images/caldeirao.webp";
 import "../../ResolverDesafioPocao/ResolverDesafioPocao.css";
 
 // Montar poção — mesmo visual e mecânica de ResolverDesafioPocao.jsx:

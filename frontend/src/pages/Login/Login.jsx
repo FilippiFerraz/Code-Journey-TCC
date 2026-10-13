@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import CampoSenha from "../../components/CampoSenha";

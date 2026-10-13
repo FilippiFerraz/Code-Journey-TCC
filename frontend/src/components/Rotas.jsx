@@ -4,6 +4,8 @@ import MainLayout from "../layouts/MainLayout";
 import api from "../services/api";
 import { temToken, verificarAdmin, verificarSessao } from "../services/sessao";
 import { desafioConcluido, desafioLiberado, mundoLiberado } from "../data/progresso";
+import { prefetchTelas } from "../telas";
+import { precarregarSons } from "../utils/sons";
 
 // Guardas de rota do App.jsx. Elas só decidem qual TELA aparece — quem
 // protege os dados de verdade é o backend (auth.middleware.js,
@@ -34,9 +36,21 @@ export function RotaProtegida() {
   const location = useLocation();
   const permitido = useChecagem(verificarSessao, "sessao");
 
+  // Sessão confirmada: baixa em segundo plano as telas mais usadas, pra a
+  // próxima navegação já encontrar tudo pronto.
+  useEffect(() => {
+    if (permitido) {
+      prefetchTelas();
+      precarregarSons();
+    }
+  }, [permitido]);
+
   if (!temToken()) return <Navigate to="/" replace state={{ de: location.pathname }} />;
-  if (permitido === null) return null;
-  if (!permitido) return <Navigate to="/" replace />;
+  // Enquanto o backend ainda não respondeu (permitido === null) a tela já
+  // aparece: antes o app ficava EM BRANCO esperando a API. Quem protege os
+  // dados é o backend (cada requisição revalida o token), e um token
+  // recusado cai no 401 que desloga e volta pro Login logo em seguida.
+  if (permitido === false) return <Navigate to="/" replace />;
   return <Outlet />;
 }
 
@@ -87,8 +101,10 @@ export function RotaDesafio({ exigir, children }) {
     }
   }, chave);
 
-  if (permitido === null) return null;
-  if (!permitido) {
+  // Mesmo raciocínio de RotaProtegida: a tela abre na hora e, se o progresso
+  // (que costuma já estar em cache) disser que está trancada, volta pra
+  // anterior. O servidor revalida cada resposta de qualquer forma.
+  if (permitido === false) {
     const destino = exigir === "mundo" ? "/home" : `/desafios/${mundoId}/${dificuldade}`;
     return <Navigate to={destino} replace />;
   }

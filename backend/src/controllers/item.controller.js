@@ -9,4 +9,13 @@ async function getItens(req, res, next) {
   }
 }
 
-module.exports = { getItens };
+async function getItensRei(req, res, next) {
+  try {
+    const itens = await itemService.listarItens({ bauRei: true });
+    return res.status(200).json(itens);
+  } catch (erro) {
+    next(erro);
+  }
+}
+
+module.exports = { getItens, getItensRei };

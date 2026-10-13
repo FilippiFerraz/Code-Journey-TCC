@@ -35,7 +35,10 @@ const origensPermitidas = (process.env.FRONTEND_URL || "http://localhost:5173")
   .map((origem) => tirarBarraFinal(origem.trim()))
   .filter(Boolean);
 
-app.use(cors({ origin: origensPermitidas }));
+// maxAge: o navegador lembra a resposta da pré-verificação (OPTIONS) por 2h
+// em vez de repeti-la antes de CADA chamada — cada pré-verificação é uma ida
+// e volta de rede inteira (o Chrome limita esse cache a 2h, então 7200).
+app.use(cors({ origin: origensPermitidas, maxAge: 7200 }));
 app.use(express.json());
 
 app.use("/api", rotas);

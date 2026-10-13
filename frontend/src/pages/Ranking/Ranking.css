@@ -2,7 +2,7 @@
    Ranking.css — ranking global por XP
    Renderiza dentro do MainLayout (área rolável .layout-conteudo).
    Estética: placas de madeira penduradas na parede da masmorra do fundo
-   (fundo_ranking.jpg), com rebites nos cantos — mesma linguagem "jogo de
+   (fundo_ranking.webp), com rebites nos cantos — mesma linguagem "jogo de
    RPG pixelado" do resto do app.
    ============================================================ */
 
@@ -14,7 +14,7 @@
   margin: -20px;
   padding: 20px;
   min-height: calc(100% + 40px);
-  background: url("../../assets/images/fundo_ranking.jpg") center / cover no-repeat;
+  background: url("../../assets/images/fundo_ranking.webp") center / cover no-repeat;
   image-rendering: pixelated;
 }
 

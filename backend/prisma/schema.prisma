@@ -273,6 +273,14 @@ model Item {
   imagemUrl   String?
   bonusAtaque Int     @default(0)
   bonusDefesa Int     @default(0)
+  // Item exclusivo do Baú da Sorte: só sai na roleta do baú de fim de
+  // módulo (ver bau.service.js) — não aparece no seletor de recompensa de
+  // desafio do painel de admin nem pode ser dado por desafio.
+  exclusivoBau Boolean @default(false)
+  // Item exclusivo do Baú Real: só sai no baú ganho ao vencer o Desafio do
+  // Rei (minijogo do castelo — ver abrirBauRei em bau.service.js). Mesmas
+  // restrições do exclusivoBau, mas com uma roleta própria.
+  exclusivoRei Boolean @default(false)
 
   personagens ItemPersonagem[]
   desafios    Desafio[] // desafios que dão este item como recompensa ao concluir

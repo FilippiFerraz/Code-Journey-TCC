@@ -1,14 +1,17 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
-import mapa from "../../assets/images/mapa.png";
-import portalDesafios from "../../assets/images/Portal_Desafios.gif";
+import mapa from "../../assets/images/mapa.webp";
+import portalDesafios from "../../assets/images/Portal_Desafios.webp";
 import cadeadoPortal from "../../assets/images/Cadeado_portal.png";
 import api from "../../services/api";
 import { mundoLiberado } from "../../data/progresso";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
+import PersonagemNoMapa from "./PersonagemNoMapa";
+import { lerUltimoPortal, salvarUltimoPortal, trechoEntre } from "./caminhoMapa";
 import "./Home.css";
 
 // Mesmo breakpoint usado pelo MainLayout pra trocar entre rodapé (mobile) e
@@ -16,12 +19,19 @@ import "./Home.css";
 // onde a barra de busca aparece (ver comentário mais abaixo).
 const BREAKPOINT_MOBILE = 768;
 
-// Posições em % relativas ao tamanho da imagem do mapa (ajuste livremente)
+// Posições em % relativas ao tamanho da imagem do mapa. Mudou alguma? Ajuste
+// também o ponto do portal em CAMINHO (caminhoMapa.js), por onde o
+// personagem anda.
 const PORTAIS = [
   { id: "1", nome: "Vila Inicial", top: "16%", left: "50%" },
   { id: "2", nome: "Acampamento Goblin", top: "47%", left: "50%" },
   { id: "3", nome: "Arena do Dragão", top: "71%", left: "50%" },
 ];
+
+// Castelo do mapa (canto superior direito da arte): abre o Desafio do Rei
+// depois que os dois primeiros portais estão concluídos. Centro e tamanho
+// em % da imagem do mapa, cobrindo o desenho do castelo.
+const CASTELO = { top: "21%", left: "80.5%", largura: "33%", altura: "19%" };
 
 function Home() {
   const navigate = useNavigate();
@@ -30,6 +40,17 @@ function Home() {
   // Portal clicado enquanto ainda trancado — guarda o objeto pra mostrar o
   // nome dele no aviso do Mago; null quando não há aviso na tela.
   const [portalBloqueado, setPortalBloqueado] = useState(null);
+  const [avisoCastelo, setAvisoCastelo] = useState(false);
+  // Portal pro qual o personagem está caminhando (animação antes de abrir a
+  // dificuldade); null quando ninguém está andando no mapa.
+  const [destino, setDestino] = useState(null);
+  const itensEquipados = usePersonagemAvatar();
+  // Calculado uma vez por viagem — PersonagemNoMapa reinicia a caminhada
+  // sempre que recebe uma lista nova.
+  const trechoViagem = useMemo(
+    () => (destino ? trechoEntre(lerUltimoPortal(), destino.id) : []),
+    [destino]
+  );
   // Progresso real do usuário logado (GET /api/progresso), usado pra decidir
   // quais portais estão liberados. Começa vazio — enquanto não chega (ou se
   // a chamada falhar), só o portal 1 aparece liberado, nunca o contrário.
@@ -124,10 +145,34 @@ function Home() {
   }
 
   function handlePortalClick(portal) {
+    if (destino) return; // já está caminhando pra um portal
     if (!mundoLiberado(progresso, portal.id)) {
       setPortalBloqueado(portal);
       return;
     }
+    // Com "reduzir movimento" no sistema, pula a caminhada.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      entrarNoPortal(portal);
+      return;
+    }
+    setDestino(portal);
+  }
+
+  // Desafio do Rei: liberado com os portais 1 e 2 concluídos (o portal 3
+  // abrir é exatamente isso — ver mundoLiberado).
+  const casteloLiberado = mundoLiberado(progresso, "3");
+
+  function handleCasteloClick() {
+    if (destino) return;
+    if (!casteloLiberado) {
+      setAvisoCastelo(true);
+      return;
+    }
+    navigate("/desafio-do-rei");
+  }
+
+  function entrarNoPortal(portal) {
+    salvarUltimoPortal(portal.id);
     navigate(`/dificuldade/${portal.id}`, { state: { nomeMundo: portal.nome } });
   }
 
@@ -199,6 +244,22 @@ function Home() {
       <div className="home-mapa">
         <img src={mapa} alt="Mapa da jornada" className="home-mapa-imagem" />
 
+        <button
+          type="button"
+          className={`home-castelo ${casteloLiberado ? "" : "home-castelo--bloqueado"}`}
+          style={{ top: CASTELO.top, left: CASTELO.left, width: CASTELO.largura, height: CASTELO.altura }}
+          onClick={handleCasteloClick}
+          aria-label={casteloLiberado ? "Desafio do Rei" : "Desafio do Rei (bloqueado)"}
+        >
+          <span className="home-castelo-placa">
+            <i
+              className={`hn ${casteloLiberado ? "hn-crown-solid" : "hn-lock"} home-castelo-icone`}
+              aria-hidden="true"
+            />
+            Desafio do Rei
+          </span>
+        </button>
+
         {PORTAIS.map((portal) => {
           const liberado = mundoLiberado(progresso, portal.id);
           const bauDisponivel = baus.find(
@@ -250,9 +311,25 @@ function Home() {
             </Fragment>
           );
         })}
+
+        {destino && (
+          <PersonagemNoMapa
+            pontos={trechoViagem}
+            itensEquipados={itensEquipados}
+            onChegar={() => entrarNoPortal(destino)}
+          />
+        )}
       </div>
 
       {mostrarTutorial && <TutorialHome onConcluir={concluirTutorial} />}
+
+      {avisoCastelo && (
+        <AvisoPortalBloqueado
+          titulo="Castelo fechado"
+          fala="O Rei só recebe heróis que já venceram a Vila Inicial e o Acampamento Goblin. Conclua os dois primeiros portais e ele vai te chamar para o Desafio do Rei!"
+          onFechar={() => setAvisoCastelo(false)}
+        />
+      )}
 
       {portalBloqueado && (
         <AvisoPortalBloqueado

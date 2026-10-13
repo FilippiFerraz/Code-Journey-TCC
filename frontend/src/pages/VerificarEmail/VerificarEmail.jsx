@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import BotaoPixel from "../../components/BotaoPixel";
 import { EMAIL_MAXIMO, validarCodigo, validarEmail } from "../../utils/validacoes";
 import "../Login/Login.css";

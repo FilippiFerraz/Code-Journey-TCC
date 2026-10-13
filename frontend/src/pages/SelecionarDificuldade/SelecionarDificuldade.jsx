@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
-import fundoTela from "../../assets/images/fundo_tela_selcionardesafio.png";
+import fundoTela from "../../assets/images/fundo_tela_selcionardesafio.webp";
 import "./SelecionarDificuldade.css";
 
 // Dificuldades exibidas, na ordem dos botões. O "valor" é o que vai na URL

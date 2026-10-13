@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import logo from "../assets/images/logo.png";
+import logo from "../assets/images/logo.webp";
 import { useEhAdministrador } from "../hooks/useEhAdministrador";
 import { useIsMobile } from "../hooks/useIsMobile";
 import "./MainLayout.css";

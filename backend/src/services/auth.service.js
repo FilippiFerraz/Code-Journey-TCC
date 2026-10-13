@@ -92,13 +92,17 @@ async function login({ email, senha, ip, userAgent }) {
   // delete em config/prisma.js), então um usuário excluído cai aqui como
   // "não encontrado" — por isso a checagem extra abaixo, só pra dar uma
   // mensagem melhor nesse caso específico.
-  const usuario = await buscarPorEmail(email);
+  // Uma consulta só, sem o filtro de conta excluída: serve tanto pra achar o
+  // usuário quanto pra saber se a conta foi desativada (antes eram duas
+  // consultas em sequência no caminho de falha).
+  const usuarioBruto = await buscarPorEmail(email, prisma.semFiltro);
+  const usuario = usuarioBruto?.deletedAt ? null : usuarioBruto;
 
   if (!usuario) {
     // Busca sem o filtro de soft delete só pra saber se é uma conta
     // desativada (pra vincular usuarioId/nomeUsuario no histórico mesmo
     // nesse caso) — não muda a mensagem de erro nem o comportamento do login.
-    const usuarioExcluido = await buscarPorEmail(email, prisma.semFiltro);
+    const usuarioExcluido = usuarioBruto;
 
     if (usuarioExcluido?.deletedAt) {
       await registrarTentativa({

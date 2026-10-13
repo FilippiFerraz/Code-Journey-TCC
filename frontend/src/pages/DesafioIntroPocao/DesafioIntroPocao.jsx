@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
-import bruxaInimigo from "../../assets/images/bruxa_inimigo.png";
+import bruxaInimigo from "../../assets/images/bruxa_inimigo.webp";
 import "./DesafioIntroPocao.css";
 
 // Introdução narrativa do desafio "Monte a Poção" — mesmo padrão visual

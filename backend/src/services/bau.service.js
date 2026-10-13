@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { listarDesafiosResumo } = require("./desafiosCache");
 const { concederItemSeNaoTiver, buscarOuCriarPersonagem } = require("./personagem.service");
 
 // Quantos itens vão em "slots" na resposta de abrirBau — pode repetir itens
@@ -50,28 +51,36 @@ async function mundoConcluido(usuarioId, mundoId, dificuldade) {
 // aberto (com o item que ele deu) — usado por Home.jsx pra decidir em quais
 // portais do mapa desenhar o ícone do baú.
 async function listarBaus(usuarioId) {
-  const trilhas = await prisma.desafio.findMany({
-    distinct: ["mundoId", "dificuldade"],
-    select: { mundoId: true, dificuldade: true },
-    orderBy: [{ mundoId: "asc" }, { dificuldade: "asc" }],
-  });
+  // Antes: 2 consultas POR trilha, num laço, uma depois da outra. Agora três
+  // consultas juntas e a conta de "trilha concluída" é feita em memória.
+  const [desafios, bausAbertos, progressosConcluidos] = await Promise.all([
+    listarDesafiosResumo(),
+    prisma.bauMundo.findMany({ where: { usuarioId }, include: { itemGanho: true } }),
+    prisma.progresso.findMany({ where: { usuarioId, concluido: true }, select: { desafioId: true } }),
+  ]);
 
-  const bausAbertos = await prisma.bauMundo.findMany({
-    where: { usuarioId },
-    include: { itemGanho: true },
-  });
   const bauPorTrilha = new Map(
-    bausAbertos.map((bau) => [`${bau.mundoId}:${bau.dificuldade}`, bau])
+    bausAbertos.map((bau) => [bau.mundoId + ":" + bau.dificuldade, bau])
   );
+  const concluidos = new Set(progressosConcluidos.map((p) => p.desafioId));
+
+  // desafios já vêm ordenados por mundo e dificuldade
+  const desafiosPorTrilha = new Map();
+  for (const d of desafios) {
+    const chave = d.mundoId + ":" + d.dificuldade;
+    if (!desafiosPorTrilha.has(chave)) desafiosPorTrilha.set(chave, []);
+    desafiosPorTrilha.get(chave).push(d.id);
+  }
 
   const resultado = [];
-  for (const trilha of trilhas) {
-    const bauAberto = bauPorTrilha.get(`${trilha.mundoId}:${trilha.dificuldade}`);
-    const concluido = await mundoConcluido(usuarioId, trilha.mundoId, trilha.dificuldade);
+  for (const [chave, ids] of desafiosPorTrilha) {
+    const [mundoId, dificuldade] = chave.split(":");
+    const bauAberto = bauPorTrilha.get(chave);
+    const concluido = ids.length > 0 && ids.every((id) => concluidos.has(id));
 
     resultado.push({
-      mundoId: trilha.mundoId,
-      dificuldade: trilha.dificuldade,
+      mundoId: Number(mundoId),
+      dificuldade,
       disponivel: concluido && !bauAberto,
       aberto: Boolean(bauAberto),
       itemGanho: bauAberto ? formatarItem(bauAberto.itemGanho) : null,
@@ -81,8 +90,6 @@ async function listarBaus(usuarioId) {
   return resultado;
 }
 
-// Peso de cada raridade no sorteio do prêmio (Item.raridade) — quanto maior,
-// mais provável. Raridade desconhecida conta como "comum".
 const PESOS_RARIDADE = {
   comum: 60,
   raro: 25,
@@ -105,11 +112,16 @@ function sortearPorRaridade(itens) {
 // Sorteia o item ganho e monta os SLOTS_ROLETA itens exibidos na roleta — o
 // item sorteado sempre ocupa um deles, no índice retornado em
 // "indiceVencedor" (é nesse slot que a animação do frontend deve parar).
-// Recompensas não acumulam (ver concederItemSeNaoTiver), então o sorteio é
-// feito só entre os itens que o jogador AINDA NÃO TEM — o baú sempre dá algo
-// novo. Se ele já tiver todos, sorteia entre todos (e nada se duplica).
-async function sortearRoleta(usuarioId) {
-  const itensDisponiveis = await prisma.item.findMany();
+// O baú só sorteia os itens exclusivos dele (Item.exclusivoBau) — eles não
+// saem de nenhum outro lugar do jogo. Recompensas não acumulam (ver
+// concederItemSeNaoTiver), então o sorteio é feito só entre os que o
+// jogador AINDA NÃO TEM — o baú sempre dá algo novo. Se ele já tiver todos,
+// sorteia entre todos (e nada se duplica).
+//
+// "filtro" escolhe a roleta: a do baú de módulo (padrão) ou a do Baú Real
+// (ver abrirBauRei), cada uma com seus próprios itens exclusivos.
+async function sortearRoleta(usuarioId, filtro = { exclusivoBau: true }) {
+  const itensDisponiveis = await prisma.item.findMany({ where: filtro });
   if (itensDisponiveis.length === 0) {
     throw erroDeValidacao("Ainda não há itens cadastrados para dar como recompensa.");
   }
@@ -168,4 +180,82 @@ async function abrirBau(usuarioId, mundoId, dificuldade) {
   };
 }
 
-module.exports = { listarBaus, abrirBau };
+// ---------- Baú Real (Desafio do Rei) ----------
+//
+// O Desafio do Rei (minijogo do castelo no mapa) libera depois que os dois
+// primeiros portais estão concluídos e dá UM Baú Real, com roleta própria
+// (itens com Item.exclusivoRei). Ele usa a mesma tabela dos baús de módulo
+// (BauMundo), numa "trilha" que não existe: mundoId 0 e dificuldade "rei".
+// Nenhum desafio é cadastrado nela, então listarBaus nunca a mostra e
+// abrirBau nunca a abre (mundoConcluido daria false).
+//
+// Limitação conhecida: a vitória no minijogo acontece no navegador — o
+// backend só confere se o desafio está liberado e se o baú já foi aberto.
+const MUNDO_BAU_REI = 0;
+const DIFICULDADE_BAU_REI = "rei";
+const MUNDOS_EXIGIDOS_REI = [1, 2];
+const DIFICULDADE_EXIGIDA_REI = "iniciante";
+
+async function desafioReiLiberado(usuarioId) {
+  const concluidos = await Promise.all(
+    MUNDOS_EXIGIDOS_REI.map((mundoId) => mundoConcluido(usuarioId, mundoId, DIFICULDADE_EXIGIDA_REI))
+  );
+  return concluidos.every(Boolean);
+}
+
+function buscarBauRei(usuarioId, incluirItem = false) {
+  return prisma.bauMundo.findUnique({
+    where: {
+      usuarioId_mundoId_dificuldade: {
+        usuarioId,
+        mundoId: MUNDO_BAU_REI,
+        dificuldade: DIFICULDADE_BAU_REI,
+      },
+    },
+    include: incluirItem ? { itemGanho: true } : undefined,
+  });
+}
+
+// GET /api/baus/rei — se o Desafio do Rei já está liberado pro jogador e se
+// o Baú Real já foi aberto (com o item que saiu).
+async function situacaoBauRei(usuarioId) {
+  const [liberado, bau] = await Promise.all([
+    desafioReiLiberado(usuarioId),
+    buscarBauRei(usuarioId, true),
+  ]);
+  return {
+    liberado,
+    aberto: Boolean(bau),
+    itemGanho: bau ? formatarItem(bau.itemGanho) : null,
+  };
+}
+
+// POST /api/baus/rei/abrir — mesmo fluxo de abrirBau, com a roleta do Baú Real.
+async function abrirBauRei(usuarioId) {
+  if (await buscarBauRei(usuarioId)) {
+    throw erroDeValidacao("Você já abriu o Baú Real.");
+  }
+  if (!(await desafioReiLiberado(usuarioId))) {
+    throw erroDeValidacao("Conclua os dois primeiros portais para enfrentar o Desafio do Rei.");
+  }
+
+  const { itemGanho, slots, indiceVencedor } = await sortearRoleta(usuarioId, { exclusivoRei: true });
+  const { quantidade } = await concederItemSeNaoTiver(usuarioId, itemGanho.id);
+
+  await prisma.bauMundo.create({
+    data: {
+      usuarioId,
+      mundoId: MUNDO_BAU_REI,
+      dificuldade: DIFICULDADE_BAU_REI,
+      itemGanhoId: itemGanho.id,
+    },
+  });
+
+  return {
+    itemGanho: formatarItem(itemGanho, quantidade),
+    slots: slots.map((item) => formatarItem(item)),
+    indiceVencedor,
+  };
+}
+
+module.exports = { listarBaus, abrirBau, situacaoBauRei, abrirBauRei };
