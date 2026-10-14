@@ -1,0 +1,415 @@
+/* Card de Perfil do Jogador (PerfilJogadorCard.jsx), na coluna direita do
+   layout desktop. Visual dark medieval: slate/azul-marinho com bordas roxas,
+   ouro nos destaques e sprites nítidos (image-rendering: pixelated). */
+.pjc {
+  --pjc-fundo: #0f172a;
+  --pjc-fundo-claro: #1e293b;
+  --pjc-borda: rgba(107, 33, 168, 0.6);
+  --pjc-roxo: #7c3aed;
+  --pjc-ouro: #f4c542;
+  --pjc-creme: #f5f0ff;
+  --pjc-apagado: #94a3b8;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  color: var(--pjc-creme);
+  background: linear-gradient(180deg, #161f38 0%, var(--pjc-fundo) 100%);
+  border: 2px solid var(--pjc-borda);
+  box-shadow: 0 0 0 2px #0b0f1d, inset 0 0 0 1px rgba(196, 181, 253, 0.08), 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* cantoneiras douradas, como nas molduras das telas de jogo */
+.pjc::before,
+.pjc::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--pjc-ouro);
+}
+
+.pjc::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.pjc::after {
+  right: -2px;
+  bottom: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.pjc-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pjc-moldura {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  display: block;
+  background:
+    radial-gradient(circle at 50% 70%, rgba(124, 58, 237, 0.35), transparent 70%),
+    #0b1122;
+  border: 3px solid #4c1d95;
+  box-shadow: 0 0 0 2px #0b0f1d, inset 0 0 0 2px rgba(244, 197, 66, 0.35);
+}
+
+.pjc-moldura:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.pjc-avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.pjc-avatar img {
+  image-rendering: pixelated;
+}
+
+.pjc-nivel {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #2a1a0a;
+  background: var(--pjc-ouro);
+  border: 2px solid #8a5a12;
+  box-shadow: 0 2px 0 #000000;
+}
+
+.pjc-identidade {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.pjc-nome {
+  max-width: 100%;
+  font-size: 15px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 0 #000000;
+}
+
+.pjc-titulo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #c4b5fd;
+}
+
+.pjc-titulo .hn,
+.pjc-titulo .icone-pixel {
+  font-size: 12px;
+  color: var(--pjc-ouro);
+}
+
+.pjc-ofensiva {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--pjc-apagado);
+  background: #1e293b;
+  border: 2px solid #334155;
+}
+
+.pjc-ofensiva--acesa {
+  color: #fff4e5;
+  background: linear-gradient(180deg, #c2410c, #9a3412);
+  border-color: #f97316;
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.45);
+}
+
+.pjc-ofensiva--acesa .hn {
+  color: #fde047;
+}
+
+/* ---------- Ouro e Cristais ---------- */
+
+.pjc-recursos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pjc-recurso {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 7px;
+  align-items: center;
+  padding: 8px;
+  background: var(--pjc-fundo-claro);
+  border: 2px solid #334155;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+}
+
+.pjc-recurso-icone {
+  grid-row: span 2;
+  font-size: 22px;
+}
+
+.pjc-recurso--ouro .pjc-recurso-icone {
+  color: var(--pjc-ouro);
+  filter: drop-shadow(0 2px 0 #7a4b0c);
+}
+
+.pjc-recurso--cristais .pjc-recurso-icone {
+  color: #a78bfa;
+  filter: drop-shadow(0 0 4px rgba(167, 139, 250, 0.8));
+}
+
+.pjc-recurso-rotulo {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--pjc-apagado);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pjc-recurso-valor {
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.pjc-recurso--ouro .pjc-recurso-valor {
+  color: #fde68a;
+}
+
+.pjc-recurso--cristais .pjc-recurso-valor {
+  color: #ddd6fe;
+}
+
+/* ---------- Equipamentos ---------- */
+
+.pjc-secao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #c4b5fd;
+}
+
+.pjc-secao-link {
+  font-size: 10px;
+  color: var(--pjc-ouro);
+  text-decoration: none;
+  letter-spacing: 0;
+}
+
+.pjc-secao-link:hover,
+.pjc-secao-link:focus-visible {
+  text-decoration: underline;
+}
+
+.pjc-slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.pjc-slot {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b1122;
+  border: 2px solid #475569;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+  cursor: default;
+  outline: none;
+}
+
+.pjc-slot--comum {
+  border-color: #64748b;
+}
+
+.pjc-slot--raro {
+  border-color: #3b82f6;
+}
+
+.pjc-slot--epico {
+  border-color: #a855f7;
+  box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.4);
+}
+
+.pjc-slot--lendario {
+  border-color: var(--pjc-ouro);
+  box-shadow: inset 0 0 6px rgba(244, 197, 66, 0.45);
+}
+
+.pjc-slot--vazio {
+  border-style: dashed;
+  border-color: #334155;
+}
+
+.pjc-slot:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 1px;
+}
+
+.pjc-slot-imagem {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.pjc-slot-emoji,
+.pjc-slot-vazio-icone {
+  font-size: 20px;
+}
+
+.pjc-slot-vazio-icone {
+  color: #334155;
+}
+
+/* tooltip rápida ao passar o mouse (ou focar pelo teclado) */
+.pjc-dica {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 5;
+  min-width: 120px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--pjc-creme);
+  background: #020617;
+  border: 2px solid var(--pjc-roxo);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+  pointer-events: none;
+}
+
+.pjc-dica--esquerda {
+  left: 0;
+  transform: translate(0, 4px);
+}
+
+.pjc-dica--direita {
+  left: auto;
+  right: 0;
+  transform: translate(0, 4px);
+}
+
+.pjc-slot:hover .pjc-dica,
+.pjc-slot:focus-visible .pjc-dica {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.pjc-slot:hover .pjc-dica--esquerda,
+.pjc-slot:focus-visible .pjc-dica--esquerda,
+.pjc-slot:hover .pjc-dica--direita,
+.pjc-slot:focus-visible .pjc-dica--direita {
+  transform: translate(0, 0);
+}
+
+.pjc-dica-slot {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--pjc-apagado);
+  text-transform: uppercase;
+}
+
+.pjc-dica-nome {
+  font-size: 12px;
+}
+
+.pjc-dica-raridade {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.pjc-dica-raridade--comum {
+  color: #cbd5e1;
+}
+
+.pjc-dica-raridade--raro {
+  color: #60a5fa;
+}
+
+.pjc-dica-raridade--epico {
+  color: #c084fc;
+}
+
+.pjc-dica-raridade--lendario {
+  color: var(--pjc-ouro);
+}
+
+/* ---------- Carregando ---------- */
+
+.pjc-esqueleto {
+  background: linear-gradient(90deg, #1e293b 0%, #273449 50%, #1e293b 100%);
+  background-size: 200% 100%;
+  animation: pjc-brilho 1.2s linear infinite;
+}
+
+.pjc-esqueleto--topo {
+  height: 72px;
+}
+
+.pjc-esqueleto--linha {
+  height: 44px;
+}
+
+@keyframes pjc-brilho {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pjc-esqueleto {
+    animation: none;
+  }
+
+  .pjc-dica {
+    transition: none;
+  }
+}

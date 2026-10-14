@@ -54,13 +54,13 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
               key={etapa.numero}
               className={etapa.numero <= etapasConcluidas && !concluido ? "etapas-intro-lista--feita" : ""}
             >
-              <span>{etapa.numero <= etapasConcluidas && !concluido ? "✓" : etapa.numero}</span>
+              <span>{etapa.numero <= etapasConcluidas && !concluido ? <i className="hn hn-check-solid" aria-label="concluída" /> : etapa.numero}</span>
               {etapa.titulo || `Etapa ${etapa.numero}`}
             </li>
           ))}
         </ol>
 
-        {desafio.dica && <p className="intro-enunciado-dica">💡 Dica: {renderDica(desafio.dica)}</p>}
+        {desafio.dica && <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(desafio.dica)}</p>}
         {continuando && (
           <p className="etapas-intro-aviso">Você já venceu {etapasConcluidas} etapa(s) — vai continuar de onde parou.</p>
         )}
@@ -78,7 +78,7 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
     return (
       <div className="chefe-tela">
         <BotaoPixel className="chefe-voltar" classeMiolo="chefe-voltar-miolo" onClick={voltar}>
-          ← Voltar
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
         </BotaoPixel>
         <div className="chefe-intro" onClick={avancar}>
           {!mostrarEnunciado && <BotaoPularFalas onPular={() => setMostrarEnunciado(true)} className="chefe-pular" />}
@@ -102,7 +102,7 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
                     <span key={i} className={`chefe-intro-ponto ${i <= indice ? "chefe-intro-ponto--ativo" : ""}`} />
                   ))}
                 </div>
-                <span className="chefe-intro-continuar">toque para continuar ▶</span>
+                <span className="chefe-intro-continuar">toque para continuar <i className="hn hn-play-solid" aria-hidden="true" /></span>
               </div>
               <BarraAvancoFala chave={indice} />
             </div>
@@ -117,7 +117,7 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
   return (
     <div className="intro-container" onClick={avancar}>
       <BotaoPixel className="intro-voltar" classeMiolo="intro-voltar-miolo" onClick={voltar}>
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {!mostrarEnunciado && <BotaoPularFalas onPular={() => setMostrarEnunciado(true)} />}
@@ -147,7 +147,7 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
                 <span key={i} className={`intro-ponto ${i <= indice ? "intro-ponto-ativo" : ""}`} />
               ))}
             </div>
-            <span className="intro-continuar">toque para continuar ▶</span>
+            <span className="intro-continuar">toque para continuar <i className="hn hn-play-solid" aria-hidden="true" /></span>
           </div>
           <BarraAvancoFala chave={indice} />
         </div>

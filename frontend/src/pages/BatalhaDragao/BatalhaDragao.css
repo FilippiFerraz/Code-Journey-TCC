@@ -1,0 +1,642 @@
+/* Batalha do Dragão (BatalhaDragao.jsx): tela cheia, sem MainLayout.
+   Paleta da arena: roxo profundo, magenta do sopro, ciano do escudo. */
+.drg-tela {
+  --drg-fundo: #0b0614;
+  --drg-painel: #170d29;
+  --drg-roxo: #6a2fd0;
+  --drg-roxo-escuro: #2e1670;
+  --drg-magenta: #ff4fd8;
+  --drg-ciano: #3ff2ff;
+  --drg-ouro: #f4c542;
+  --drg-ouro-sombra: #8a5a12;
+  --drg-creme: #fff4dc;
+
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--drg-creme);
+  background: var(--drg-fundo);
+  user-select: none;
+}
+
+.drg-tela--aviso {
+  align-items: center;
+  justify-content: center;
+}
+
+.drg-carregando {
+  font-weight: 800;
+  animation: drg-piscar 1s ease-in-out infinite;
+}
+
+/* screen shake da tela inteira (impacto do sopro, rugido da fúria) */
+.drg-tela--tremendo {
+  animation: drg-tremer 0.65s linear;
+}
+
+/* ---------- HUD do topo ---------- */
+
+.drg-hud {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 6px;
+  background: linear-gradient(180deg, #1e0d36, #120821);
+}
+
+.drg-voltar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  background: var(--drg-ouro-sombra);
+}
+
+.drg-voltar-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+  color: var(--drg-creme);
+  font-size: 16px;
+}
+
+.drg-boss {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drg-boss-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.drg-boss-nome {
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  color: #e6c8ff;
+  text-shadow: 0 0 8px rgba(176, 38, 255, 0.8), 0 2px 0 #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drg-fase {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #2a1a0a;
+  background: #c9b3ff;
+}
+
+.drg-fase--furia {
+  color: #ffffff;
+  background: #d81b60;
+  animation: drg-piscar 0.8s ease-in-out infinite;
+}
+
+/* vida do dragão: a barra cai rápido e a "fantasma" branca segue devagar */
+.drg-hp {
+  position: relative;
+  height: 14px;
+  background: #2a1236;
+  border: 2px solid #000000;
+  box-shadow: 0 0 0 2px #5b2a86;
+}
+
+.drg-hp-fantasma,
+.drg-hp-barra {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.drg-hp-fantasma {
+  background: #ffffff;
+  transition: width 0.9s ease-in 0.45s;
+}
+
+.drg-hp-barra {
+  background: linear-gradient(180deg, #ff6ef2 0 35%, #c026d3 35% 100%);
+  transition: width 0.35s ease-out;
+}
+
+.drg-tela--furia .drg-hp-barra {
+  background: linear-gradient(180deg, #ff6b8b 0 35%, #e11d48 35% 100%);
+}
+
+.drg-hp-texto {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-shadow: 0 1px 0 #000000, 0 0 3px #000000;
+}
+
+/* ---------- Barra do sopro (cast) ---------- */
+
+.drg-cast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 6px;
+  background: #120821;
+  opacity: 0.35;
+  transition: opacity 0.25s ease;
+}
+
+.drg-cast--ativo {
+  opacity: 1;
+}
+
+.drg-cast-rotulo {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  font-weight: 900;
+  color: var(--drg-magenta);
+}
+
+.drg-cast-trilho {
+  flex: 1;
+  height: 8px;
+  background: #2a1236;
+  border: 1px solid #000000;
+}
+
+.drg-cast-barra {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #7b2fbf, #ff4fd8);
+  box-shadow: 0 0 8px rgba(255, 79, 216, 0.8);
+}
+
+.drg-cast:not(.drg-cast--ativo) .drg-cast-barra {
+  width: 0 !important;
+}
+
+.drg-cast-segundos {
+  min-width: 26px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: right;
+}
+
+/* ---------- Palco (canvas) ---------- */
+
+.drg-palco {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 240 / 150;
+  max-height: 42dvh;
+  background: #000000;
+}
+
+.drg-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.drg-vinheta {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(220, 20, 60, 0.75) 100%);
+  animation: drg-vinheta 1.6s ease-out forwards;
+}
+
+.drg-flash-furia {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #b026ff;
+  animation: drg-flash 2.3s ease-out forwards;
+}
+
+/* ---------- Jogador ---------- */
+
+.drg-jogador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #120821;
+  border-top: 2px solid #2e1670;
+}
+
+.drg-vidas {
+  display: flex;
+  gap: 4px;
+}
+
+.drg-coracao {
+  font-size: 18px;
+  color: #ff4d6d;
+  filter: drop-shadow(0 2px 0 #000000);
+}
+
+.drg-coracao--perdido {
+  color: #3a3346;
+}
+
+.drg-escudo {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #8a86a0;
+}
+
+.drg-escudo--ativo {
+  color: var(--drg-ciano);
+  text-shadow: 0 0 6px rgba(63, 242, 255, 0.8);
+}
+
+/* ---------- Painel do desafio ---------- */
+
+.drg-painel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 12px 14px;
+  background: var(--drg-painel);
+}
+
+.drg-desafio {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: drg-surgir 0.3s ease-out;
+}
+
+.drg-enunciado {
+  margin: 0;
+  font-weight: 800;
+  color: var(--drg-ouro);
+}
+
+.drg-codigo {
+  margin: 0;
+  padding: 8px 0;
+  overflow-x: auto;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  background: #0b0716;
+  border: 2px solid #3a2466;
+}
+
+.drg-codigo-linha {
+  display: flex;
+  gap: 10px;
+  padding-right: 8px;
+  white-space: pre;
+}
+
+.drg-codigo-numero {
+  flex-shrink: 0;
+  width: 22px;
+  text-align: right;
+  color: #5f5480;
+}
+
+.drg-codigo code {
+  font-family: "Courier New", monospace;
+  color: #d9f99d;
+}
+
+.drg-lacuna {
+  padding: 0 2px;
+  color: #2a1a0a;
+  background: var(--drg-ouro);
+  animation: drg-piscar 1s ease-in-out infinite;
+}
+
+.drg-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.drg-opcao {
+  min-height: 40px;
+  padding: 6px 8px;
+  font-family: inherit;
+  color: var(--drg-creme);
+  background: linear-gradient(180deg, #3b1f73, #2a1556);
+  border: 2px solid #6a2fd0;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.drg-opcao code {
+  font-family: "Courier New", monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.drg-opcao:hover,
+.drg-opcao:focus-visible {
+  border-color: var(--drg-ciano);
+  outline: none;
+}
+
+.drg-opcao:active {
+  transform: translateY(2px);
+}
+
+.drg-retorno {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border: 2px solid;
+  animation: drg-surgir 0.3s ease-out;
+}
+
+.drg-retorno--acerto {
+  border-color: var(--drg-ciano);
+  background: rgba(63, 242, 255, 0.08);
+}
+
+.drg-retorno--erro {
+  border-color: #ff4d6d;
+  background: rgba(255, 77, 109, 0.08);
+}
+
+.drg-retorno--furia {
+  border-color: var(--drg-magenta);
+  background: rgba(255, 79, 216, 0.1);
+}
+
+.drg-retorno-titulo {
+  font-size: 0.95rem;
+}
+
+.drg-retorno--acerto .drg-retorno-titulo {
+  color: var(--drg-ciano);
+}
+
+.drg-retorno--erro .drg-retorno-titulo {
+  color: #ff8aa0;
+}
+
+.drg-retorno--furia .drg-retorno-titulo {
+  color: var(--drg-magenta);
+  letter-spacing: 2px;
+}
+
+.drg-retorno-texto {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.drg-retorno-texto code {
+  padding: 0 4px;
+  font-family: "Courier New", monospace;
+  font-weight: 700;
+  color: #2a1a0a;
+  background: var(--drg-ouro);
+}
+
+.drg-retorno-botao {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.drg-aguardando {
+  margin: 20px 0;
+  text-align: center;
+  opacity: 0.7;
+  animation: drg-piscar 1.2s ease-in-out infinite;
+}
+
+/* ---------- Intro (falas por cima da arena) ---------- */
+
+.drg-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(5, 2, 12, 0.1) 30%, rgba(5, 2, 12, 0.85));
+  cursor: pointer;
+}
+
+.drg-pular {
+  top: 60px;
+  right: 14px;
+}
+
+.drg-balao {
+  position: relative;
+  width: 100%;
+  padding: 14px 16px 18px;
+  background: rgba(20, 10, 40, 0.95);
+  border: 3px solid var(--drg-ouro);
+  box-shadow: 0 0 0 3px var(--drg-ouro-sombra), 0 10px 24px rgba(0, 0, 0, 0.6);
+}
+
+.drg-balao--dragao {
+  border-color: var(--drg-magenta);
+  box-shadow: 0 0 0 3px #6b1a5c, 0 0 24px rgba(255, 79, 216, 0.45);
+}
+
+.drg-mago {
+  position: absolute;
+  bottom: 100%;
+  left: 6px;
+  width: 104px;
+  height: auto;
+  margin-bottom: -6px;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+}
+
+.drg-balao-nome {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--drg-ouro);
+}
+
+.drg-balao--dragao .drg-balao-nome {
+  color: var(--drg-magenta);
+  letter-spacing: 1px;
+}
+
+.drg-balao-fala {
+  margin: 0 0 10px;
+  line-height: 1.45;
+  animation: drg-surgir 0.35s ease-out;
+}
+
+.drg-balao--dragao .drg-balao-fala {
+  font-weight: 800;
+}
+
+.drg-balao-continuar {
+  display: block;
+  font-size: 0.75rem;
+  text-align: right;
+  opacity: 0.75;
+}
+
+/* ---------- Caixas (vitória, derrota, avisos) ---------- */
+
+.drg-sobreposicao {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 2, 12, 0.6);
+  animation: drg-aparecer 0.4s ease-out;
+}
+
+.drg-caixa {
+  width: min(94%, 380px);
+  box-sizing: border-box;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: rgba(20, 10, 40, 0.97);
+  border: 3px solid var(--drg-ouro);
+  box-shadow: 0 0 0 3px var(--drg-ouro-sombra), 0 14px 30px rgba(0, 0, 0, 0.6);
+  animation: drg-surgir 0.35s ease-out;
+}
+
+.drg-caixa--vitoria {
+  box-shadow: 0 0 0 3px var(--drg-ouro-sombra), 0 0 40px rgba(244, 197, 66, 0.5);
+}
+
+.drg-caixa--derrota {
+  border-color: #ff4d6d;
+  box-shadow: 0 0 0 3px #6b1a2c, 0 14px 30px rgba(0, 0, 0, 0.6);
+}
+
+.drg-caixa-titulo {
+  font-size: 1.1rem;
+  color: var(--drg-ouro);
+  text-shadow: 0 2px 0 #000000;
+}
+
+.drg-caixa--derrota .drg-caixa-titulo {
+  color: #ff8aa0;
+}
+
+.drg-caixa-texto {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.drg-caixa-botoes {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.drg-botao {
+  width: min(88%, 260px);
+  background: var(--drg-ouro-sombra);
+}
+
+.drg-botao-miolo {
+  padding: 11px 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0 22%, transparent 22%),
+    linear-gradient(180deg, var(--drg-roxo) 0%, var(--drg-roxo-escuro) 100%);
+  color: var(--drg-creme);
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.drg-botao--secundario .drg-botao-miolo {
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+}
+
+.drg-voltar:focus-visible .botao-pixel-miolo,
+.drg-botao:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes drg-tremer {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-6px, 3px); }
+  20% { transform: translate(5px, -4px); }
+  30% { transform: translate(-4px, -2px); }
+  40% { transform: translate(6px, 2px); }
+  50% { transform: translate(-3px, 4px); }
+  60% { transform: translate(3px, -3px); }
+  70% { transform: translate(-2px, 2px); }
+  85% { transform: translate(1px, -1px); }
+}
+
+@keyframes drg-vinheta {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes drg-flash {
+  0% { opacity: 0; }
+  15% { opacity: 0.55; }
+  30% { opacity: 0.1; }
+  45% { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+@keyframes drg-piscar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes drg-surgir {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes drg-aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drg-tela--tremendo,
+  .drg-fase--furia,
+  .drg-lacuna,
+  .drg-carregando,
+  .drg-aguardando,
+  .drg-desafio,
+  .drg-retorno,
+  .drg-caixa,
+  .drg-balao-fala {
+    animation: none;
+  }
+}

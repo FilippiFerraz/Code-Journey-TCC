@@ -69,7 +69,7 @@ function AdminLogs() {
           classeMiolo="admin-logs-voltar-miolo"
           onClick={() => navigate("/admin")}
         >
-          ← Painel
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Painel
         </BotaoPixel>
 
         <select

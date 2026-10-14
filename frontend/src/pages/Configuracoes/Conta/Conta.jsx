@@ -269,7 +269,7 @@ function Conta() {
           classeMiolo="conta-voltar-miolo"
           onClick={() => navigate("/configuracoes")}
         >
-          ← Voltar
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
         </BotaoPixel>
 
         <div className="conta-form">
@@ -295,7 +295,7 @@ function Conta() {
             <div className="conta-info">
               {bloqueioNome ? (
                 <>
-                  <span className="conta-info-icone">ℹ️</span>
+                  <i className="hn hn-info-circle-solid conta-info-icone" aria-hidden="true" />
                   <span className="conta-info-texto">
                     Última alteração: {formatarData(conta.nomeAlteradoEm)} — faltam{" "}
                     <strong>{textoDias(conta.diasParaAlterarNome)}</strong> para poder alterar de novo.
@@ -337,7 +337,7 @@ function Conta() {
               /* Etapa 2: aguardando o código enviado pro e-mail novo */
               <form onSubmit={handleConfirmarEmail}>
                 <div className="conta-info">
-                  <span className="conta-info-icone">📧</span>
+                  <i className="hn hn-envelope-solid conta-info-icone" aria-hidden="true" />
                   <span className="conta-info-texto">
                     Enviamos um código de 6 dígitos para <strong>{conta.emailPendente}</strong>.
                     Digite-o abaixo para concluir a troca.
@@ -377,7 +377,7 @@ function Conta() {
             ) : bloqueioEmail ? (
               <>
                 <div className="conta-info">
-                  <span className="conta-info-icone">ℹ️</span>
+                  <i className="hn hn-info-circle-solid conta-info-icone" aria-hidden="true" />
                   <span className="conta-info-texto">
                     Última alteração: {formatarData(conta.emailAlteradoEm)} — faltam{" "}
                     <strong>{textoDias(conta.diasParaAlterarEmail)}</strong> para poder alterar de novo.

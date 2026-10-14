@@ -49,3 +49,7 @@ import "./pages/Admin/LoginHistorico/AdminLoginHistorico.css";
 import "./pages/DesafioEtapas/DesafioEtapas.css";
 import "./components/TelaCarregando.css";
 import "./pages/DesafioRei/DesafioRei.css";
+import "./components/IconePixel.css";
+import "./pages/DesafioCristais/DesafioCristais.css";
+import "./pages/BatalhaDragao/BatalhaDragao.css";
+import "./components/PerfilJogadorCard.css";

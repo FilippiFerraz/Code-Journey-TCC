@@ -100,10 +100,13 @@
 .coracao {
   font-size: 1.3rem;
   line-height: 1;
+  color: #ff4d6d;
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6));
   transition: transform 0.2s ease;
 }
 
 .coracao--vazio {
+  color: #1d1626;
   opacity: 0.55;
 }
 

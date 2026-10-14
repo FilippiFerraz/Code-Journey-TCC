@@ -9,6 +9,14 @@ import api from "../../services/api";
 import { desafioConcluido, desafioLiberado } from "../../data/progresso";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
+import { BookOpen } from "pixelarticons/react/BookOpen.js";
+import { Crown } from "pixelarticons/react/Crown.js";
+import { Potion } from "pixelarticons/react/Potion.js";
+import { Script } from "pixelarticons/react/Script.js";
+import { Shield } from "pixelarticons/react/Shield.js";
+import { Sparkle } from "pixelarticons/react/Sparkle.js";
+import { Sword } from "pixelarticons/react/Sword.js";
+import IconePixel from "../../components/IconePixel";
 
 // Ids dos desafios da trilha. Quem está liberado ou não é calculado a partir
 // do progresso REAL do usuário (GET /api/progresso — ver desafioLiberado em
@@ -40,12 +48,12 @@ function ehDesafioPocao(mundoId, numero) {
 // imagem (.png/.gif — ver IconeDesafio).
 // TODO: vir da API de desafios junto com o resto do conteúdo do desafio.
 const ICONES_DESAFIOS = {
-  1: "⚔️",
-  2: "🛡️",
-  3: "📘",
-  4: "📜",
-  5: "🧪",
-  6: "👑",
+  1: Sword,
+  2: Shield,
+  3: BookOpen,
+  4: Script,
+  5: Potion,
+  6: Crown,
 };
 
 // Cena do topo (o avatar do jogador aparece sempre por cima). Todos os
@@ -73,11 +81,16 @@ const ROTULO_ESTADO = {
   concluido: "concluído",
 };
 
+// icone: caminho de imagem (.png/.gif) ou um ícone da pixelarticons
 function IconeDesafio({ icone }) {
-  if (/\.(png|gif)$/i.test(icone)) {
+  if (typeof icone === "string" && /\.(png|gif)$/i.test(icone)) {
     return <img src={icone} alt="" className="desafio-card-icone-imagem" draggable={false} />;
   }
-  return <span className="desafio-card-icone-emoji">{icone}</span>;
+  return (
+    <span className="desafio-card-icone-emoji">
+      <IconePixel icone={icone ?? Sword} />
+    </span>
+  );
 }
 
 function Desafios() {
@@ -232,14 +245,14 @@ function Desafios() {
           <div className="desafios-painel-corpo">
             <div className="desafios-faixa">
               <div className="desafios-faixa-corpo">
-                <span className="desafios-faixa-lis" aria-hidden="true">⚜</span>
+                <span className="desafios-faixa-lis" aria-hidden="true"><IconePixel icone={Sparkle} /></span>
                 <div className="desafios-faixa-textos">
                   <h2 className="desafios-faixa-titulo">DESAFIOS</h2>
                   <p className="desafios-faixa-subtitulo">
                     Escolha um desafio e prove seu conhecimento em programação!
                   </p>
                 </div>
-                <span className="desafios-faixa-lis" aria-hidden="true">⚜</span>
+                <span className="desafios-faixa-lis" aria-hidden="true"><IconePixel icone={Sparkle} /></span>
               </div>
             </div>
 
@@ -275,7 +288,7 @@ function Desafios() {
                       <span className="desafio-card-corpo">
                         <span className="desafio-card-icone">
                           <IconeDesafio icone={desafio.icone} />
-                          {bloqueado && <span className="desafio-card-cadeado">🔒</span>}
+                          {bloqueado && <span className="desafio-card-cadeado"><i className="hn hn-lock-solid" aria-label="Bloqueado" /></span>}
                         </span>
                         <span className="desafio-card-rodape">
                           <span>
@@ -290,7 +303,7 @@ function Desafios() {
                     </span>
 
                     {desafio.estado === "concluido" && (
-                      <span className="desafio-card-selo" aria-hidden="true">✔</span>
+                      <span className="desafio-card-selo" aria-hidden="true"><i className="hn hn-check-solid" /></span>
                     )}
 
                     {desafio.chefe && !bloqueado && (

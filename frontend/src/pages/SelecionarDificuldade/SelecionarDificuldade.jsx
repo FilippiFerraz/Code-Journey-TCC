@@ -1,3 +1,7 @@
+import { Crown } from "pixelarticons/react/Crown.js";
+import { Skull } from "pixelarticons/react/Skull.js";
+import { Sword } from "pixelarticons/react/Sword.js";
+import IconePixel from "../../components/IconePixel";
 import { useNavigate, useParams } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
 import fundoTela from "../../assets/images/fundo_tela_selcionardesafio.webp";
@@ -9,16 +13,21 @@ import "./SelecionarDificuldade.css";
 // "descricao" aparece como dica ao passar o mouse.
 // Ícone aceita emoji ou caminho de imagem .png/.gif (ver IconeDificuldade).
 const DIFICULDADES = [
-  { valor: "iniciante", rotulo: "INICIANTE", nome: "Iniciante", descricao: "Dificuldade fácil", icone: "🗡️" },
-  { valor: "guerreiro", rotulo: "GUERREIRO", nome: "Guerreiro", descricao: "Dificuldade difícil", icone: "⚔️" },
-  // { valor: "mestre", rotulo: "MESTRE", nome: "Mestre", descricao: "Dificuldade extrema", icone: "👑" }, // TODO: reativar se um terceiro nível for criado
+  { valor: "iniciante", rotulo: "INICIANTE", nome: "Iniciante", descricao: "Dificuldade fácil", icone: Sword },
+  { valor: "guerreiro", rotulo: "GUERREIRO", nome: "Guerreiro", descricao: "Dificuldade difícil", icone: Skull },
+  // { valor: "mestre", rotulo: "MESTRE", nome: "Mestre", descricao: "Dificuldade extrema", icone: Crown }, // TODO: reativar se um terceiro nível for criado
 ];
 
+// icone: caminho de imagem (.png/.gif) ou um ícone da pixelarticons
 function IconeDificuldade({ icone }) {
-  if (/\.(png|gif)$/i.test(icone)) {
+  if (typeof icone === "string" && /\.(png|gif)$/i.test(icone)) {
     return <img src={icone} alt="" className="dif-opcao-icone-imagem" draggable={false} />;
   }
-  return <span className="dif-opcao-icone-emoji">{icone}</span>;
+  return (
+    <span className="dif-opcao-icone-emoji">
+      <IconePixel icone={icone} />
+    </span>
+  );
 }
 
 function SelecionarDificuldade() {

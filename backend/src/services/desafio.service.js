@@ -45,7 +45,7 @@ async function buscarDesafioPorId(desafioId) {
 async function listarItensCatalogo() {
   // itens exclusivos de baú (de módulo ou Real) não podem ser recompensa de desafio
   return prisma.item.findMany({
-    where: { exclusivoBau: false, exclusivoRei: false },
+    where: { exclusivoBau: false, exclusivoRei: false, exclusivoCristal: false, exclusivoDragao: false },
     select: { id: true, nome: true, icone: true, descricao: true, tipo: true, raridade: true },
     orderBy: { nome: "asc" },
   });
@@ -114,7 +114,7 @@ async function atualizarDesafio(desafioId, dados, admin) {
       }
       const item = await prisma.item.findUnique({ where: { id: itemIdNumero } });
       if (!item) throw erroNaoEncontrado("Item de recompensa não encontrado.");
-      if (item.exclusivoBau || item.exclusivoRei) {
+      if (item.exclusivoBau || item.exclusivoRei || item.exclusivoCristal || item.exclusivoDragao) {
         throw erroDeValidacao("Este item é exclusivo de um baú e não pode ser recompensa de desafio.");
       }
       atualizacoes.itemRecompensaId = itemIdNumero;

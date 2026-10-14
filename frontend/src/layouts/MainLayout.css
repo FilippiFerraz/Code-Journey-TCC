@@ -141,29 +141,21 @@
   overflow-y: auto; /* se a lista de itens crescer além da altura da tela */
 }
 
+/* coluna direita escura (dark medieval), no tom do mapa e do Card de
+   Perfil do Jogador (components/PerfilJogadorCard.jsx) que fica no topo dela */
 .layout-coluna-direita {
   flex-shrink: 0;
-  width: 280px;
+  width: 300px;
+  box-sizing: border-box;
   padding: 20px 16px;
-  background: #faf8fc;
-  border-left: 1px solid #ece9f0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background:
+    linear-gradient(180deg, rgba(76, 29, 149, 0.18), transparent 240px),
+    #0b1020;
+  border-left: 2px solid rgba(107, 33, 168, 0.6);
   overflow-y: auto;
-}
-
-/* placeholder — widgets de XP/ranking/missão do dia entram aqui depois */
-.layout-widget-placeholder {
-  padding: 18px 16px;
-  border: 2px dashed #d8c7ea;
-  border-radius: 14px;
-  background: #ffffff;
-  text-align: center;
-}
-
-.layout-widget-placeholder-texto {
-  margin: 0;
-  font-size: 13px;
-  color: #8a8a95;
-  line-height: 1.5;
 }
 
 /* Sidebar e conteúdo já cabem a partir de 768px, mas com a coluna direita

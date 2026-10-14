@@ -33,7 +33,7 @@ function AdminDesafios() {
           classeMiolo="admin-desafios-voltar-miolo"
           onClick={() => navigate("/admin")}
         >
-          ← Painel
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Painel
         </BotaoPixel>
 
         {carregando ? (
@@ -60,7 +60,7 @@ function AdminDesafios() {
                 <strong className="admin-desafios-item-titulo">{desafio.titulo}</strong>
                 <span className="admin-desafios-item-recompensa">
                   {desafio.itemRecompensa
-                    ? `Item: ${desafio.itemRecompensa.icone ? `${desafio.itemRecompensa.icone} ` : ""}${desafio.itemRecompensa.nome}`
+                    ? `Item: ${desafio.itemRecompensa.nome}`
                     : "Sem item — só XP"}
                 </span>
               </button>

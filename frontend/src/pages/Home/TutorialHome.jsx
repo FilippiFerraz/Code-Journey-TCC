@@ -125,7 +125,7 @@ function TutorialHome({ onConcluir }) {
               classeMiolo="tutorial-botao-miolo"
               onClick={avancar}
             >
-              {ultimoPasso ? "Entendi!" : "Próximo ▶"}
+              {ultimoPasso ? "Entendi!" : <>Próximo <i className="hn hn-play-solid" aria-hidden="true" /></>}
             </BotaoPixel>
           </div>
         </div>

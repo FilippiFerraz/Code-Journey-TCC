@@ -6,11 +6,14 @@ import portalDesafios from "../../assets/images/Portal_Desafios.webp";
 import cadeadoPortal from "../../assets/images/Cadeado_portal.png";
 import api from "../../services/api";
 import { mundoLiberado } from "../../data/progresso";
+import { tocarSom } from "../../utils/sons";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
 import PersonagemNoMapa from "./PersonagemNoMapa";
+import { Gift } from "pixelarticons/react/Gift.js";
+import IconePixel from "../../components/IconePixel";
 import { lerUltimoPortal, salvarUltimoPortal, trechoEntre } from "./caminhoMapa";
 import "./Home.css";
 
@@ -33,6 +36,24 @@ const PORTAIS = [
 // em % da imagem do mapa, cobrindo o desenho do castelo.
 const CASTELO = { top: "21%", left: "80.5%", largura: "33%", altura: "19%" };
 
+// Cristal Gigante e a cachoeira ao lado dele (lado esquerdo da arte): os
+// dois abrem o Desafio da Cachoeira de Cristais, liberado com o portal 1
+// concluído. Centro e tamanho em % da imagem do mapa.
+const PONTOS_CRISTAIS = [
+  { id: "cristal", nome: "Cristal Gigante", top: "39%", left: "17%", largura: "19%", altura: "10.5%" },
+  { id: "cachoeira", nome: "Cachoeira", top: "40%", left: "30.3%", largura: "7%", altura: "9%" },
+];
+// Placa com o nome do desafio, entre o cristal e a cachoeira.
+const PLACA_CRISTAIS = { top: "45.6%", left: "24.5%" };
+// Duração da transição (brilho + partículas) antes de abrir o minijogo.
+const DURACAO_TRANSICAO_CRISTAIS_MS = 900;
+
+// Dragão adormecido no centro da arena (fundo do mapa, abaixo do portal 3):
+// abre a Batalha do Dragão, liberada com os três portais concluídos.
+const DRAGAO = { top: "84.3%", left: "50%", largura: "32%", altura: "11%" };
+// Transição dramática (tremor, flash e fogo roxo) antes de abrir a batalha.
+const DURACAO_TRANSICAO_DRAGAO_MS = 1300;
+
 function Home() {
   const navigate = useNavigate();
   const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
@@ -41,6 +62,10 @@ function Home() {
   // nome dele no aviso do Mago; null quando não há aviso na tela.
   const [portalBloqueado, setPortalBloqueado] = useState(null);
   const [avisoCastelo, setAvisoCastelo] = useState(false);
+  const [avisoCristais, setAvisoCristais] = useState(false);
+  const [abrindoCristais, setAbrindoCristais] = useState(false);
+  const [avisoDragao, setAvisoDragao] = useState(false);
+  const [abrindoDragao, setAbrindoDragao] = useState(false);
   // Portal pro qual o personagem está caminhando (animação antes de abrir a
   // dificuldade); null quando ninguém está andando no mapa.
   const [destino, setDestino] = useState(null);
@@ -171,6 +196,44 @@ function Home() {
     navigate("/desafio-do-rei");
   }
 
+  // Desafio da Cachoeira de Cristais: liberado com o portal 1 concluído (o
+  // portal 2 abrir é exatamente isso — ver mundoLiberado).
+  const cristaisLiberados = mundoLiberado(progresso, "2");
+
+  function handleCristaisClick() {
+    if (destino || abrindoCristais) return;
+    if (!cristaisLiberados) {
+      setAvisoCristais(true);
+      return;
+    }
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      navigate("/desafio-dos-cristais");
+      return;
+    }
+    setAbrindoCristais(true);
+    window.setTimeout(() => navigate("/desafio-dos-cristais"), DURACAO_TRANSICAO_CRISTAIS_MS);
+  }
+
+  // Batalha do Dragão: liberada com os portais 1, 2 e 3 concluídos (o
+  // "portal 4" abrir é exatamente o portal 3 concluído — ver mundoLiberado).
+  const dragaoLiberado =
+    mundoLiberado(progresso, "2") && mundoLiberado(progresso, "3") && mundoLiberado(progresso, "4");
+
+  function handleDragaoClick() {
+    if (destino || abrindoDragao) return;
+    if (!dragaoLiberado) {
+      setAvisoDragao(true);
+      return;
+    }
+    tocarSom("boss"); // o rugido
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      navigate("/batalha-do-dragao");
+      return;
+    }
+    setAbrindoDragao(true);
+    window.setTimeout(() => navigate("/batalha-do-dragao"), DURACAO_TRANSICAO_DRAGAO_MS);
+  }
+
   function entrarNoPortal(portal) {
     salvarUltimoPortal(portal.id);
     navigate(`/dificuldade/${portal.id}`, { state: { nomeMundo: portal.nome } });
@@ -241,8 +304,45 @@ function Home() {
     <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined}>
       {ehMobile && barraBusca}
 
-      <div className="home-mapa">
+      <div className={`home-mapa ${abrindoDragao ? "home-mapa--tremendo" : ""}`}>
         <img src={mapa} alt="Mapa da jornada" className="home-mapa-imagem" />
+
+        {PONTOS_CRISTAIS.map((ponto) => (
+          <button
+            key={ponto.id}
+            type="button"
+            className={`home-cristais ${cristaisLiberados ? "" : "home-cristais--bloqueado"}`}
+            style={{ top: ponto.top, left: ponto.left, width: ponto.largura, height: ponto.altura }}
+            onClick={handleCristaisClick}
+            aria-label={`${ponto.nome}: Desafio da Cachoeira de Cristais${cristaisLiberados ? "" : " (bloqueado)"}`}
+          />
+        ))}
+        <button
+          type="button"
+          className={`home-cristais-placa ${cristaisLiberados ? "" : "home-cristais-placa--bloqueada"}`}
+          style={{ top: PLACA_CRISTAIS.top, left: PLACA_CRISTAIS.left }}
+          onClick={handleCristaisClick}
+          aria-label={`Desafio da Cachoeira de Cristais${cristaisLiberados ? "" : " (bloqueado)"}`}
+        >
+          <i
+            className={`hn ${cristaisLiberados ? "hn-sparkles-solid" : "hn-lock"} home-cristais-icone`}
+            aria-hidden="true"
+          />
+          Cachoeira de Cristais
+        </button>
+
+        <button
+          type="button"
+          className={`home-dragao ${dragaoLiberado ? "" : "home-dragao--bloqueado"}`}
+          style={{ top: DRAGAO.top, left: DRAGAO.left, width: DRAGAO.largura, height: DRAGAO.altura }}
+          onClick={handleDragaoClick}
+          aria-label={`Batalha contra o Dragão do Código Fonte${dragaoLiberado ? "" : " (bloqueada)"}`}
+        >
+          <span className="home-dragao-placa">
+            <i className={`hn ${dragaoLiberado ? "hn-fire-solid" : "hn-lock"} home-dragao-icone`} aria-hidden="true" />
+            Dragão do Código Fonte
+          </span>
+        </button>
 
         <button
           type="button"
@@ -304,7 +404,7 @@ function Home() {
                   }
                   aria-label={`Abrir o baú de ${portal.nome}`}
                 >
-                  <span className="home-bau-icone" aria-hidden="true">🎁</span>
+                  <span className="home-bau-icone" aria-hidden="true"><IconePixel icone={Gift} /></span>
                   <span className="home-bau-texto">Abrir baú!</span>
                 </button>
               )}
@@ -322,6 +422,40 @@ function Home() {
       </div>
 
       {mostrarTutorial && <TutorialHome onConcluir={concluirTutorial} />}
+
+      {avisoCristais && (
+        <AvisoPortalBloqueado
+          titulo="Ponte submersa"
+          fala="A ponte até o Cristal Gigante ainda está debaixo d'água! Vença a Vila Inicial e a cachoeira vai revelar o Desafio da Cachoeira de Cristais."
+          onFechar={() => setAvisoCristais(false)}
+        />
+      )}
+
+      {/* transição ao abrir o minijogo: brilho roxo e partículas de cristal */}
+      {abrindoCristais && (
+        <div className="home-transicao-cristais" aria-hidden="true">
+          {Array.from({ length: 18 }, (_, i) => (
+            <span key={i} className="home-transicao-particula" style={{ "--i": i }} />
+          ))}
+        </div>
+      )}
+
+      {avisoDragao && (
+        <AvisoPortalBloqueado
+          titulo="O dragão dorme..."
+          fala="Shhh! O Dragão do Código Fonte só desperta para quem venceu os três portais: a Vila Inicial, o Acampamento Goblin e a Arena do Dragão. Conclua todos e volte para a batalha final!"
+          onFechar={() => setAvisoDragao(false)}
+        />
+      )}
+
+      {/* transição da batalha: flash, fogo roxo subindo e o mapa tremendo */}
+      {abrindoDragao && (
+        <div className="home-transicao-dragao" aria-hidden="true">
+          {Array.from({ length: 24 }, (_, i) => (
+            <span key={i} className="home-transicao-fogo" style={{ "--i": i }} />
+          ))}
+        </div>
+      )}
 
       {avisoCastelo && (
         <AvisoPortalBloqueado

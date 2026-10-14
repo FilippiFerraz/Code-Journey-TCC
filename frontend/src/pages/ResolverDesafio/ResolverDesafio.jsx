@@ -267,6 +267,8 @@ function ResolverDesafio() {
   const [respostaTexto, setRespostaTexto] = useState("");
   const [corrigindo, setCorrigindo] = useState(false);
   const [feedbackDissertativa, setFeedbackDissertativa] = useState("");
+  // true quando o feedback é a falha ao falar com a IA (ganha o ícone de aviso)
+  const [falhaCorrecaoIA, setFalhaCorrecaoIA] = useState(false);
 
   // Estado do exercício "avaliar_codigo": índice do cartão atual (0 até
   // cartas.length - 1), quanto o cartão foi arrastado no eixo X (controla a
@@ -457,13 +459,15 @@ function ResolverDesafio() {
       dados = resposta.data;
     } catch (erro) {
       setCorrigindo(false);
+      setFalhaCorrecaoIA(true);
       setFeedbackDissertativa(
-        `⚠️ ${erro.response?.data?.erro || "Não foi possível falar com o mago agora. Verifique sua conexão e tente de novo."}`
+        erro.response?.data?.erro || "Não foi possível falar com o mago agora. Verifique sua conexão e tente de novo."
       );
       setResultado("erro");
       return;
     }
     setCorrigindo(false);
+    setFalhaCorrecaoIA(false);
     setFeedbackDissertativa(dados.feedbackIA || "");
 
     if (dados.correta) {
@@ -628,6 +632,7 @@ function ResolverDesafio() {
     if (ehDissertativa) {
       setRespostaTexto("");
       setCorrigindo(false);
+      setFalhaCorrecaoIA(false);
       setFeedbackDissertativa("");
     }
     if (ehAvaliarCodigo) {
@@ -758,6 +763,9 @@ function ResolverDesafio() {
         {resultado === "erro" && (
           <div className="retorno retorno--erro">
             <p className="retorno-fala">
+              {ehDissertativa && falhaCorrecaoIA && (
+                <><i className="hn hn-exclamation-triangle-solid icone-aviso" aria-hidden="true" /> </>
+              )}
               {ehDissertativa
                 ? feedbackDissertativa
                 : ehAvaliarCodigo
@@ -1004,7 +1012,7 @@ function ResolverDesafio() {
         classeMiolo="desafio-voltar-miolo"
         onClick={abrirConfirmarSair}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {mostrarConfirmarSair && (
@@ -1072,7 +1080,7 @@ function ResolverDesafio() {
               className={`coracao ${i < vida ? "" : "coracao--vazio"}`}
               aria-hidden="true"
             >
-              {i < vida ? "❤️" : "🖤"}
+              <i className="hn hn-heart-solid" />
             </span>
           ))}
         </div>

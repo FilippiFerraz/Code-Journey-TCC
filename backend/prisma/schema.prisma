@@ -281,6 +281,13 @@ model Item {
   // Rei (minijogo do castelo — ver abrirBauRei em bau.service.js). Mesmas
   // restrições do exclusivoBau, mas com uma roleta própria.
   exclusivoRei Boolean @default(false)
+  // Item exclusivo do Baú de Cristal: só sai no baú ganho ao vencer o
+  // Desafio da Cachoeira de Cristais (minijogo de programação em blocos do
+  // cristal gigante / cachoeira do mapa).
+  exclusivoCristal Boolean @default(false)
+  // Item exclusivo do Baú do Dragão: só sai no baú ganho ao derrotar o
+  // Dragão do Código Fonte (batalha da arena do mapa).
+  exclusivoDragao Boolean @default(false)
 
   personagens ItemPersonagem[]
   desafios    Desafio[] // desafios que dão este item como recompensa ao concluir

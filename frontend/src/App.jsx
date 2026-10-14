@@ -11,7 +11,7 @@ import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica } from "./components
 const {
   Cadastro, VerificarEmail, EsqueciSenha, Home, SelecionarDificuldade, Desafios,
   DesafioIntro, ResolverDesafio, DesafioChefe, DesafioIntroPocao, ResolverDesafioPocao,
-  DesafioEtapas, Perfil, Ranking, EditarPersonagem, RecompensaDesafio, BauDaSorte, DesafioRei,
+  DesafioEtapas, Perfil, Ranking, EditarPersonagem, RecompensaDesafio, BauDaSorte, DesafioRei, DesafioCristais, BatalhaDragao,
   Configuracoes, Conta, Admin, AdminUsuarios, AdminDesafios, EditarDesafioAdmin,
   AdminDashboard, AdminLogs, AdminLoginHistorico,
 } = telas;
@@ -53,7 +53,15 @@ function App() {
             {/* Desafio do Rei (castelo do mapa) e o Baú Real dele — a própria
                 tela e o backend conferem se os dois primeiros portais foram concluídos */}
             <Route path="/desafio-do-rei" element={<DesafioRei />} />
-            <Route path="/bau-rei" element={<BauDaSorte bauRei />} />
+            <Route path="/bau-rei" element={<BauDaSorte bauEspecial="rei" />} />
+            {/* Desafio da Cachoeira de Cristais (cristal gigante / cachoeira do
+                mapa) e o Baú de Cristal dele — liberados com o portal 1 concluído */}
+            <Route path="/desafio-dos-cristais" element={<DesafioCristais />} />
+            <Route path="/bau-cristal" element={<BauDaSorte bauEspecial="cristal" />} />
+            {/* Batalha contra o Dragão do Código Fonte (dragão da arena do mapa)
+                e o Baú do Dragão — liberados com os três portais concluídos */}
+            <Route path="/batalha-do-dragao" element={<BatalhaDragao />} />
+            <Route path="/bau-dragao" element={<BauDaSorte bauEspecial="dragao" />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/perfil/:usuarioId" element={<Perfil />} />
             <Route path="/ranking" element={<Ranking />} />

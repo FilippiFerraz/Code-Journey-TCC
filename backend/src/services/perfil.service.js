@@ -2,6 +2,7 @@
 // Se lá for "const { prisma } = require(...)", use a mesma forma aqui.
 const prisma = require("../config/prisma.js");
 const { posicaoDoUsuario } = require("./ranking.service.js");
+const { resumoJogador } = require("./resumoJogador.service.js");
 
 // Quantidade de itens em destaque mostrados no perfil (os equipados mais
 // recentes primeiro — ver Perfil.jsx, seção "Itens em destaque").
@@ -32,9 +33,16 @@ function itensDestaqueDe(equipados) {
 
 // TODOS os itens equipados (sem o limite de itensDestaque), com o slot
 // (tipo) — é o que o frontend precisa pra montar o guerreiro em camadas
-// (AvatarPersonagem.jsx), inclusive no perfil de outro jogador.
+// (AvatarPersonagem.jsx), inclusive no perfil de outro jogador. Nome e
+// raridade vão pro tooltip dos slots do Card de Perfil (PerfilJogadorCard.jsx).
 function itensEquipadosDe(equipados) {
-  return equipados.map(({ item }) => ({ tipo: item.tipo, imagemUrl: item.imagemUrl }));
+  return equipados.map(({ item }) => ({
+    tipo: item.tipo,
+    imagemUrl: item.imagemUrl,
+    nome: item.nome,
+    raridade: item.raridade,
+    icone: item.icone,
+  }));
 }
 
 // Busca os dados do perfil do usuário logado.
@@ -67,7 +75,10 @@ async function buscarPerfil(usuarioId) {
   // Futuro: coluna própria "nomeUsuario" na fase de personalização.
   const nomeUsuario = usuario.email.split("@")[0];
 
-  const posicao = await posicaoDoUsuario(usuario.xpTotal);
+  const [posicao, resumo] = await Promise.all([
+    posicaoDoUsuario(usuario.xpTotal),
+    resumoJogador(usuario.id, usuario.xpTotal),
+  ]);
 
   return {
     id: usuario.id,
@@ -78,7 +89,8 @@ async function buscarPerfil(usuarioId) {
     role: usuario.role,
 
     acertos,
-    diasOfensiva: 0, // TODO: streak de dias — precisa agrupar Progresso.dataConclusao por dia
+    // nivel, diasOfensiva, ouro, cristais e titulo — ver resumoJogador.service.js
+    ...resumo,
     ranking: { posicao },
     itensDestaque: itensDestaqueDe(equipados),
     itensEquipados: itensEquipadosDe(equipados),
@@ -141,7 +153,10 @@ async function buscarPerfilPublico(usuarioId) {
   }
 
   const nomeUsuario = usuario.email.split("@")[0];
-  const posicao = usuario.rankingVisivel ? await posicaoDoUsuario(usuario.xpTotal) : null;
+  const [posicao, resumo] = await Promise.all([
+    usuario.rankingVisivel ? posicaoDoUsuario(usuario.xpTotal) : null,
+    resumoJogador(usuario.id, usuario.xpTotal),
+  ]);
 
   return {
     id: usuario.id,
@@ -150,7 +165,7 @@ async function buscarPerfilPublico(usuarioId) {
     membroDesde: usuario.criadoEm,
 
     acertos,
-    diasOfensiva: 0,
+    ...resumo,
     ranking: { posicao },
     // itensEquipados: pra Perfil.jsx montar o guerreiro de QUEM está sendo
     // visitado, não o de quem está olhando.

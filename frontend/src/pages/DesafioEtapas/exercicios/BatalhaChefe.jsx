@@ -108,7 +108,7 @@ export default function BatalhaChefe({ etapa, nomeChefe, travado, verificar, res
             disabled={bloqueado}
             extra={
               <span className="chefe-cursor" aria-hidden="true">
-                ▶
+                <i className="hn hn-play-solid" aria-hidden="true" />
               </span>
             }
           >

@@ -68,7 +68,7 @@ function AdminLoginHistorico() {
           classeMiolo="admin-login-hist-voltar-miolo"
           onClick={() => navigate("/admin")}
         >
-          ← Painel
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Painel
         </BotaoPixel>
 
         <div className="admin-login-hist-toolbar">

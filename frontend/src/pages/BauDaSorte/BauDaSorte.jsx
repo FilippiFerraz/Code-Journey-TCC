@@ -79,8 +79,8 @@ function prefereMenosMovimento() {
 // GET /api/baus pra saber o motivo: baú já aberto antes (mostra o prêmio
 // que saiu na época) ou módulo ainda não concluído. Erros de rede/servidor
 // sobem como exceção e viram a fase "erro".
-async function abrirOuRecuperarBau(mundoId, dificuldade, bauRei) {
-  if (bauRei) return abrirOuRecuperarBauRei();
+async function abrirOuRecuperarBau(mundoId, dificuldade, bauEspecial) {
+  if (bauEspecial) return abrirOuRecuperarBauEspecial(bauEspecial);
   try {
     const res = await api.post(`/baus/${mundoId}/abrir`, { dificuldade });
     return { situacao: "aberto", premio: res.data.itemGanho };
@@ -101,28 +101,50 @@ async function abrirOuRecuperarBau(mundoId, dificuldade, bauRei) {
   }
 }
 
-// Mesmo fluxo pro Baú Real (Desafio do Rei), com as rotas próprias dele.
-async function abrirOuRecuperarBauRei() {
+// Baús especiais dos minijogos do mapa: rotas da API e textos de cada um.
+const BAUS_ESPECIAIS = {
+  rei: {
+    titulo: "BAÚ REAL!",
+    subtitulo: "Asas da coleção do Rei Tiribyte!",
+    trancado: "O Baú Real ainda está trancado.",
+  },
+  cristal: {
+    titulo: "BAÚ DE CRISTAL!",
+    subtitulo: "Presentes do Cristal Gigante!",
+    trancado: "O Baú de Cristal ainda está trancado.",
+  },
+  dragao: {
+    titulo: "BAÚ DO DRAGÃO!",
+    subtitulo: "Tesouros das cinzas do Dragão!",
+    trancado: "O Baú do Dragão ainda está trancado.",
+  },
+};
+
+// Mesmo fluxo do baú de módulo, com as rotas do baú especial
+// (POST /api/baus/:chave/abrir e GET /api/baus/:chave).
+async function abrirOuRecuperarBauEspecial(chave) {
   try {
-    const res = await api.post("/baus/rei/abrir");
+    const res = await api.post(`/baus/${chave}/abrir`);
     return { situacao: "aberto", premio: res.data.itemGanho };
   } catch (erro) {
     if (erro.response?.status !== 400) throw erro;
 
-    const resBau = await api.get("/baus/rei");
+    const resBau = await api.get(`/baus/${chave}`);
     if (resBau.data.aberto && resBau.data.itemGanho) {
       return { situacao: "jaAberto", premio: resBau.data.itemGanho };
     }
     return {
       situacao: "bloqueado",
-      mensagem: erro.response.data?.erro || "O Baú Real ainda está trancado.",
+      mensagem: erro.response.data?.erro || BAUS_ESPECIAIS[chave].trancado,
     };
   }
 }
 
-// bauRei: abre o Baú Real do Desafio do Rei (rota /bau-rei) em vez do baú
-// de fim de módulo — muda só de onde vêm os itens e o prêmio.
-function BauDaSorte({ bauRei = false }) {
+// bauEspecial: "rei" (Baú Real do Desafio do Rei, rota /bau-rei), "cristal"
+// (Baú de Cristal da Cachoeira, rota /bau-cristal) ou "dragao" (Baú do
+// Dragão, rota /bau-dragao) em vez do baú
+// de fim de módulo — muda só de onde vêm os itens, o prêmio e os textos.
+function BauDaSorte({ bauEspecial = null }) {
   const navigate = useNavigate();
   const { mundoId, dificuldade } = useParams();
 
@@ -160,13 +182,13 @@ function BauDaSorte({ bauRei = false }) {
     setJaAbertoAntes(false);
     giroRef.current = { iniciado: false, finalizado: false };
 
-    const chave = `${bauRei ? "rei" : `${mundoId}:${dificuldade}`}:${tentativa}`;
+    const chave = `${bauEspecial ?? `${mundoId}:${dificuldade}`}:${tentativa}`;
     if (aberturaRef.current.chave !== chave) {
-      aberturaRef.current = { chave, promessa: abrirOuRecuperarBau(mundoId, dificuldade, bauRei) };
+      aberturaRef.current = { chave, promessa: abrirOuRecuperarBau(mundoId, dificuldade, bauEspecial) };
     }
 
     Promise.all([
-      api.get(bauRei ? "/itens/rei" : "/itens", { signal: controlador.signal }),
+      api.get(bauEspecial ? `/itens/${bauEspecial}` : "/itens", { signal: controlador.signal }),
       aberturaRef.current.promessa,
     ])
       .then(([resItens, abertura]) => {
@@ -207,7 +229,7 @@ function BauDaSorte({ bauRei = false }) {
       ativo = false;
       controlador.abort();
     };
-  }, [mundoId, dificuldade, tentativa, bauRei]);
+  }, [mundoId, dificuldade, tentativa, bauEspecial]);
 
   // ---------- Posição da fita ----------
 
@@ -413,14 +435,14 @@ function BauDaSorte({ bauRei = false }) {
             </div>
           </div>
           <div className="sorte-faixa-corpo">
-            <h1 className="sorte-faixa-titulo">{bauRei ? "BAÚ REAL!" : "MÓDULO CONCLUÍDO!"}</h1>
+            <h1 className="sorte-faixa-titulo">{bauEspecial ? BAUS_ESPECIAIS[bauEspecial].titulo : "MÓDULO CONCLUÍDO!"}</h1>
           </div>
         </div>
 
         <p className="sorte-subtitulo">
-          <span aria-hidden="true">✦</span>{" "}
-          {bauRei ? "Asas da coleção do Rei Tiribyte!" : "Você ganhou uma recompensa!"}{" "}
-          <span aria-hidden="true">✦</span>
+          <i className="hn hn-sparkles-solid" aria-hidden="true" />{" "}
+          {bauEspecial ? BAUS_ESPECIAIS[bauEspecial].subtitulo : "Você ganhou uma recompensa!"}{" "}
+          <i className="hn hn-sparkles-solid" aria-hidden="true" />
         </p>
 
         <div className={`sorte-roleta ${revelado ? "sorte-roleta--revelada" : ""}`}>

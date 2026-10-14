@@ -120,7 +120,7 @@ function EditarPerfil() {
         classeMiolo="editarperfil-voltar-miolo"
         onClick={() => navigate("/perfil")}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       <h1 className="editarperfil-titulo">Editar perfil</h1>

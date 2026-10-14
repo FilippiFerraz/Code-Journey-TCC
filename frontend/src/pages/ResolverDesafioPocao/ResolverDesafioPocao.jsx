@@ -218,7 +218,7 @@ function ResolverDesafioPocao() {
         classeMiolo="pocao-voltar-miolo"
         onClick={abrirConfirmarSair}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {mostrarConfirmarSair && (
@@ -258,7 +258,7 @@ function ResolverDesafioPocao() {
               animate={{ opacity: [0, 1, 0], scale: [0.5, 1.8, 2.4] }}
               transition={{ duration: 1.1, ease: "easeOut" }}
             >
-              ✨
+              <i className="hn hn-sparkles-solid" />
             </motion.span>
           </motion.div>
 
@@ -336,7 +336,7 @@ function ResolverDesafioPocao() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
                   >
-                    ✨
+                    <i className="hn hn-sparkles-solid" />
                   </motion.span>
                 )}
               </AnimatePresence>

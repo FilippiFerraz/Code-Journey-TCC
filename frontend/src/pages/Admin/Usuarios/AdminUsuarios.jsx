@@ -179,7 +179,7 @@ function AdminUsuarios() {
           classeMiolo="admin-usuarios-voltar-miolo"
           onClick={() => navigate("/admin")}
         >
-          ← Painel
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Painel
         </BotaoPixel>
 
         <div className="admin-usuarios-toolbar">

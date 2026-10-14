@@ -73,7 +73,7 @@ function Perfil() {
         classeMiolo="perfil-voltar-miolo"
         onClick={() => (modoVisita ? navigate(-1) : navigate("/home"))}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {/* Banner do personagem */}

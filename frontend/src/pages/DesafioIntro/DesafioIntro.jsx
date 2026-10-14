@@ -190,7 +190,7 @@ function DesafioIntro() {
         classeMiolo="intro-voltar-miolo"
         onClick={handleVoltar}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {!mostrarEnunciado && <BotaoPularFalas onPular={pularFalas} />}
@@ -229,7 +229,7 @@ function DesafioIntro() {
                 />
               ))}
             </div>
-            <span className="intro-continuar">toque para continuar ▶</span>
+            <span className="intro-continuar">toque para continuar <i className="hn hn-play-solid" aria-hidden="true" /></span>
           </div>
           <BarraAvancoFala chave={indice} />
         </div>
@@ -242,7 +242,7 @@ function DesafioIntro() {
             <span className="intro-enunciado-tag">DESAFIO {desafioId}</span>
             <h2 className="intro-enunciado-titulo">{intro.titulo}</h2>
             <p className="intro-enunciado-texto">{intro.texto}</p>
-            <p className="intro-enunciado-dica">💡 Dica: {renderDica(intro.dica)}</p>
+            <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(intro.dica)}</p>
 
             <BotaoPixel
               className="intro-botao-iniciar"

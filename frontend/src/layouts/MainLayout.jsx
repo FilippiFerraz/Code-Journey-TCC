@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import PerfilJogadorCard from "../components/PerfilJogadorCard";
 import logo from "../assets/images/logo.webp";
 import { useEhAdministrador } from "../hooks/useEhAdministrador";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -234,12 +235,9 @@ function MainLayout({ titulo, children, buscaHeader }) {
           <main className="layout-conteudo">{children}</main>
 
           <aside className="layout-coluna-direita">
-            {/* TODO: widgets de XP, ranking resumido e missão do dia */}
-            <div className="layout-widget-placeholder">
-              <p className="layout-widget-placeholder-texto">
-                Em breve: seu progresso, XP e missão do dia aparecem por aqui.
-              </p>
-            </div>
+            {/* Card de Perfil do Jogador no topo; abaixo dele entram os
+                próximos widgets (ranking resumido, missão do dia...). */}
+            <PerfilJogadorCard />
           </aside>
         </div>
       )}

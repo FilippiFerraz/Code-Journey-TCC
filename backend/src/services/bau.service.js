@@ -180,48 +180,81 @@ async function abrirBau(usuarioId, mundoId, dificuldade) {
   };
 }
 
-// ---------- Baú Real (Desafio do Rei) ----------
+// ---------- Baús especiais (minijogos do mapa) ----------
 //
-// O Desafio do Rei (minijogo do castelo no mapa) libera depois que os dois
-// primeiros portais estão concluídos e dá UM Baú Real, com roleta própria
-// (itens com Item.exclusivoRei). Ele usa a mesma tabela dos baús de módulo
-// (BauMundo), numa "trilha" que não existe: mundoId 0 e dificuldade "rei".
-// Nenhum desafio é cadastrado nela, então listarBaus nunca a mostra e
-// abrirBau nunca a abre (mundoConcluido daria false).
+// Cada minijogo do mapa da Home dá UM baú especial, com roleta própria:
+// - "rei": Desafio do Rei (castelo), liberado com os portais 1 e 2
+//   concluídos; sorteia as asas da coleção do Rei (Item.exclusivoRei).
+// - "cristal": Desafio da Cachoeira de Cristais (cristal gigante e
+//   cachoeira), liberado com o portal 1 concluído; sorteia os itens de
+//   cristal (Item.exclusivoCristal).
+// - "dragao": Batalha contra o Dragão do Código Fonte (dragão da arena),
+//   liberada com os portais 1, 2 e 3 concluídos; sorteia os itens do
+//   dragão (Item.exclusivoDragao).
+// Eles usam a mesma tabela dos baús de módulo (BauMundo), numa "trilha" que
+// não existe: mundoId 0 e dificuldade = a chave do baú. Nenhum desafio é
+// cadastrado nela, então listarBaus nunca a mostra e abrirBau nunca a abre
+// (mundoConcluido daria false).
 //
-// Limitação conhecida: a vitória no minijogo acontece no navegador — o
+// Limitação conhecida: a vitória nos minijogos acontece no navegador — o
 // backend só confere se o desafio está liberado e se o baú já foi aberto.
-const MUNDO_BAU_REI = 0;
-const DIFICULDADE_BAU_REI = "rei";
-const MUNDOS_EXIGIDOS_REI = [1, 2];
-const DIFICULDADE_EXIGIDA_REI = "iniciante";
+const MUNDO_BAU_ESPECIAL = 0;
+const DIFICULDADE_EXIGIDA = "iniciante";
 
-async function desafioReiLiberado(usuarioId) {
+const BAUS_ESPECIAIS = {
+  rei: {
+    mundosExigidos: [1, 2],
+    filtroItens: { exclusivoRei: true },
+    nome: "Baú Real",
+    bloqueado: "Conclua os dois primeiros portais para enfrentar o Desafio do Rei.",
+  },
+  cristal: {
+    mundosExigidos: [1],
+    filtroItens: { exclusivoCristal: true },
+    nome: "Baú de Cristal",
+    bloqueado: "Conclua o primeiro portal para enfrentar o Desafio da Cachoeira de Cristais.",
+  },
+  dragao: {
+    mundosExigidos: [1, 2, 3],
+    filtroItens: { exclusivoDragao: true },
+    nome: "Baú do Dragão",
+    bloqueado: "Conclua os três portais para enfrentar o Dragão do Código Fonte.",
+  },
+};
+
+function configBauEspecial(chave) {
+  const config = BAUS_ESPECIAIS[chave];
+  if (!config) {
+    const erro = new Error("Baú não encontrado.");
+    erro.status = 404;
+    throw erro;
+  }
+  return config;
+}
+
+async function bauEspecialLiberado(usuarioId, config) {
   const concluidos = await Promise.all(
-    MUNDOS_EXIGIDOS_REI.map((mundoId) => mundoConcluido(usuarioId, mundoId, DIFICULDADE_EXIGIDA_REI))
+    config.mundosExigidos.map((mundoId) => mundoConcluido(usuarioId, mundoId, DIFICULDADE_EXIGIDA))
   );
   return concluidos.every(Boolean);
 }
 
-function buscarBauRei(usuarioId, incluirItem = false) {
+function buscarBauEspecial(usuarioId, chave, incluirItem = false) {
   return prisma.bauMundo.findUnique({
     where: {
-      usuarioId_mundoId_dificuldade: {
-        usuarioId,
-        mundoId: MUNDO_BAU_REI,
-        dificuldade: DIFICULDADE_BAU_REI,
-      },
+      usuarioId_mundoId_dificuldade: { usuarioId, mundoId: MUNDO_BAU_ESPECIAL, dificuldade: chave },
     },
     include: incluirItem ? { itemGanho: true } : undefined,
   });
 }
 
-// GET /api/baus/rei — se o Desafio do Rei já está liberado pro jogador e se
-// o Baú Real já foi aberto (com o item que saiu).
-async function situacaoBauRei(usuarioId) {
+// GET /api/baus/:chave (rei | cristal) — se o minijogo já está liberado pro
+// jogador e se o baú dele já foi aberto (com o item que saiu).
+async function situacaoBauEspecial(usuarioId, chave) {
+  const config = configBauEspecial(chave);
   const [liberado, bau] = await Promise.all([
-    desafioReiLiberado(usuarioId),
-    buscarBauRei(usuarioId, true),
+    bauEspecialLiberado(usuarioId, config),
+    buscarBauEspecial(usuarioId, chave, true),
   ]);
   return {
     liberado,
@@ -230,25 +263,21 @@ async function situacaoBauRei(usuarioId) {
   };
 }
 
-// POST /api/baus/rei/abrir — mesmo fluxo de abrirBau, com a roleta do Baú Real.
-async function abrirBauRei(usuarioId) {
-  if (await buscarBauRei(usuarioId)) {
-    throw erroDeValidacao("Você já abriu o Baú Real.");
+// POST /api/baus/:chave/abrir — mesmo fluxo de abrirBau, com a roleta do baú especial.
+async function abrirBauEspecial(usuarioId, chave) {
+  const config = configBauEspecial(chave);
+  if (await buscarBauEspecial(usuarioId, chave)) {
+    throw erroDeValidacao(`Você já abriu o ${config.nome}.`);
   }
-  if (!(await desafioReiLiberado(usuarioId))) {
-    throw erroDeValidacao("Conclua os dois primeiros portais para enfrentar o Desafio do Rei.");
+  if (!(await bauEspecialLiberado(usuarioId, config))) {
+    throw erroDeValidacao(config.bloqueado);
   }
 
-  const { itemGanho, slots, indiceVencedor } = await sortearRoleta(usuarioId, { exclusivoRei: true });
+  const { itemGanho, slots, indiceVencedor } = await sortearRoleta(usuarioId, config.filtroItens);
   const { quantidade } = await concederItemSeNaoTiver(usuarioId, itemGanho.id);
 
   await prisma.bauMundo.create({
-    data: {
-      usuarioId,
-      mundoId: MUNDO_BAU_REI,
-      dificuldade: DIFICULDADE_BAU_REI,
-      itemGanhoId: itemGanho.id,
-    },
+    data: { usuarioId, mundoId: MUNDO_BAU_ESPECIAL, dificuldade: chave, itemGanhoId: itemGanho.id },
   });
 
   return {
@@ -258,4 +287,9 @@ async function abrirBauRei(usuarioId) {
   };
 }
 
-module.exports = { listarBaus, abrirBau, situacaoBauRei, abrirBauRei };
+// Filtro dos itens que podem sair na roleta de um baú especial (pra montar a fita).
+function filtroItensBauEspecial(chave) {
+  return configBauEspecial(chave).filtroItens;
+}
+
+module.exports = { listarBaus, abrirBau, situacaoBauEspecial, abrirBauEspecial, filtroItensBauEspecial };

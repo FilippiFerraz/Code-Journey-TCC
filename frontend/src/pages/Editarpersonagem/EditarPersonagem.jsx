@@ -156,7 +156,7 @@ function EditarPersonagem() {
         classeMiolo="editar-voltar-miolo"
         onClick={() => navigate("/perfil")}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {/* Cena de equipamento: personagem no centro, slots em volta */}

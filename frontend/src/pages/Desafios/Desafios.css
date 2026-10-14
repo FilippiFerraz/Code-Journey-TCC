@@ -529,6 +529,7 @@
 .desafio-card-icone-emoji {
   font-size: 44px;
   line-height: 1;
+  color: #f4e2b8; /* ícone em pixel art (pixelarticons): creme sobre o roxo */
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.4));
 }
 
@@ -627,6 +628,7 @@
 .desafio-card-cadeado {
   position: absolute;
   font-size: 26px;
+  color: #f4c542;
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6));
 }
 

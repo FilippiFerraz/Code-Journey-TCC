@@ -311,7 +311,7 @@ function DesafioChefe() {
               ))}
             </div>
             <span className="chefe-intro-continuar">
-              {ultimaFala ? "toque para enfrentar ▶" : "toque para continuar ▶"}
+              {ultimaFala ? "toque para enfrentar" : "toque para continuar"} <i className="hn hn-play-solid" aria-hidden="true" />
             </span>
           </div>
           {!ultimaFala && <BarraAvancoFala chave={falaIndice} />}
@@ -461,7 +461,7 @@ function DesafioChefe() {
               disabled={travado}
               extra={
                 <span className="chefe-cursor" aria-hidden="true">
-                  ▶
+                  <i className="hn hn-play-solid" aria-hidden="true" />
                 </span>
               }
             >
@@ -480,7 +480,7 @@ function DesafioChefe() {
         classeMiolo="chefe-voltar-miolo"
         onClick={abrirConfirmarSair}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {mostrarConfirmarSair && (

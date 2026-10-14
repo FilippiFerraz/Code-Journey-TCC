@@ -288,7 +288,7 @@ export default function DesafioEtapas() {
     <div className="cena-vida" aria-label={`Vida: ${vida} de ${VIDA_MAXIMA}`}>
       {Array.from({ length: VIDA_MAXIMA }).map((_, i) => (
         <span key={i} className={`coracao ${i < vida ? "" : "coracao--vazio"}`} aria-hidden="true">
-          {i < vida ? "❤️" : "🖤"}
+          <i className="hn hn-heart-solid" />
         </span>
       ))}
     </div>
@@ -528,7 +528,7 @@ export default function DesafioEtapas() {
 
         {avisoFalha && (
           <div className="retorno retorno--erro">
-            <p className="retorno-fala">⚠️ {avisoFalha}</p>
+            <p className="retorno-fala"><i className="hn hn-exclamation-triangle-solid icone-aviso" aria-hidden="true" /> {avisoFalha}</p>
           </div>
         )}
       </>
@@ -542,7 +542,7 @@ export default function DesafioEtapas() {
         classeMiolo={cena.chefe ? "chefe-voltar-miolo" : "desafio-voltar-miolo"}
         onClick={() => setMostrarConfirmarSair(true)}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {mostrarConfirmarSair && (

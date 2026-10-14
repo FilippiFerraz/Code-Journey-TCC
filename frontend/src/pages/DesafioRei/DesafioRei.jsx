@@ -350,7 +350,7 @@ function DesafioRei() {
             <p key={indiceFala} className="rei-balao-fala">
               {falaAtual.texto}
             </p>
-            <span className="rei-balao-continuar">Toque para continuar ▸</span>
+            <span className="rei-balao-continuar">Toque para continuar <i className="hn hn-play-solid" aria-hidden="true" /></span>
             <BarraAvancoFala chave={indiceFala} />
           </div>
         </div>

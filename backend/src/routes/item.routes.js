@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { getItens, getItensRei } = require("../controllers/item.controller.js");
+const { getItens, getItensBauEspecial } = require("../controllers/item.controller.js");
 const autenticar = require("../middlewares/auth.middleware.js");
 
 const router = Router();
@@ -8,7 +8,8 @@ const router = Router();
 // autenticação das outras rotas de jogo. Usado pela roleta do Baú da Sorte.
 router.get("/", autenticar, getItens);
 
-// GET /api/itens/rei — os itens da roleta do Baú Real (Desafio do Rei).
-router.get("/rei", autenticar, getItensRei);
+// GET /api/itens/rei, /cristal e /dragao — os itens da roleta de um baú
+// especial (Baú Real, Baú de Cristal, Baú do Dragão).
+router.get("/:chave(rei|cristal|dragao)", autenticar, getItensBauEspecial);
 
 module.exports = router;

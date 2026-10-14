@@ -176,7 +176,7 @@ function EditarDesafioAdmin() {
           classeMiolo="admin-desafios-voltar-miolo"
           onClick={() => navigate("/admin/desafios")}
         >
-          ← Desafios
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Desafios
         </BotaoPixel>
 
         <p className="admin-desafios-trilha-info">
@@ -310,7 +310,6 @@ function EditarDesafioAdmin() {
                 <option value="">Nenhum — o desafio dá só XP</option>
                 {itensCatalogo.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.icone ? `${item.icone} ` : ""}
                     {item.nome} ({item.tipo})
                   </option>
                 ))}

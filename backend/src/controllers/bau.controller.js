@@ -26,20 +26,21 @@ async function postAbrirBau(req, res, next) {
   }
 }
 
-async function getBauRei(req, res, next) {
+// :chave = rei | cristal (ver BAUS_ESPECIAIS em bau.service.js)
+async function getBauEspecial(req, res, next) {
   try {
-    res.status(200).json(await bauService.situacaoBauRei(idUsuario(req)));
+    res.status(200).json(await bauService.situacaoBauEspecial(idUsuario(req), req.params.chave));
   } catch (err) {
     next(err);
   }
 }
 
-async function postAbrirBauRei(req, res, next) {
+async function postAbrirBauEspecial(req, res, next) {
   try {
-    res.status(200).json(await bauService.abrirBauRei(idUsuario(req)));
+    res.status(200).json(await bauService.abrirBauEspecial(idUsuario(req), req.params.chave));
   } catch (err) {
     next(err);
   }
 }
 
-module.exports = { getBaus, postAbrirBau, getBauRei, postAbrirBauRei };
+module.exports = { getBaus, postAbrirBau, getBauEspecial, postAbrirBauEspecial };

@@ -102,7 +102,7 @@ export default function MontarPocao({ etapa, travado, verificar, responder }) {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
               >
-                ✨
+                <i className="hn hn-sparkles-solid" />
               </motion.span>
             )}
           </AnimatePresence>

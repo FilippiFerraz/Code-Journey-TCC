@@ -1,4 +1,6 @@
+import { Forward } from "pixelarticons/react/Forward.js";
 import BotaoPixel from "./BotaoPixel";
+import IconePixel from "./IconePixel";
 import { INTERVALO_FALA_MS } from "../hooks/useAvancoAutomatico";
 import "./ControlesFalas.css";
 
@@ -21,7 +23,7 @@ export function BotaoPularFalas({ onPular, className = "" }) {
       onClick={handleClique}
       aria-label="Pular as falas"
     >
-      Pular ⏭
+      Pular <IconePixel icone={Forward} />
     </BotaoPixel>
   );
 }
