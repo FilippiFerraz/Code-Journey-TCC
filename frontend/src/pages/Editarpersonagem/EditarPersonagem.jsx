@@ -1,23 +1,25 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HardHat, Shield, Sword, Shirt, Footprints } from "lucide-react";
+import { HardHat, Shield, ShieldHalf, Sword, Shirt, Footprints } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
 import { itensEquipadosDoPersonagem } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import IconeItem from "../../components/IconeItem";
 import BotaoPixel from "../../components/BotaoPixel";
+import EscolherAparencia from "../../components/EscolherAparencia";
 
 // Slots de equipamento ao redor do personagem. Os ids batem com Item.tipo
 // no backend (ver schema.prisma) — é assim que um item entra no slot certo.
 // "icone" é o componente do lucide-react (não uma instância) — a biblioteca
 // pixelada do resto do app não tem ícones de fantasia (capacete, peitoral,
 // espada...), então esses slots usam lucide-react só nesses casos.
-// Só esses 5 tipos podem ser equipados — o backend recusa qualquer outro
+// Só esses 6 tipos podem ser equipados — o backend recusa qualquer outro
 // (ver TIPOS_EQUIPAVEIS em backend/src/services/personagem.service.js).
 const SLOTS_ESQUERDA = [
   { id: "capacete", nome: "Capacete", icone: HardHat },
   { id: "peitoral", nome: "Peitoral", icone: Shield },
+  { id: "escudo", nome: "Escudo", icone: ShieldHalf },
 ];
 
 const SLOTS_DIREITA = [
@@ -95,6 +97,7 @@ function EditarPersonagem() {
   const [erro, setErro] = useState(null);
   const [itemEmAcao, setItemEmAcao] = useState(null); // id do ItemPersonagem sendo (des)equipado
   const [itemSelecionado, setItemSelecionado] = useState(null); // item com descrição aberta
+  const [escolhendoAparencia, setEscolhendoAparencia] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -176,7 +179,12 @@ function EditarPersonagem() {
           })}
         </div>
 
-        <AvatarPersonagem itensEquipados={itensEquipados} className="editar-avatar" alt="Personagem" />
+        <AvatarPersonagem
+          itensEquipados={itensEquipados}
+          aparencia={personagem.aparencia}
+          className="editar-avatar"
+          alt="Personagem"
+        />
 
         <div className="editar-slots">
           {SLOTS_DIREITA.map((slot) => {
@@ -275,6 +283,25 @@ function EditarPersonagem() {
           )}
         </div>
       </section>
+
+      <BotaoPixel
+        className="editar-aparencia-botao"
+        classeMiolo="editar-aparencia-botao-miolo"
+        onClick={() => setEscolhendoAparencia(true)}
+      >
+        <i className="hn hn-user-solid" aria-hidden="true" /> Alterar aparência
+      </BotaoPixel>
+
+      {escolhendoAparencia && (
+        <EscolherAparencia
+          aparenciaAtual={personagem.aparencia}
+          onFechar={() => setEscolhendoAparencia(false)}
+          onConcluir={(aparencia) => {
+            setPersonagem((atual) => ({ ...atual, aparencia }));
+            setEscolhendoAparencia(false);
+          }}
+        />
+      )}
     </div>
   );
 }

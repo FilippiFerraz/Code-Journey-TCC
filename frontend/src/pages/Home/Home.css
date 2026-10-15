@@ -104,6 +104,11 @@
   position: relative;
   width: calc(100% + 40px);
   margin: -20px; /* cancela o padding do .layout-conteudo, imagem cola nas bordas */
+  /* prévia do mapa (definida no style, ver Home.jsx), ampliada em pixel art:
+     aparece na hora e o mapa de verdade é desenhado por cima quando chega */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
 }
 
 .home-mapa-imagem {
@@ -666,5 +671,119 @@
 @media (prefers-reduced-motion: reduce) {
   .home-dragao-placa {
     animation: none;
+  }
+}
+
+/* ============================================================
+   Fim do mapa — depois da arena do Dragão o caminho some numa faixa
+   de nuvens com o aviso "Termine o Mundo 1 para continuar" (só um
+   indicativo de que o jogo continua; não é clicável). As nuvens são
+   recortadas do céu do próprio mapa (scripts/gerarNuvens.mjs).
+   ============================================================ */
+.home-fim-mapa {
+  position: relative;
+  width: calc(100% + 40px);
+  /* sobe por cima do fim da arte: a escada da arena entra nas nuvens */
+  margin: -12% -20px -20px;
+  aspect-ratio: 941 / 430;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    rgba(42, 29, 82, 0) 0%,
+    rgba(42, 29, 82, 0.55) 11%,
+    #2a1d52 23%,
+    #1d1338 100%
+  );
+  pointer-events: none;
+}
+
+.home-fim-nuvem {
+  position: absolute;
+  height: auto;
+  image-rendering: pixelated;
+  opacity: 0.95;
+  filter: drop-shadow(0 4px 0 rgba(20, 12, 40, 0.35));
+  animation: home-fim-nuvem-vagar var(--duracao, 10s) ease-in-out var(--atraso, 0s) infinite alternate;
+}
+
+.home-fim-nuvem--espelhada {
+  --espelho: -1;
+}
+
+/* vai e volta devagar (o espelho fica no scale pra não brigar com o
+   translate da animação) */
+@keyframes home-fim-nuvem-vagar {
+  from {
+    transform: translateX(-4%) scaleX(var(--espelho, 1));
+  }
+  to {
+    transform: translateX(4%) scaleX(var(--espelho, 1));
+  }
+}
+
+.home-fim-placa {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px;
+  max-width: calc(100% - 32px);
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.3;
+  color: #ffffff;
+  text-align: left;
+  background: #4a3a7a;
+  border: 2px solid #1d1338;
+  box-shadow: 0 0 12px rgba(178, 160, 255, 0.55);
+  animation: home-fim-placa-flutuar 3.2s ease-in-out infinite;
+}
+
+.home-fim-placa .hn {
+  font-size: 16px;
+  color: #ffd84d;
+}
+
+.home-fim-placa small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #cfc6ff;
+}
+
+@keyframes home-fim-placa-flutuar {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, calc(-50% - 4px));
+  }
+}
+
+@media (min-width: 600px) {
+  .home-fim-placa {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .home-fim-placa small {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-fim-nuvem,
+  .home-fim-placa {
+    animation: none;
+  }
+
+  .home-fim-nuvem--espelhada {
+    transform: scaleX(-1);
   }
 }

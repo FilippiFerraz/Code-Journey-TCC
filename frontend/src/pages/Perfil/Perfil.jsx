@@ -63,6 +63,8 @@ function Perfil() {
   const posicao = perfil.ranking?.posicao;
   const itens = perfil.itensDestaque ?? [];
   const itensEquipados = modoVisita ? perfil.itensEquipados ?? [] : itensEquipadosProprios;
+  // undefined = aparência do jogador logado (ver AvatarPersonagem)
+  const aparencia = modoVisita ? perfil.aparencia ?? null : undefined;
 
   return (
     <div className="perfil">
@@ -86,7 +88,12 @@ function Perfil() {
           backgroundRepeat: "no-repeat",
         }}
       >
-        <AvatarPersonagem itensEquipados={itensEquipados} className="perfil-avatar" alt="Personagem" />
+        <AvatarPersonagem
+          itensEquipados={itensEquipados}
+          aparencia={aparencia}
+          className="perfil-avatar"
+          alt="Personagem"
+        />
       </div>
 
       {/* Identidade — dados reais do banco */}

@@ -36,7 +36,7 @@ async function buscarPersonagem(usuarioId) {
   return { ...personagem, itens };
 }
 
-async function atualizarPersonagem(usuarioId, { nome, imagemUrl }) {
+async function atualizarPersonagem(usuarioId, { nome, imagemUrl, aparencia }) {
   const personagem = await buscarOuCriarPersonagem(usuarioId);
 
   const dados = {};
@@ -45,6 +45,8 @@ async function atualizarPersonagem(usuarioId, { nome, imagemUrl }) {
     dados.nome = nome.trim();
   }
   if (imagemUrl !== undefined) dados.imagemUrl = imagemUrl;
+  // já validada na rota (APARENCIAS em validacoes/esquemas.js)
+  if (aparencia !== undefined) dados.aparencia = aparencia;
 
   return prisma.personagem.update({ where: { id: personagem.id }, data: dados });
 }
@@ -71,7 +73,7 @@ async function buscarItemDoPersonagem(personagemId, itemPersonagemId) {
 // Tipos de item (Item.tipo) que têm slot no personagem — mesmos slots de
 // EditarPersonagem.jsx. Itens de outros tipos podem existir no inventário,
 // mas não podem ser equipados.
-const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas", "botas"];
+const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas", "botas", "escudo"];
 
 // Equipa um item, desequipando antes qualquer outro item do mesmo slot
 // (Item.tipo) — EditarPersonagem.jsx só tem uma posição por slot.

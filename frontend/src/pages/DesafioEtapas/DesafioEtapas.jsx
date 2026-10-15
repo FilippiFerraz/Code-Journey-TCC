@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
-import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersonagemAvatar";
+import { APARENCIA_PADRAO } from "../../data/spritesPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
@@ -52,6 +53,9 @@ export default function DesafioEtapas() {
   const { mundoId, dificuldade, desafioId } = useParams();
   const navigate = useNavigate();
   const itensEquipados = usePersonagemAvatar();
+  // O GIF de ataque é do guerreiro original: as outras aparências fazem a
+  // investida (mesma animação CSS) com o próprio avatar em camadas.
+  const usaGifAtaque = (useAparenciaPropria() ?? APARENCIA_PADRAO) === APARENCIA_PADRAO;
   const cena = cenaDoDesafio(Number(desafioId));
   const nomeInimigo = cena.inimigo.nome;
 
@@ -357,7 +361,7 @@ export default function DesafioEtapas() {
         }}
       >
         <div className={`cena-palco ${foco ? "cena-palco--foco" : ""}`}>
-          {golpeHeroi ? (
+          {golpeHeroi && usaGifAtaque ? (
             <img
               key={`heroi-ataque-${cicloAtaque}`}
               src={guerreiroAtaque}
@@ -368,9 +372,12 @@ export default function DesafioEtapas() {
             />
           ) : (
             <AvatarPersonagem
+              key={golpeHeroi ? `heroi-ataque-${cicloAtaque}` : "heroi"}
               itensEquipados={itensEquipados}
               alt="Guerreiro"
-              className={`cena-heroi ${tomandoGolpe ? "cena-heroi--atingido" : ""}`}
+              className={`cena-heroi ${golpeHeroi ? "cena-heroi--golpeando" : ""} ${
+                tomandoGolpe ? "cena-heroi--atingido" : ""
+              }`}
               style={{ width: 120, height: 120 }}
             />
           )}

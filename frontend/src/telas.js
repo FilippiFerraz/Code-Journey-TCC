@@ -47,6 +47,12 @@ export const telas = Object.fromEntries(
   Object.entries(carregadores).map(([nome, carregar]) => [nome, lazy(carregar)])
 );
 
+// Começa a baixar uma tela AGORA (sem esperar ociosidade) — usado em main.jsx
+// quando já se sabe qual tela vai abrir.
+export function carregarTela(nome) {
+  return carregadores[nome]?.().catch(() => {});
+}
+
 // Telas que o jogador quase sempre abre logo depois de entrar.
 const TELAS_QUENTES = [
   "Home",

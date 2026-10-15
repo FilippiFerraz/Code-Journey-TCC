@@ -59,6 +59,8 @@ async function buscarPerfil(usuarioId) {
         xpTotal: true,
         tutorialVisto: true,
         role: true,
+        // aparência do herói (Personagem.aparencia), na mesma consulta
+        personagem: { select: { aparencia: true } },
       },
     }),
     prisma.progresso.count({ where: { usuarioId, concluido: true } }),
@@ -87,6 +89,8 @@ async function buscarPerfil(usuarioId) {
     membroDesde: usuario.criadoEm,
     tutorialVisto: usuario.tutorialVisto,
     role: usuario.role,
+    // null = ainda não escolheu (a Home abre EscolherAparencia.jsx)
+    aparencia: usuario.personagem?.aparencia ?? null,
 
     acertos,
     // nivel, diasOfensiva, ouro, cristais e titulo — ver resumoJogador.service.js
@@ -140,6 +144,8 @@ async function buscarPerfilPublico(usuarioId) {
         criadoEm: true,
         xpTotal: true,
         rankingVisivel: true,
+        // aparência do herói (Personagem.aparencia), na mesma consulta
+        personagem: { select: { aparencia: true } },
       },
     }),
     prisma.progresso.count({ where: { usuarioId, concluido: true } }),
@@ -167,8 +173,9 @@ async function buscarPerfilPublico(usuarioId) {
     acertos,
     ...resumo,
     ranking: { posicao },
-    // itensEquipados: pra Perfil.jsx montar o guerreiro de QUEM está sendo
+    // aparencia e itensEquipados: pra Perfil.jsx montar o guerreiro de QUEM está sendo
     // visitado, não o de quem está olhando.
+    aparencia: usuario.personagem?.aparencia ?? null,
     itensDestaque: itensDestaqueDe(equipados),
     itensEquipados: itensEquipadosDe(equipados),
   };

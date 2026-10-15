@@ -15,8 +15,8 @@ const router = Router();
 // (cria o registro na primeira vez que o usuário acessa)
 router.get("/", autenticar, getPersonagem);
 
-// PUT /api/personagem — atualiza o nome do personagem (imagemUrl não é mais
-// aceito — ver esquemas.js)
+// PUT /api/personagem — atualiza o nome e/ou a aparência do herói (imagemUrl
+// não é mais aceito — ver esquemas.js)
 router.put("/", autenticar, validar(esquemas.atualizar), putPersonagem);
 
 // POST /api/personagem/inventario/:itemPersonagemId/equipar

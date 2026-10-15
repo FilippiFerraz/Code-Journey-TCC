@@ -21,6 +21,25 @@ Por isso cada item novo é **um** desenho, e não um sprite inteiro pra cada com
 
 Slots: `capacete`, `peitoral`, `arma`, `costas`, `botas`.
 
+## Aparências do herói
+
+O jogador escolhe a aparência no primeiro acesso (e pode trocar em **Editar personagem → Alterar aparência**). Ela fica salva em `Personagem.aparencia` e só troca a camada `base`, então **todo item serve em qualquer aparência**.
+
+| id | Arte original |
+|---|---|
+| `guerreiro` | a própria `base.png` |
+| `guerreiro-afro` | `arte-original/Guerreiro_simples_afro.png` |
+| `guerreira` | `arte-original/Guerreira_simples.png` |
+| `guerreira-afro` | `arte-original/Guerreira_simples_afro.png` |
+
+As artes (500x500, com espada) são reduzidas na grade da `base.png` por:
+
+```
+npm run aparencias:gerar
+```
+
+O script acha sozinho a escala e a posição em que o corpo coincide com a `base.png`, troca a mão com espada pela mão vazia da base (a arma é o slot `arma`) e gera também `{id}--capacete.png`, com o cabelo aparado no contorno do capuz, usada quando há capacete equipado. Saída em `aparencias/` (commitada). Aparência nova: adicione no `APARENCIAS` do script, em `src/data/spritesPersonagem.js` e em `backend/src/validacoes/esquemas.js`.
+
 ## Como desenhar uma forma
 
 1. No Piskel ou Aseprite, abra a `base.png` como camada de referência (64×64).

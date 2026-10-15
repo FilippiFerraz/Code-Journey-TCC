@@ -2,13 +2,21 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import mapa from "../../assets/images/mapa.webp";
+// prévia minúscula (7 KB) mostrada enquanto o mapa (o maior arquivo do site) carrega
+import mapaPrevia from "../../assets/images/mapa-previa.webp";
 import portalDesafios from "../../assets/images/Portal_Desafios.webp";
-import cadeadoPortal from "../../assets/images/Cadeado_portal.png";
+import cadeadoPortal from "../../assets/images/Cadeado_portal.webp";
+// nuvens recortadas do céu do próprio mapa (ver scripts/gerarNuvens.mjs);
+// ?no-inline: arquivos à parte, baixados só ao rolar até o fim do mapa
+import nuvem1 from "../../assets/images/nuvens/nuvem-1.webp?no-inline";
+import nuvem2 from "../../assets/images/nuvens/nuvem-2.webp?no-inline";
+import nuvem3 from "../../assets/images/nuvens/nuvem-3.webp?no-inline";
 import api from "../../services/api";
 import { mundoLiberado } from "../../data/progresso";
 import { tocarSom } from "../../utils/sons";
 import { useIsMobile } from "../../hooks/useIsMobile";
-import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import { usePersonagemAvatar, definirAparenciaPropria } from "../../hooks/usePersonagemAvatar";
+import EscolherAparencia from "../../components/EscolherAparencia";
 import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
 import PersonagemNoMapa from "./PersonagemNoMapa";
@@ -54,10 +62,25 @@ const DRAGAO = { top: "84.3%", left: "50%", largura: "32%", altura: "11%" };
 // Transição dramática (tremor, flash e fogo roxo) antes de abrir a batalha.
 const DURACAO_TRANSICAO_DRAGAO_MS = 1300;
 
+// Nuvens do fim do mapa, depois da arena do Dragão: o caminho some nelas,
+// avisando que o jogo continua num próximo mundo. Posição e largura em %
+// da faixa; cada uma vai e volta devagar, com ritmo próprio (duração em s).
+const NUVENS_FIM = [
+  { src: nuvem1, left: -6, top: 6, largura: 34, duracao: 9 },
+  { src: nuvem3, left: 24, top: 10, largura: 30, duracao: 11, espelhada: true },
+  { src: nuvem2, left: 50, top: 4, largura: 30, duracao: 8 },
+  { src: nuvem1, left: 74, top: 9, largura: 34, duracao: 10, espelhada: true },
+  { src: nuvem3, left: 6, top: 40, largura: 28, duracao: 12, espelhada: true },
+  { src: nuvem2, left: 68, top: 42, largura: 30, duracao: 9 },
+  { src: nuvem3, left: 36, top: 70, largura: 28, duracao: 10 },
+];
+
 function Home() {
   const navigate = useNavigate();
   const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
   const [mostrarTutorial, setMostrarTutorial] = useState(false);
+  // Primeiro acesso: escolha da aparência do herói, antes do tutorial.
+  const [escolherAparencia, setEscolherAparencia] = useState(false);
   // Portal clicado enquanto ainda trancado — guarda o objeto pra mostrar o
   // nome dele no aviso do Mago; null quando não há aviso na tela.
   const [portalBloqueado, setPortalBloqueado] = useState(null);
@@ -92,15 +115,18 @@ function Home() {
   // Só mostra o tutorial guiado se o perfil confirmar que o usuário ainda
   // não viu (Usuario.tutorialVisto). Se a chamada falhar (ex: offline), não
   // bloqueia a Home — o tutorial simplesmente não aparece dessa vez.
+  // Antes dele, quem ainda não escolheu a aparência do herói (aparencia
+  // null — undefined seria um backend sem o campo) escolhe.
   useEffect(() => {
     let ativo = true;
 
     api
       .get("/perfil")
       .then((res) => {
-        if (ativo && res.data.tutorialVisto === false) {
-          setMostrarTutorial(true);
-        }
+        if (!ativo) return;
+        if (res.data.aparencia === null) setEscolherAparencia(true);
+        else if (res.data.aparencia) definirAparenciaPropria(res.data.aparencia);
+        if (res.data.tutorialVisto === false) setMostrarTutorial(true);
       })
       .catch(() => {});
 
@@ -304,8 +330,22 @@ function Home() {
     <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined}>
       {ehMobile && barraBusca}
 
-      <div className={`home-mapa ${abrindoDragao ? "home-mapa--tremendo" : ""}`}>
-        <img src={mapa} alt="Mapa da jornada" className="home-mapa-imagem" />
+      <div
+        className={`home-mapa ${abrindoDragao ? "home-mapa--tremendo" : ""}`}
+        style={{ backgroundImage: `url(${mapaPrevia})` }}
+      >
+        {/* width/height = tamanho real da arte: o navegador reserva o espaço
+            antes de baixar (sem o mapa "pular" a tela) e fetchPriority avisa
+            que é a imagem principal da tela */}
+        <img
+          src={mapa}
+          alt="Mapa da jornada"
+          className="home-mapa-imagem"
+          width={941}
+          height={1672}
+          fetchPriority="high"
+          decoding="async"
+        />
 
         {PONTOS_CRISTAIS.map((ponto) => (
           <button
@@ -421,7 +461,41 @@ function Home() {
         )}
       </div>
 
-      {mostrarTutorial && <TutorialHome onConcluir={concluirTutorial} />}
+      {/* Fim do mapa: nuvens com o aviso de que há mais mundos depois deste */}
+      <div className="home-fim-mapa">
+        {NUVENS_FIM.map((nuvem, i) => (
+          <img
+            key={i}
+            src={nuvem.src}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            draggable={false}
+            className={`home-fim-nuvem ${nuvem.espelhada ? "home-fim-nuvem--espelhada" : ""}`}
+            style={{
+              left: `${nuvem.left}%`,
+              top: `${nuvem.top}%`,
+              width: `${nuvem.largura}%`,
+              "--duracao": `${nuvem.duracao}s`,
+              "--atraso": `${-i * 1.7}s`,
+            }}
+          />
+        ))}
+
+        <p className="home-fim-placa">
+          <i className="hn hn-lock" aria-hidden="true" />
+          <span>
+            Termine o Mundo 1 para continuar
+            <small>Novos mundos em breve...</small>
+          </span>
+        </p>
+      </div>
+
+      {escolherAparencia ? (
+        <EscolherAparencia onConcluir={() => setEscolherAparencia(false)} />
+      ) : (
+        mostrarTutorial && <TutorialHome onConcluir={concluirTutorial} />
+      )}
 
       {avisoCristais && (
         <AvisoPortalBloqueado

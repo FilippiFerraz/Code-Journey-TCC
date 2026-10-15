@@ -12,8 +12,8 @@ import BotaoPixel from "../../components/BotaoPixel";
 import IconePixel from "../../components/IconePixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
-import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
-import { BASE_PERSONAGEM, ORDEM_CAMADAS, camadaDoItem } from "../../data/spritesPersonagem";
+import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersonagemAvatar";
+import { camadasDoPersonagem } from "../../data/spritesPersonagem";
 import { tocarSom } from "../../utils/sons";
 import mago from "../../assets/images/Mago.webp";
 import { BLOCOS, NIVEIS } from "./niveisCristais";
@@ -102,18 +102,12 @@ function contem(lista, id) {
   return lista.some((b) => b.id === id || (b.corpo && contem(b.corpo, id)));
 }
 
-function carregarCamadas(itensEquipados) {
-  return ORDEM_CAMADAS.map((slot) => {
-    if (slot === "base") return BASE_PERSONAGEM;
-    const item = itensEquipados.find((it) => it?.tipo === slot);
-    return camadaDoItem(item?.imagemUrl);
-  })
-    .filter(Boolean)
-    .map((src) => {
-      const imagem = new Image();
-      imagem.src = src;
-      return imagem;
-    });
+function carregarCamadas(itensEquipados, aparencia) {
+  return camadasDoPersonagem(itensEquipados, aparencia).map(({ src }) => {
+    const imagem = new Image();
+    imagem.src = src;
+    return imagem;
+  });
 }
 
 // ---------- Peças da interface ----------
@@ -231,6 +225,7 @@ function ListaPrograma({ lista, editavel, alvoId, blocoAtivo, condicaoAtiva, aoR
 function DesafioCristais() {
   const navigate = useNavigate();
   const itensEquipados = usePersonagemAvatar();
+  const aparencia = useAparenciaPropria();
 
   // carregando | bloqueado | erro | historia | jogo
   const [fase, setFase] = useState("carregando");
@@ -284,7 +279,7 @@ function DesafioCristais() {
 
   // ---------- Cena ----------
 
-  const camadas = useMemo(() => carregarCamadas(itensEquipados), [itensEquipados]);
+  const camadas = useMemo(() => carregarCamadas(itensEquipados, aparencia), [itensEquipados, aparencia]);
   const camadasRef = useRef(camadas);
   useEffect(() => {
     camadasRef.current.splice(0, camadasRef.current.length, ...camadas);

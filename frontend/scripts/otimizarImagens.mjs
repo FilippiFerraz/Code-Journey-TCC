@@ -22,20 +22,27 @@ const RAIZ = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ORIGINAIS = path.join(RAIZ, "arte-original");
 const DESTINO = path.join(RAIZ, "src/assets/images");
 
-// q = qualidade WebP (0-100), max = lado maior em px, animado = GIF -> WebP animado
+// q = qualidade WebP (0-100), max = lado maior em px, animado = GIF -> WebP animado,
+// origem = gerar a partir de outro original (ex: a prévia pequena do mapa)
 const CONFIG = {
   // fundos de cena (aparecem com no máximo 720 px de largura)
   "Fundo_personagem.png": { max: 1440, q: 80 },
-  "Fundo_desafio_3_P1.png": { q: 82 },
-  "Fundo_desafio_4_P1.png": { q: 82 },
-  "Fundo_desafio_6_P1.png": { q: 82 },
+  // fundos das batalhas: aparecem com ~480 px (até 1,4x no zoom da cena)
+  "Fundo_desafio_3_P1.png": { max: 1024, q: 82 },
+  "Fundo_desafio_4_P1.png": { max: 1024, q: 82 },
+  "Fundo_desafio_6_P1.png": { max: 1024, q: 82 },
   "Fundo_batalha2.png": { q: 85 },
   "Fundo_Personagem_Perfil.png": { q: 85 },
   "fundo_batalha_1_portal_3.jpg": { q: 82 },
   "fundo_batalha_2_portal_3.jpg": { q: 82 },
   "fundo_ranking.jpg": { q: 80 },
   "fundo_tela_selcionardesafio.png": { q: 80 },
-  "mapa.png": { q: 84 },
+  // mapa da Home: é a maior imagem do site e o que define o tempo da Home.
+  // Em 74 fica visualmente igual ao 84 (testado com zoom de 2x) e ~25% menor.
+  "mapa.png": { q: 74 },
+  // prévia minúscula do mapa: aparece na hora, ampliada em pixel art, até o
+  // mapa de verdade chegar (ver .home-mapa em Home.css)
+  "mapa-previa.png": { origem: "mapa.png", max: 240, q: 50 },
   // inimigos (aparecem com no máximo ~330 px de largura)
   "bruxa_inimigo.png": { max: 800, q: 85 },
   "rei_goblin_inimigo.png": { max: 800, q: 85 },
@@ -49,8 +56,10 @@ const CONFIG = {
   "logo.png": { max: 320, q: 85 },
   "Mago.png": { max: 420, q: 85 },
   "Detalhe_desafios.png": { q: 85 },
-  // GIF do portal aparece com 85 px: 256 px já cobre telas de alta densidade
-  "Portal_Desafios.gif": { max: 256, q: 80, animado: true },
+  // GIF do portal aparece com 85 px (3 vezes na Home): 180 px cobre telas 2x
+  "Portal_Desafios.gif": { max: 180, q: 80, animado: true },
+  // cadeado dos portais trancados: aparece com 40 px
+  "Cadeado_portal.png": { max: 120, q: 85 },
 };
 
 fs.mkdirSync(ORIGINAIS, { recursive: true });
@@ -59,9 +68,10 @@ let totalDepois = 0;
 
 for (const [arquivo, opcoes] of Object.entries(CONFIG)) {
   // o original pode estar em arte-original/ (já movido) ou ainda em src/assets/images/
-  let origem = path.join(ORIGINAIS, arquivo);
+  const nomeOrigem = opcoes.origem ?? arquivo;
+  let origem = path.join(ORIGINAIS, nomeOrigem);
   if (!fs.existsSync(origem)) {
-    const antigo = path.join(DESTINO, arquivo);
+    const antigo = path.join(DESTINO, nomeOrigem);
     if (!fs.existsSync(antigo)) {
       console.log("  (pulado — não achei)", arquivo);
       continue;

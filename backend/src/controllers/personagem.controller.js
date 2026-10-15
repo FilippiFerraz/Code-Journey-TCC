@@ -15,10 +15,11 @@ async function getPersonagem(req, res, next) {
 
 async function putPersonagem(req, res, next) {
   try {
-    const { nome, imagemUrl } = req.body;
+    const { nome, imagemUrl, aparencia } = req.body;
     const personagem = await personagemService.atualizarPersonagem(idUsuario(req), {
       nome,
       imagemUrl,
+      aparencia,
     });
     return res.status(200).json(personagem);
   } catch (erro) {

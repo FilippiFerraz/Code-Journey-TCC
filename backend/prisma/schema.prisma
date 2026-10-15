@@ -248,6 +248,11 @@ model Personagem {
   vidaAtual Int     @default(100)
   vidaMax   Int     @default(100)
   imagemUrl String?
+  // Aparência do herói escolhida no primeiro acesso ("guerreiro" |
+  // "guerreiro-afro" | "guerreira" | "guerreira-afro" — ver APARENCIAS em
+  // src/services/personagem.service.js). null = ainda não escolheu: a Home
+  // abre a escolha antes do tutorial.
+  aparencia String?
 
   criadoEm DateTime @default(now())
 
@@ -262,7 +267,7 @@ model Item {
 
   nome        String
   // slot de equipamento — bate com os ids dos slots em EditarPersonagem.jsx:
-  // "capacete" | "peitoral" | "arma" | "costas" (só esses podem ser equipados —
+  // "capacete" | "peitoral" | "arma" | "costas" | "botas" | "escudo" (só esses podem ser equipados —
   // ver TIPOS_EQUIPAVEIS em src/services/personagem.service.js)
   tipo        String
   raridade    String  @default("comum") // "comum" | "raro" | "epico" | "lendario"

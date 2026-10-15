@@ -2,7 +2,8 @@ import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Check, X } from "lucide-react";
 import api from "../../services/api";
-import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersonagemAvatar";
+import { APARENCIA_PADRAO } from "../../data/spritesPersonagem";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
 import { formatarTempo } from "../../utils/tempo";
@@ -242,6 +243,9 @@ function ResolverDesafio() {
   const { mundoId, dificuldade, desafioId } = useParams();
   const navigate = useNavigate();
   const itensEquipados = usePersonagemAvatar();
+  // O GIF de ataque é do guerreiro original: as outras aparências fazem a
+  // investida (mesma animação CSS) com o próprio avatar em camadas.
+  const usaGifAtaque = (useAparenciaPropria() ?? APARENCIA_PADRAO) === APARENCIA_PADRAO;
 
   const desafio = DESAFIOS[mundoId]?.[desafioId] || DESAFIOS[1][1];
   const ehOrdenarBlocos = desafio.tipo === "ordenar_blocos";
@@ -1038,7 +1042,7 @@ function ResolverDesafio() {
         {/* palco = tudo que sofre o zoom da "câmera" */}
         <div className={`cena-palco ${focoSlime ? "cena-palco--foco" : ""}`}>
           {/* sem chão desenhado em CSS: cada imagem de fundo já traz o piso */}
-          {golpeHeroi ? (
+          {golpeHeroi && usaGifAtaque ? (
             // Durante o golpe: GIF de ataque (ainda sem as camadas de
             // equipamento — animar camadas é trabalho futuro). A key muda a
             // cada golpe pra forçar o navegador a reiniciar o GIF do quadro zero.
@@ -1054,9 +1058,12 @@ function ResolverDesafio() {
             />
           ) : (
             <AvatarPersonagem
+              key={golpeHeroi ? `heroi-ataque-${cicloAtaque}` : "heroi"}
               itensEquipados={itensEquipados}
               alt="Guerreiro"
-              className={`cena-heroi ${tomandoGolpe ? "cena-heroi--atingido" : ""}`}
+              className={`cena-heroi ${golpeHeroi ? "cena-heroi--golpeando" : ""} ${
+                tomandoGolpe ? "cena-heroi--atingido" : ""
+              }`}
               style={{ width: 120, height: 120 }}
             />
           )}

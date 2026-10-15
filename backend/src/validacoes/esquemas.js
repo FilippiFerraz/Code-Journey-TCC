@@ -4,6 +4,10 @@
 // erro. Campo que não está aqui é descartado antes de chegar no controller.
 const r = require("./regras");
 
+// Aparências do herói (ver Personagem.aparencia no schema.prisma) — mesmos
+// ids de APARENCIAS em frontend/src/data/spritesPersonagem.js.
+const APARENCIAS = ["guerreiro", "guerreiro-afro", "guerreira", "guerreira-afro"];
+
 function campo(rotulo, regra) {
   return { rotulo, regra };
 }
@@ -93,7 +97,10 @@ const personagem = {
   // imagemUrl não é aceito: nenhuma tela usa esse campo hoje, e um
   // endereço livre de imagem é dado que o sistema não precisa receber.
   atualizar: {
-    body: { nome: campo("nome do personagem", r.opcional(r.texto({ min: 2, max: 20 }))) },
+    body: {
+      nome: campo("nome do personagem", r.opcional(r.texto({ min: 2, max: 20 }))),
+      aparencia: campo("aparência", r.opcional(r.umDe(APARENCIAS))),
+    },
   },
   item: {
     params: { itemPersonagemId: campo("item", r.idPositivo) },

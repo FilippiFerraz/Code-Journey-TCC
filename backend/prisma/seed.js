@@ -15,6 +15,7 @@
 const { PrismaClient } = require("@prisma/client");
 const desafioIA = require("./desafios/desafioIA");
 const desafiosPortal3 = require("./desafios/portal3");
+const itensGuardiaoCristal = require("./itensGuardiaoCristal");
 const { validarAlternativas } = require("../src/services/etapas.service");
 
 const prisma = new PrismaClient();
@@ -382,6 +383,8 @@ const itens = [
     bonusAtaque: 2,
     exclusivoDragao: true,
   },
+  // Coleção "Guardião de Cristal" — também do Baú de Cristal (ver o arquivo).
+  ...itensGuardiaoCristal,
 ];
 
 // Qual item cada desafio dá ao ser concluído pela primeira vez, por

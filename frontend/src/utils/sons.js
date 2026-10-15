@@ -37,14 +37,20 @@ export function tocarSom(nome) {
   }
 }
 
-// Cria (e começa a baixar) todos os sons de uma vez, quando o navegador está
-// ocioso. Antes o arquivo só começava a baixar NA PRIMEIRA VEZ que o som
+// Sons pequenos e frequentes, pré-carregados quando o navegador está ocioso.
+// O "boss" (146 KB, mais que os outros três juntos) fica de fora: só toca
+// nas lutas de chefe e no dragão, e baixa quando alguém chega lá — antes
+// ele era baixado em toda sessão, mesmo de quem nunca enfrentou um chefe.
+const SONS_PRECARREGADOS = ["acerto", "erro", "recompensa"];
+
+// Cria (e começa a baixar) os sons frequentes de uma vez, quando o navegador
+// está ocioso. Antes o arquivo só começava a baixar NA PRIMEIRA VEZ que o som
 // tocava — em rede lenta, o primeiro acerto/erro ficava mudo ou atrasado.
 let precarregado = false;
 export function precarregarSons() {
   if (precarregado) return;
   precarregado = true;
-  const rodar = () => Object.keys(ARQUIVOS).forEach((nome) => obterAudio(nome).load());
+  const rodar = () => SONS_PRECARREGADOS.forEach((nome) => obterAudio(nome).load());
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(rodar, { timeout: 5000 });
   } else {

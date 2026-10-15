@@ -37,6 +37,8 @@ const ROTULOS_TIPO = {
   sapato: "Sapato",
   arma: "Arma",
   costas: "Costas",
+  botas: "Botas",
+  escudo: "Escudo",
   acessorios: "Acessório",
 };
 

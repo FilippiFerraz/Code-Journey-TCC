@@ -11,7 +11,10 @@
     "itens:gerar": "node scripts/gerarItensPersonagem.mjs",
     "itens:importar": "node scripts/importarItemPersonagem.mjs",
     "imagens:otimizar": "node scripts/otimizarImagens.mjs",
-    "icones:gerar": "node scripts/gerarIcones.mjs"
+    "icones:gerar": "node scripts/gerarIcones.mjs",
+    "aparencias:gerar": "node scripts/gerarAparencias.mjs",
+    "nuvens:gerar": "node scripts/gerarNuvens.mjs",
+    "itens:cristal": "node scripts/importarItensCristal.mjs"
   },
   "dependencies": {
     "@fontsource/silkscreen": "^5.3.0",

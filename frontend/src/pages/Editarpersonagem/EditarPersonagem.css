@@ -355,6 +355,22 @@
   background: linear-gradient(180deg, #e05c5c, #b93a3a);
 }
 
+/* ---------- Alterar aparência (abaixo do inventário) ---------- */
+.editar-aparencia-botao {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 16px 20px 0;
+  background: #4a2a8a;
+}
+
+.editar-aparencia-botao-miolo {
+  padding: 11px 18px;
+  background: linear-gradient(180deg, var(--roxo), var(--roxo-forte));
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
 /* respeita quem prefere menos animação (nada anima aqui, mas fica pronto) */
 @media (prefers-reduced-motion: reduce) {
   .editar * {

@@ -1,5 +1,9 @@
+import { Suspense, lazy } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import PerfilJogadorCard from "../components/PerfilJogadorCard";
+// Sob demanda: o card puxa os sprites do personagem (dezenas de PNGs) e só
+// aparece no desktop. Importado direto, isso tudo entrava no pacote
+// principal que TODA tela (inclusive o Login, no celular) baixa primeiro.
+const PerfilJogadorCard = lazy(() => import("../components/PerfilJogadorCard"));
 import logo from "../assets/images/logo.webp";
 import { useEhAdministrador } from "../hooks/useEhAdministrador";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -237,7 +241,9 @@ function MainLayout({ titulo, children, buscaHeader }) {
           <aside className="layout-coluna-direita">
             {/* Card de Perfil do Jogador no topo; abaixo dele entram os
                 próximos widgets (ranking resumido, missão do dia...). */}
-            <PerfilJogadorCard />
+            <Suspense fallback={null}>
+              <PerfilJogadorCard />
+            </Suspense>
           </aside>
         </div>
       )}

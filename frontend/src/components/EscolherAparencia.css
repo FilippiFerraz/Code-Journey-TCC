@@ -1,0 +1,164 @@
+/* ============================================================
+   EscolherAparencia.css — escolha da aparência do herói
+   (primeiro acesso na Home e "Alterar aparência" no inventário).
+   Mesmo escurecido do TutorialHome.css, acima dele (z-index), já
+   que no primeiro acesso a escolha vem antes do tutorial.
+   ============================================================ */
+
+.aparencia-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 8, 20, 0.8);
+  animation: aparenciaSurgir 0.2s ease-out;
+}
+
+@keyframes aparenciaSurgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.aparencia-painel {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 22px 18px 18px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+.aparencia-titulo {
+  margin: 0 28px 4px;
+  color: #6a3fd9;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.aparencia-subtitulo {
+  margin: 0 0 16px;
+  color: #22283a;
+  font-size: 14px;
+}
+
+.aparencia-fechar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #4a2a8a;
+}
+
+.aparencia-fechar-miolo {
+  padding: 6px 9px;
+  background: linear-gradient(180deg, #8a2fb8, #6a3fd9);
+  color: #ffffff;
+  font-size: 12px;
+}
+
+/* ---------- Opções (2 x 2) ---------- */
+.aparencia-opcoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.aparencia-opcao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px 8px;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #8a2fb8, #6a3fd9);
+  color: #ffffff;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.aparencia-opcao:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.aparencia-opcao:focus-visible {
+  outline: 3px solid #1b9ec9;
+  outline-offset: 2px;
+}
+
+.aparencia-opcao--marcada {
+  border-color: #ffd84d;
+  box-shadow: 0 0 14px 2px rgba(255, 216, 77, 0.55);
+}
+
+.aparencia-opcao:disabled {
+  cursor: default;
+}
+
+.aparencia-avatar {
+  /* quadrado: o herói é montado em camadas de 64x64 (AvatarPersonagem) */
+  width: 112px;
+  height: 112px;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45));
+}
+
+.aparencia-nome {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.aparencia-marca {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: #ffd84d;
+  font-size: 18px;
+}
+
+.aparencia-erro {
+  margin: 12px 0 0;
+  color: #b93a3a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.aparencia-confirmar {
+  margin-top: 16px;
+  background: #2c7a3d;
+}
+
+.aparencia-confirmar:disabled {
+  opacity: 0.6;
+}
+
+.aparencia-confirmar-miolo {
+  padding: 9px 22px;
+  background: linear-gradient(180deg, #55c46b, #3a9d50);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+@media (max-width: 360px) {
+  .aparencia-avatar {
+    width: 88px;
+    height: 88px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aparencia-overlay,
+  .aparencia-opcao {
+    animation: none;
+    transition: none;
+  }
+}

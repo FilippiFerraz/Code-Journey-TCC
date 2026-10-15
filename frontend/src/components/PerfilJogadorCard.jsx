@@ -5,8 +5,10 @@ import { DiamondGem } from "pixelarticons/react/DiamondGem.js";
 import { Feather } from "pixelarticons/react/Feather.js";
 import { Package } from "pixelarticons/react/Package.js";
 import { Shield } from "pixelarticons/react/Shield.js";
+import { ShieldSharp } from "pixelarticons/react/ShieldSharp.js";
 import { Sword } from "pixelarticons/react/Sword.js";
 import api from "../services/api";
+import { definirAparenciaPropria } from "../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "./AvatarPersonagem";
 import IconeItem from "./IconeItem";
 import IconePixel from "./IconePixel";
@@ -23,6 +25,7 @@ import "./PerfilJogadorCard.css";
 const SLOTS = [
   { tipo: "capacete", nome: "Capacete", icone: Crown },
   { tipo: "peitoral", nome: "Peitoral", icone: Shield },
+  { tipo: "escudo", nome: "Escudo", icone: ShieldSharp },
   { tipo: "arma", nome: "Arma", icone: Sword },
   { tipo: "costas", nome: "Costas", icone: Feather },
   { tipo: "botas", nome: "Botas", icone: Package },
@@ -50,7 +53,12 @@ export default function PerfilJogadorCard() {
     let ativo = true;
     api
       .get("/perfil")
-      .then((res) => ativo && setPerfil(res.data))
+      .then((res) => {
+        if (!ativo) return;
+        // aparência do herói vem junto do perfil: já serve pra todo avatar do jogador
+        if (res.data.aparencia) definirAparenciaPropria(res.data.aparencia);
+        setPerfil(res.data);
+      })
       .catch(() => ativo && setFalhou(true));
     return () => {
       ativo = false;

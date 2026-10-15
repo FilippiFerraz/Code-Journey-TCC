@@ -1,13 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.webp";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import CampoSenha from "../../components/CampoSenha";
 import { EMAIL_MAXIMO, SENHA_MAXIMO, validarEmail } from "../../utils/validacoes";
+import { prefetchTelas } from "../../telas";
+// só a URL (o arquivo em si é baixado no pré-carregamento abaixo)
+import mapa from "../../assets/images/mapa.webp";
+
+// Enquanto o jogador digita e-mail e senha, a rede está parada: aproveita pra
+// baixar a tela e o mapa da Home, que é para onde ele vai depois de entrar.
+// Fica no cache do navegador — a Home abre com o mapa já pronto.
+// Respeita o modo "economia de dados" do celular.
+function adiantarHome() {
+  if (navigator.connection?.saveData) return;
+  prefetchTelas(["Home"]);
+  const baixarMapa = () => {
+    const imagem = new Image();
+    imagem.src = mapa;
+  };
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(baixarMapa, { timeout: 3000 });
+  } else {
+    setTimeout(baixarMapa, 1500);
+  }
+}
 import "./Login.css";
 
 function Login() {
+  useEffect(() => {
+    adiantarHome();
+  }, []);
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);

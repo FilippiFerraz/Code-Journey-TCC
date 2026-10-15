@@ -142,13 +142,199 @@
   font-size: 13px;
 }
 
+/* ============================================================
+   Tutorial guiado (TutorialHome.jsx) — o balão fica AO LADO do alvo,
+   nunca por cima: a posição (top/left) e o lado ("acima", "abaixo",
+   "direita") vêm de posicionarBalao, e --seta é onde a setinha aponta.
+   ============================================================ */
+
+/* com spotlight, quem escurece a tela é só a sombra do .tutorial-spot —
+   senão o fundo do overlay também passaria por baixo do "buraco" e o
+   ícone destacado ficaria apagado */
+.tutorial-overlay--com-spot {
+  background: transparent;
+}
+
+.tutorial-overlay--com-spot .tutorial-spot {
+  animation: tutorialSpotPulsar 1.6s ease-in-out infinite;
+}
+
+@keyframes tutorialSpotPulsar {
+  0%,
+  100% {
+    box-shadow: 0 0 0 9999px rgba(10, 8, 20, 0.78), 0 0 0 3px #ffd84d, 0 0 14px 3px rgba(255, 216, 77, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 9999px rgba(10, 8, 20, 0.78), 0 0 0 4px #ffe680, 0 0 26px 8px rgba(255, 216, 77, 0.75);
+  }
+}
+
+.tutorial-balao--guiado {
+  right: auto;
+  bottom: auto;
+  display: block;
+  /* desliza de um alvo pro outro em vez de pular */
+  transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1), left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.45s ease;
+  animation: none;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.45));
+}
+
+/* sem alvo medido (ex: elemento ainda não montado): volta pro rodapé */
+.tutorial-balao--sem-alvo {
+  top: auto;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+}
+
+.tutorial-balao--guiado .tutorial-balao-corpo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px 12px 12px;
+  border-radius: 16px;
+  box-shadow: none;
+  animation: tutorialBalaoEntrar 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* a setinha do balão antigo (à esquerda, pro mago) não vale aqui: o mago
+   fica dentro do balão e a seta aponta pro alvo (::after abaixo) */
+.tutorial-balao--guiado .tutorial-balao-corpo::before {
+  content: none;
+}
+
+/* cada passo "salta" vindo da direção do alvo */
+@keyframes tutorialBalaoEntrar {
+  from {
+    opacity: 0;
+    transform: translate(var(--entrada-x, 0), var(--entrada-y, 0)) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.tutorial-balao--acima {
+  --entrada-y: 14px;
+}
+
+.tutorial-balao--abaixo {
+  --entrada-y: -14px;
+}
+
+.tutorial-balao--direita {
+  --entrada-x: -14px;
+}
+
+/* ---------- Setinha apontando pro alvo ---------- */
+.tutorial-balao--guiado::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 11px solid transparent;
+  animation: tutorialSetaSurgir 0.3s ease-out both;
+}
+
+@keyframes tutorialSetaSurgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tutorial-balao--acima::after {
+  top: 100%;
+  left: calc(var(--seta) - 11px);
+  border-top-color: #ffffff;
+  border-bottom-width: 0;
+  transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tutorial-balao--abaixo::after {
+  bottom: 100%;
+  left: calc(var(--seta) - 11px);
+  border-bottom-color: #ffffff;
+  border-top-width: 0;
+  transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tutorial-balao--direita::after {
+  right: 100%;
+  top: calc(var(--seta) - 11px);
+  border-right-color: #ffffff;
+  border-left-width: 0;
+  transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tutorial-balao--sem-alvo::after {
+  content: none;
+}
+
+/* ---------- Conteúdo ---------- */
+.tutorial-balao--guiado .tutorial-guia {
+  width: 52px;
+  margin-top: 2px;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3));
+  transform-origin: 50% 100%;
+  animation: tutorialMagoBalancar 2.4s ease-in-out infinite;
+}
+
+@keyframes tutorialMagoBalancar {
+  0%,
+  100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-3px) rotate(-3deg); }
+}
+
+.tutorial-balao-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.tutorial-balao--guiado .tutorial-balao-titulo {
+  font-size: 14px;
+}
+
+.tutorial-balao--guiado .tutorial-balao-fala {
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  animation: none;
+}
+
+/* bolinha do passo atual vira uma "pílula" */
+.tutorial-ponto {
+  transition: background 0.2s ease, width 0.3s ease;
+}
+
+.tutorial-ponto-atual {
+  width: 20px;
+  border-radius: 4px;
+}
+
+@media (max-width: 360px) {
+  .tutorial-balao--guiado .tutorial-guia {
+    width: 40px;
+  }
+
+  .tutorial-balao--guiado .tutorial-balao-corpo {
+    gap: 8px;
+    padding: 12px 12px 10px 10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tutorial-overlay,
   .tutorial-balao,
-  .tutorial-balao-fala {
+  .tutorial-balao-fala,
+  .tutorial-overlay--com-spot .tutorial-spot,
+  .tutorial-balao--guiado .tutorial-balao-corpo,
+  .tutorial-balao--guiado .tutorial-guia,
+  .tutorial-balao--guiado::after {
     animation: none;
   }
-  .tutorial-spot {
+  .tutorial-spot,
+  .tutorial-balao--guiado,
+  .tutorial-balao--guiado::after {
     transition: none;
   }
 }
