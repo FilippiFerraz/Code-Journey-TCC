@@ -58,6 +58,7 @@ async function buscarPerfil(usuarioId) {
         criadoEm: true,
         xpTotal: true,
         tutorialVisto: true,
+        introVista: true,
         role: true,
         // aparência do herói (Personagem.aparencia), na mesma consulta
         personagem: { select: { aparencia: true } },
@@ -88,6 +89,7 @@ async function buscarPerfil(usuarioId) {
     nomeUsuario,
     membroDesde: usuario.criadoEm,
     tutorialVisto: usuario.tutorialVisto,
+    introVista: usuario.introVista,
     role: usuario.role,
     // null = ainda não escolheu (a Home abre EscolherAparencia.jsx)
     aparencia: usuario.personagem?.aparencia ?? null,
@@ -190,9 +192,19 @@ async function marcarTutorialVisto(usuarioId) {
   });
 }
 
+// Marca que o jogador já assistiu a cutscene de introdução. Chamado quando
+// ela termina (ou é pulada) — ver IntroCutscene.jsx.
+async function marcarIntroVista(usuarioId) {
+  await prisma.usuario.update({
+    where: { id: usuarioId },
+    data: { introVista: true },
+  });
+}
+
 module.exports = {
   buscarPerfil,
   marcarTutorialVisto,
+  marcarIntroVista,
   buscarUsuariosPorNome,
   buscarPerfilPublico,
 };

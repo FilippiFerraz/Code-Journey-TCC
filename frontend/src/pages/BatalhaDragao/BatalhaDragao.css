@@ -211,22 +211,6 @@
   height: 100%;
 }
 
-.drg-vinheta {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 45%, rgba(220, 20, 60, 0.75) 100%);
-  animation: drg-vinheta 1.6s ease-out forwards;
-}
-
-.drg-flash-furia {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: #b026ff;
-  animation: drg-flash 2.3s ease-out forwards;
-}
-
 /* ---------- Jogador ---------- */
 
 .drg-jogador {
@@ -596,20 +580,6 @@
   60% { transform: translate(3px, -3px); }
   70% { transform: translate(-2px, 2px); }
   85% { transform: translate(1px, -1px); }
-}
-
-@keyframes drg-vinheta {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-@keyframes drg-flash {
-  0% { opacity: 0; }
-  15% { opacity: 0.55; }
-  30% { opacity: 0.1; }
-  45% { opacity: 0.4; }
-  100% { opacity: 0; }
 }
 
 @keyframes drg-piscar {

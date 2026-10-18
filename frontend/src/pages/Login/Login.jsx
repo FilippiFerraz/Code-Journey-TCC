@@ -6,6 +6,7 @@ import BotaoPixel from "../../components/BotaoPixel";
 import CampoSenha from "../../components/CampoSenha";
 import { EMAIL_MAXIMO, SENHA_MAXIMO, validarEmail } from "../../utils/validacoes";
 import { prefetchTelas } from "../../telas";
+import { desbloquearAudio } from "../../utils/audioContexto";
 // só a URL (o arquivo em si é baixado no pré-carregamento abaixo)
 import mapa from "../../assets/images/mapa.webp";
 
@@ -45,6 +46,9 @@ function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    // libera o som dentro do clique — se for o 1º acesso da conta, a
+    // cutscene de introdução toca na Home logo em seguida
+    desbloquearAudio();
     setErro("");
     setEmailNaoVerificado(false);
 

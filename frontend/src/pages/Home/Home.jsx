@@ -1,5 +1,6 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Fragment, Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import mapa from "../../assets/images/mapa.webp";
 // prévia minúscula (7 KB) mostrada enquanto o mapa (o maior arquivo do site) carrega
@@ -24,6 +25,22 @@ import { Gift } from "pixelarticons/react/Gift.js";
 import IconePixel from "../../components/IconePixel";
 import { lerUltimoPortal, salvarUltimoPortal, trechoEntre } from "./caminhoMapa";
 import "./Home.css";
+
+// Cutscene de introdução (só no primeiro acesso): arquivo à parte, baixado
+// só por quem vai assistir.
+const IntroCutscene = lazy(() => import("../../components/IntroCutscene/IntroCutscene"));
+
+// Marca local de "já viu a intro" — reserva pra quando o backend não
+// responde (ou ainda não tem o campo introVista). O que vale é o banco.
+const chaveIntroLocal = (usuarioId) => `introVista:${usuarioId}`;
+
+function introVistaLocal(usuarioId) {
+  try {
+    return localStorage.getItem(chaveIntroLocal(usuarioId)) === "1";
+  } catch {
+    return false;
+  }
+}
 
 // Mesmo breakpoint usado pelo MainLayout pra trocar entre rodapé (mobile) e
 // sidebar (desktop) — precisa bater com o de lá pra decidir corretamente
@@ -77,7 +94,14 @@ const NUVENS_FIM = [
 
 function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
+  // Cutscene de introdução: conta recém-criada (VerificarEmail manda
+  // introPendente) já abre com ela, sem esperar o /perfil — que depois
+  // confirma ou cancela (Usuario.introVista).
+  const [mostrarIntro, setMostrarIntro] = useState(Boolean(location.state?.introPendente));
+  const introConcluidaRef = useRef(false);
+  const usuarioIdRef = useRef(null);
   const [mostrarTutorial, setMostrarTutorial] = useState(false);
   // Primeiro acesso: escolha da aparência do herói, antes do tutorial.
   const [escolherAparencia, setEscolherAparencia] = useState(false);
@@ -117,13 +141,26 @@ function Home() {
   // bloqueia a Home — o tutorial simplesmente não aparece dessa vez.
   // Antes dele, quem ainda não escolheu a aparência do herói (aparencia
   // null — undefined seria um backend sem o campo) escolhe.
+  // A cutscene de introdução vem antes de tudo: só pra quem o banco diz que
+  // ainda não viu (introVista false). Backend sem o campo (undefined) usa a
+  // marca local como reserva.
   useEffect(() => {
     let ativo = true;
+
+    // o aviso "introPendente" vale só pra esta entrada: sai do histórico pra
+    // um F5 não reabrir a intro antes do /perfil responder
+    if (location.state?.introPendente) navigate(location.pathname, { replace: true, state: null });
 
     api
       .get("/perfil")
       .then((res) => {
         if (!ativo) return;
+        usuarioIdRef.current = res.data.id;
+        const jaViu =
+          introConcluidaRef.current ||
+          introVistaLocal(res.data.id) ||
+          (res.data.introVista !== undefined && res.data.introVista !== false);
+        setMostrarIntro(!jaViu);
         if (res.data.aparencia === null) setEscolherAparencia(true);
         else if (res.data.aparencia) definirAparenciaPropria(res.data.aparencia);
         if (res.data.tutorialVisto === false) setMostrarTutorial(true);
@@ -133,6 +170,8 @@ function Home() {
     return () => {
       ativo = false;
     };
+    // roda só na entrada da Home (location/navigate usados uma vez acima)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -263,6 +302,21 @@ function Home() {
   function entrarNoPortal(portal) {
     salvarUltimoPortal(portal.id);
     navigate(`/dificuldade/${portal.id}`, { state: { nomeMundo: portal.nome } });
+  }
+
+  // Terminou ou pulou a intro: grava no perfil (banco) e, de reserva, no
+  // navegador. Depois dela abrem a escolha de aparência e o tutorial.
+  function concluirIntro() {
+    introConcluidaRef.current = true;
+    setMostrarIntro(false);
+    if (usuarioIdRef.current != null) {
+      try {
+        localStorage.setItem(chaveIntroLocal(usuarioIdRef.current), "1");
+      } catch {
+        // ignora (aba anônima etc.)
+      }
+    }
+    api.post("/perfil/intro-vista").catch(() => {});
   }
 
   function concluirTutorial() {
@@ -491,7 +545,13 @@ function Home() {
         </p>
       </div>
 
-      {escolherAparencia ? (
+      {mostrarIntro ? (
+        // fundo preto (também em portal, pelo mesmo motivo da cutscene)
+        // enquanto o arquivo da cutscene baixa
+        <Suspense fallback={createPortal(<div className="intro-cutscene" />, document.body)}>
+          <IntroCutscene onConcluir={concluirIntro} />
+        </Suspense>
+      ) : escolherAparencia ? (
         <EscolherAparencia onConcluir={() => setEscolherAparencia(false)} />
       ) : (
         mostrarTutorial && <TutorialHome onConcluir={concluirTutorial} />

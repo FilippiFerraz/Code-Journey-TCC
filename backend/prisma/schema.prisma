@@ -40,6 +40,12 @@ model Usuario {
   // ranking, configurações). Ver TutorialHome.jsx / POST /api/perfil/tutorial-visto.
   tutorialVisto Boolean @default(false)
 
+  // Marca se o jogador já assistiu a cutscene de introdução (livro mágico,
+  // 15s) que abre na Home no primeiro acesso, antes da escolha de aparência.
+  // Ver frontend/src/components/IntroCutscene / POST /api/perfil/intro-vista.
+  // A migração marcou true pras contas que já existiam — só conta nova vê.
+  introVista Boolean @default(false)
+
   // "jogador" | "administrador". Administradores acessam rotas protegidas
   // por verificarAdmin (ver middlewares/admin.middleware.js) — dashboard de
   // suporte, edição de desafios, etc. Hoje não existe UI pra promover um

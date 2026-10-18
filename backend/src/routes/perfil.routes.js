@@ -2,6 +2,7 @@ const { Router } = require("express");
 const {
   getPerfil,
   postTutorialVisto,
+  postIntroVista,
   getBuscarUsuarios,
   getPerfilPublico,
 } = require("../controllers/perfil.controller.js");
@@ -21,6 +22,9 @@ router.get("/buscar", autenticar, validar(esquemas.buscar), getBuscarUsuarios);
 
 // POST /api/perfil/tutorial-visto — marca o tutorial guiado da Home como visto
 router.post("/tutorial-visto", autenticar, postTutorialVisto);
+
+// POST /api/perfil/intro-vista — marca a cutscene de introdução como vista
+router.post("/intro-vista", autenticar, postIntroVista);
 
 // GET /api/perfil/:usuarioId — perfil público de OUTRO usuário, aberto a
 // partir de um resultado da busca (ver Perfil.jsx em modo "visita"). Fica

@@ -346,8 +346,7 @@ function BatalhaDragao() {
 
       <div className="drg-palco">
         <canvas ref={canvasRef} className="drg-canvas" aria-label="Arena da batalha contra o dragão" />
-        {s.estado === "attacking" && <div className="drg-vinheta" aria-hidden="true" />}
-        {s.estado === "furia" && <div className="drg-flash-furia" aria-hidden="true" />}
+        {/* vinheta do sopro e clarão da fúria: desenhados no canvas, em pixel (cenaDragao.js) */}
       </div>
 
       {/* status do jogador */}

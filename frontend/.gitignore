@@ -31,3 +31,6 @@ dist-ssr
 .vercel
 .env
 .env.local
+
+# Vídeo da intro gerado por npm run intro:video (5+ MB, recriável)
+intro.mp4

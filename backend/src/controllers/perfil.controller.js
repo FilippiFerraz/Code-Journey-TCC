@@ -1,6 +1,7 @@
 const {
   buscarPerfil,
   marcarTutorialVisto,
+  marcarIntroVista,
   buscarUsuariosPorNome,
   buscarPerfilPublico,
 } = require("../services/perfil.service.js");
@@ -23,6 +24,16 @@ async function postTutorialVisto(req, res, next) {
     const usuarioId = req.usuario?.id ?? req.usuarioId;
     await marcarTutorialVisto(usuarioId);
     res.status(200).json({ tutorialVisto: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function postIntroVista(req, res, next) {
+  try {
+    const usuarioId = req.usuario?.id ?? req.usuarioId;
+    await marcarIntroVista(usuarioId);
+    res.status(200).json({ introVista: true });
   } catch (err) {
     next(err);
   }
@@ -56,6 +67,7 @@ async function getPerfilPublico(req, res, next) {
 module.exports = {
   getPerfil,
   postTutorialVisto,
+  postIntroVista,
   getBuscarUsuarios,
   getPerfilPublico,
 };
