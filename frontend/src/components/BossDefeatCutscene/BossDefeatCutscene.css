@@ -1,0 +1,85 @@
+/* Cutscene final de vitória — ver BossDefeatCutscene.jsx.
+   Cobre a tela inteira (portal no <body>); o canvas 384x216 é ampliado
+   mantendo 16:9, com faixas pretas (letterbox) no que sobrar — em pé no
+   celular as faixas ficam em cima e embaixo. Mesmo visual dos botões da
+   cutscene de introdução. */
+.final-cutscene {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.final-cutscene-canvas {
+  /* o maior 16:9 que cabe na tela (dvh: barra do navegador do celular) */
+  width: min(100vw, calc(100vh * 16 / 9));
+  width: min(100vw, calc(100dvh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+.final-cutscene-controles {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  display: flex;
+  gap: 8px;
+}
+
+.final-cutscene-botao {
+  font-family: "Press Start 2P", "Silkscreen", monospace;
+  font-size: 11px;
+  line-height: 1;
+  color: #fff8f0;
+  background: #2a1238;
+  border: 0;
+  padding: 9px 11px;
+  cursor: pointer;
+  /* borda "pixelada" em degraus: preto por fora, branco, sombra roxa */
+  box-shadow:
+    0 0 0 2px #fff8f0,
+    0 0 0 4px #140c1c,
+    4px 4px 0 2px #5b2a86;
+  opacity: 0.88;
+}
+
+.final-cutscene-botao:hover,
+.final-cutscene-botao:focus-visible {
+  opacity: 1;
+  background: #5b2a86;
+  outline: none;
+}
+
+.final-cutscene-botao:active {
+  transform: translate(2px, 2px);
+  box-shadow:
+    0 0 0 2px #fff8f0,
+    0 0 0 4px #140c1c;
+}
+
+@media (max-width: 480px) {
+  .final-cutscene-botao {
+    font-size: 9px;
+    padding: 8px 9px;
+  }
+}
+
+.final-cutscene-legenda {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

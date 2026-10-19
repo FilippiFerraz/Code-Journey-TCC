@@ -10,7 +10,8 @@
 //   hit       — o jogador acertou: escudo + contra-ataque, o dragão sofre dano
 //   attacking — o jogador errou ou o tempo acabou: Sopro de Loop Infinito
 //   furia     — o dragão caiu pra 50% e entra no Modo Fúria (fase 2)
-//   victory   — dragão derrotado
+//   victory   — dragão derrotado (a última resposta certa vem direto pra cá
+//               e a tela toca a cutscene final de vitória)
 //   defeat    — o jogador ficou sem vidas
 
 import { sortearDesafio } from "./desafiosDragao.js";
@@ -72,10 +73,13 @@ export function reducerBatalha(s, acao) {
     case "RESPONDER": {
       if (s.estado !== "charging") return s;
       if (acao.opcao !== s.desafio.correta) return falhar(s, "errou");
+      const hpDragao = Math.max(0, s.hpDragao - DANO_POR_ACERTO);
       return {
         ...s,
-        estado: "hit",
-        hpDragao: Math.max(0, s.hpDragao - DANO_POR_ACERTO),
+        // a última pergunta certa vai direto pra vitória: o golpe final é a
+        // própria cutscene (components/BossDefeatCutscene)
+        estado: hpDragao <= 0 ? "victory" : "hit",
+        hpDragao,
         escudo: true,
         ultima: { acertou: true, motivo: "acerto", correta: s.desafio.correta, explicacao: s.desafio.explicacao },
       };
@@ -95,6 +99,10 @@ export function reducerBatalha(s, acao) {
       if (s.estado === "furia") return { ...s, estado: "idle" };
       return s;
     }
+
+    // ?debug=bossDefeat: pula a luta e dispara a cutscene final (ver BatalhaDragao.jsx)
+    case "DEBUG_VITORIA":
+      return { ...s, estado: "victory", hpDragao: 0, fase: 2 };
 
     case "REINICIAR":
       return { ...estadoInicial(), estado: "idle" };

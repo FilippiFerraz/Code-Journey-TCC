@@ -15,6 +15,7 @@
     "recompensas:sincronizar": "node scripts/sincronizarRecompensas.js",
     "itens:guardiao-cristal": "node scripts/cadastrarItensGuardiaoCristal.js",
     "itens:dar-todos": "node scripts/darTodosOsItens.js",
+    "conta:liberar-tudo": "node scripts/liberarTudo.js",
     "postinstall": "prisma generate"
   },
   "prisma": {

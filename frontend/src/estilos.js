@@ -55,3 +55,4 @@ import "./pages/BatalhaDragao/BatalhaDragao.css";
 import "./components/PerfilJogadorCard.css";
 import "./components/EscolherAparencia.css";
 import "./components/IntroCutscene/IntroCutscene.css";
+import "./components/BossDefeatCutscene/BossDefeatCutscene.css";

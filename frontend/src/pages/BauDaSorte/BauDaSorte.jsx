@@ -122,9 +122,26 @@ const BAUS_ESPECIAIS = {
   },
 };
 
+// Prêmio já sorteado pela tela anterior e guardado na sessão: a Batalha do
+// Dragão abre o baú no servidor ANTES da cutscene final (a vitória fica
+// salva mesmo se o jogador pular ou recarregar) — aqui a roleta só gira até
+// esse prêmio. Lido uma vez e apagado.
+function premioPendente(chave) {
+  try {
+    const salvo = sessionStorage.getItem(`bauPendente:${chave}`);
+    if (!salvo) return null;
+    sessionStorage.removeItem(`bauPendente:${chave}`);
+    return JSON.parse(salvo)?.itemGanho ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Mesmo fluxo do baú de módulo, com as rotas do baú especial
 // (POST /api/baus/:chave/abrir e GET /api/baus/:chave).
 async function abrirOuRecuperarBauEspecial(chave) {
+  const pendente = premioPendente(chave);
+  if (pendente) return { situacao: "aberto", premio: pendente };
   try {
     const res = await api.post(`/baus/${chave}/abrir`);
     return { situacao: "aberto", premio: res.data.itemGanho };

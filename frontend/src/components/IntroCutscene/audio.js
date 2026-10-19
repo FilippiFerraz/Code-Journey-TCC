@@ -36,10 +36,11 @@ const BAIXO = [
 // acorde do final (junto com a última nota da melodia)
 const ACORDE_FINAL = [62, 66, 69];
 
-const freq = (midi) => 440 * 2 ** ((midi - 69) / 12);
+// Exportados também pra cutscene final (components/BossDefeatCutscene/audio.js).
+export const freq = (midi) => 440 * 2 ** ((midi - 69) / 12);
 
 // Onda de pulso 25% via série de Fourier (o OscillatorNode só tem 50%).
-function ondaPulso(ac, ciclo = 0.25) {
+export function ondaPulso(ac, ciclo = 0.25) {
   const n = 32;
   const real = new Float32Array(n);
   const imag = new Float32Array(n);
@@ -48,7 +49,7 @@ function ondaPulso(ac, ciclo = 0.25) {
 }
 
 // Ruído branco determinístico (igual em toda execução — vídeo idêntico).
-function bufferRuido(ac) {
+export function bufferRuido(ac) {
   const tamanho = ac.sampleRate;
   const buffer = ac.createBuffer(1, tamanho, ac.sampleRate);
   const dados = buffer.getChannelData(0);
@@ -60,7 +61,7 @@ function bufferRuido(ac) {
   return buffer;
 }
 
-function nota(ac, destino, { tipo, onda, frequencia, inicio, duracao, volume }) {
+export function nota(ac, destino, { tipo, onda, frequencia, inicio, duracao, volume }) {
   const osc = ac.createOscillator();
   if (onda) osc.setPeriodicWave(onda);
   else osc.type = tipo;
@@ -75,7 +76,7 @@ function nota(ac, destino, { tipo, onda, frequencia, inicio, duracao, volume }) 
   osc.stop(inicio + duracao + 0.02);
 }
 
-function ruidoFiltrado(ac, destino, ruido, { inicio, duracao, volume, filtro, f0, f1, q = 1 }) {
+export function ruidoFiltrado(ac, destino, ruido, { inicio, duracao, volume, filtro, f0, f1, q = 1 }) {
   const fonte = ac.createBufferSource();
   fonte.buffer = ruido;
   fonte.loop = true;
@@ -226,7 +227,7 @@ export async function renderizarAudioWav(taxa = 44100) {
   return bufferParaWav(buffer);
 }
 
-function bufferParaWav(buffer) {
+export function bufferParaWav(buffer) {
   const canais = buffer.numberOfChannels;
   const amostras = buffer.length;
   const bytes = new DataView(new ArrayBuffer(44 + amostras * canais * 2));

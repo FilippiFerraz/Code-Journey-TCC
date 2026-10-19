@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
@@ -12,6 +12,41 @@ import { HP_DRAGAO, VIDAS, estadoInicial, reducerBatalha } from "./estadoBatalha
 import { DURACOES, criarCenaDragao } from "./cenaDragao";
 import "./BatalhaDragao.css";
 
+// Cutscene final de vitória (10s): baixa em segundo plano quando a luta
+// começa (ver comecar), pra já estar pronta na hora da vitória.
+const carregarCutsceneFinal = () => import("../../components/BossDefeatCutscene/BossDefeatCutscene");
+const BossDefeatCutscene = lazy(carregarCutsceneFinal);
+// baixa o código e já prepara sprite, arenas e fonte da cutscene
+function prepararCutsceneFinal() {
+  carregarCutsceneFinal()
+    .then(() => import("../../components/BossDefeatCutscene/recursos"))
+    .then((m) => m.preCarregar())
+    .catch(() => {});
+}
+
+// Prêmio do Baú do Dragão já sorteado no servidor ANTES da cutscene (a
+// vitória fica salva mesmo se o jogador pular ou recarregar no meio). A tela
+// do baú (BauDaSorte) lê daqui pra girar a roleta com esse prêmio.
+export const CHAVE_BAU_PENDENTE = "bauPendente:dragao";
+// "Pular" só aparece a partir da 2ª vez que o jogador vê a cutscene.
+const CHAVE_CUTSCENE_VISTA = "cutsceneFinalVista";
+
+function lerArmazenado(armazenamento, chave) {
+  try {
+    return armazenamento.getItem(chave);
+  } catch {
+    return null;
+  }
+}
+
+function gravarArmazenado(armazenamento, chave, valor) {
+  try {
+    armazenamento.setItem(chave, valor);
+  } catch {
+    // ignora (aba anônima etc.)
+  }
+}
+
 // Batalha contra o Dragão do Código Fonte: aberta pelo dragão da arena no
 // mapa (Home.jsx) depois que os três portais estão concluídos. A cada
 // rodada o dragão carrega o Sopro de Loop Infinito enquanto o jogador
@@ -22,6 +57,13 @@ import "./BatalhaDragao.css";
 // (/bau-dragao — BauDaSorte com os itens de Item.exclusivoDragao).
 //
 // Regras e estados: estadoBatalha.js. Desenho e efeitos: cenaDragao.js.
+//
+// Vitória: a última resposta certa leva direto ao estado "victory"; a tela
+// abre o baú no servidor (salva o prêmio), toca a cutscene final
+// (components/BossDefeatCutscene) e no fim vai pra /bau-dragao.
+// Teste rápido: /batalha-do-dragao?debug=bossDefeat dispara a cutscene na
+// hora, SEM salvar vitória nem dar prêmio (no fim volta ao mapa — ou ao baú,
+// se ele já tinha sido aberto antes).
 
 const FALAS = [
   { quem: "mago", texto: "Viajante... você venceu os três portais. Agora só resta ELE." },
@@ -80,6 +122,9 @@ function BatalhaDragao() {
   const [indiceFala, setIndiceFala] = useState(0);
   const [s, despachar] = useReducer(reducerBatalha, undefined, estadoInicial);
   const [tremendo, setTremendo] = useState(false);
+  // cutscene final: null ou { pular, debug }
+  const [final, setFinal] = useState(null);
+  const debugFinal = useMemo(() => new URLSearchParams(window.location.search).get("debug") === "bossDefeat", []);
 
   const canvasRef = useRef(null);
   const cenaRef = useRef(null);
@@ -89,6 +134,11 @@ function BatalhaDragao() {
   // ---------- Situação (liberado? baú já aberto?) ----------
 
   useEffect(() => {
+    // vitória já salva (recarregou durante a cutscene): direto pra recompensa
+    if (lerArmazenado(sessionStorage, CHAVE_BAU_PENDENTE)) {
+      navigate("/bau-dragao", { replace: true });
+      return undefined;
+    }
     let ativo = true;
     api
       .get("/baus/dragao")
@@ -102,6 +152,7 @@ function BatalhaDragao() {
       ativo = false;
       pararSom("boss");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---------- Cena ----------
@@ -113,18 +164,20 @@ function BatalhaDragao() {
   }, [camadas]);
 
   useEffect(() => {
-    if (tela !== "batalha" || !canvasRef.current) return undefined;
+    // durante a cutscene final a arena da batalha para de animar (fica por baixo)
+    if (tela !== "batalha" || !canvasRef.current || final) return undefined;
     const cena = criarCenaDragao(canvasRef.current, { camadas: camadasRef.current });
     cenaRef.current = cena;
     return () => {
       cena.destruir();
       cenaRef.current = null;
     };
-  }, [tela]);
+  }, [tela, final]);
 
   useEffect(() => {
     cenaRef.current?.atualizar({
-      estado: s.estado,
+      // enquanto a vitória é salva, a arena mostra o clarão do golpe
+      estado: s.estado === "victory" ? "hit" : s.estado,
       fase: s.fase,
       escudo: s.escudo,
       inicioCarga: s.inicioCarga,
@@ -144,6 +197,7 @@ function BatalhaDragao() {
   function comecar() {
     tocarSom("boss");
     despachar({ tipo: "COMECAR" });
+    prepararCutsceneFinal();
   }
 
   // ---------- Ciclo da batalha ----------
@@ -168,7 +222,6 @@ function BatalhaDragao() {
   useEffect(() => {
     if (s.estado === "hit") tocarSom("acerto");
     if (s.estado === "furia") tocarSom("boss");
-    if (s.estado === "victory") tocarSom("recompensa");
     if (s.estado === "attacking" || s.estado === "furia") {
       tocarSom("erro");
       const inicio = setTimeout(() => setTremendo(true), s.estado === "attacking" ? 280 : 350);
@@ -181,6 +234,42 @@ function BatalhaDragao() {
     }
     return undefined;
   }, [s.estado]);
+
+  // ?debug=bossDefeat: pula a luta direto pra vitória
+  useEffect(() => {
+    if (debugFinal && tela === "batalha" && s.estado === "intro") {
+      prepararCutsceneFinal();
+      despachar({ tipo: "DEBUG_VITORIA" });
+    }
+  }, [debugFinal, tela, s.estado]);
+
+  // Vitória: salva ANTES da animação (abre o baú no servidor e guarda o
+  // prêmio na sessão) e só então toca a cutscene final.
+  useEffect(() => {
+    if (s.estado !== "victory") return undefined;
+    let ativo = true;
+    pararSom("boss");
+    const jaViu = lerArmazenado(localStorage, CHAVE_CUTSCENE_VISTA) === "1";
+    gravarArmazenado(localStorage, CHAVE_CUTSCENE_VISTA, "1");
+    const salvar =
+      debugFinal || bauJaAberto
+        ? Promise.resolve()
+        : api
+            .post("/baus/dragao/abrir", null, { timeout: 8000 })
+            .then((res) => gravarArmazenado(sessionStorage, CHAVE_BAU_PENDENTE, JSON.stringify(res.data)))
+            // falhou (rede)? a cutscene toca igual e o baú tenta abrir de novo na tela dele
+            .catch(() => {});
+    salvar.then(() => ativo && setFinal({ pular: jaViu || debugFinal, debug: debugFinal }));
+    return () => {
+      ativo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.estado]);
+
+  function concluirFinal() {
+    if (final?.debug) navigate(bauJaAberto ? "/bau-dragao" : "/home", { replace: true });
+    else navigate("/bau-dragao", { replace: true });
+  }
 
   // temporizador do sopro: barra de cast e prazo esgotado
   useEffect(() => {
@@ -385,17 +474,16 @@ function BatalhaDragao() {
         </div>
       )}
 
-      {s.estado === "victory" &&
-        renderCaixa(
-          "O DRAGÃO FOI DERROTADO!",
-          bauJaAberto
-            ? "O reino está livre dos bugs outra vez! Você já recebeu o Baú do Dragão antes — mas que batalha lendária!"
-            : "O reino está livre dos bugs! Das cinzas do Dragão do Código Fonte surgiu um Baú do Dragão.",
-          bauJaAberto
-            ? [botao("VER O BAÚ DO DRAGÃO", () => navigate("/bau-dragao", { replace: true })), botao("VOLTAR AO MAPA", voltarAoMapa, true)]
-            : [botao("ABRIR O BAÚ DO DRAGÃO", () => navigate("/bau-dragao", { replace: true }))],
-          "drg-caixa--vitoria"
-        )}
+      {/* vitória: tela preta bloqueando tudo enquanto salva, depois a cutscene */}
+      {s.estado === "victory" && (
+        <Suspense fallback={<div className="final-cutscene" />}>
+          {final ? (
+            <BossDefeatCutscene camadas={camadasRef.current} permitirPular={final.pular} onConcluir={concluirFinal} />
+          ) : (
+            <div className="final-cutscene" aria-busy="true" />
+          )}
+        </Suspense>
+      )}
 
       {s.estado === "defeat" &&
         renderCaixa(

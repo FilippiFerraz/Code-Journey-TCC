@@ -26,7 +26,9 @@ const LARGURA_MAXIMA = 480;
 export const DURACOES = { hit: 1400, attacking: 1600, furia: 2300 };
 const DURACAO_VITORIA = 2600;
 
-const P = {
+// Exportados (paleta, posições, primitivas e a arena) pra cutscene final de
+// vitória (components/BossDefeatCutscene) desenhar o MESMO cenário da batalha.
+export const P = {
   noite: "#07030f",
   argamassa: "#120a1e",
   tijolo: ["#2a1d40", "#31234a", "#251a39"],
@@ -56,10 +58,10 @@ const P = {
   fumaca: ["#8a7aa8", "#5e5078"],
 };
 
-const HEROI = { x: 76, y: 178 }; // pés do herói
-const DRAGAO = { x: 142, y: 64 }; // canto do sprite (os pés ficam em y 178)
+export const HEROI = { x: 76, y: 178 }; // pés do herói
+export const DRAGAO = { x: 142, y: 64 }; // canto do sprite (os pés ficam em y 178)
 // Partes do sprite (coordenadas dentro de dragao-sprite.png, 168x117).
-const SPRITE = {
+export const SPRITE = {
   boca: { x: 15, y: 63 },
   olho: { x: 25, y: 44 },
   narina: { x: 3, y: 50 },
@@ -69,10 +71,10 @@ const SPRITE = {
   linhaRespira: 60, // o que está acima sobe/desce 1 px
 };
 
-const limitar = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
-const suave = (t) => t * t * (3 - 2 * t);
+export const limitar = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+export const suave = (t) => t * t * (3 - 2 * t);
 const r = Math.round;
-const hash = (a, b) => {
+export const hash = (a, b) => {
   let h = (a * 374761393 + b * 668265263) | 0;
   h = (h ^ (h >>> 13)) * 1274126177;
   return (h ^ (h >>> 16)) >>> 0;
@@ -80,7 +82,7 @@ const hash = (a, b) => {
 
 // ---------- Primitivas em pixel ----------
 
-function novoCanvas(w, h) {
+export function novoCanvas(w, h) {
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
@@ -95,7 +97,7 @@ function novoCanvas(w, h) {
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
 const cachePadroes = new WeakMap();
 
-function padrao(g, cor, nivel) {
+export function padrao(g, cor, nivel) {
   const n = Math.max(0, Math.min(16, r(nivel)));
   if (n >= 16) return cor;
   let mapa = cachePadroes.get(g);
@@ -112,12 +114,12 @@ function padrao(g, cor, nivel) {
   return p;
 }
 
-function retPx(g, x, y, w, h, estilo) {
+export function retPx(g, x, y, w, h, estilo) {
   g.fillStyle = estilo;
   g.fillRect(r(x), r(y), r(w), r(h));
 }
 
-function discoPx(g, cx, cy, raio, estilo) {
+export function discoPx(g, cx, cy, raio, estilo) {
   const x0 = r(cx), y0 = r(cy), rr = r(raio);
   if (rr < 0) return;
   g.fillStyle = estilo;
@@ -127,7 +129,7 @@ function discoPx(g, cx, cy, raio, estilo) {
   }
 }
 
-function elipsePx(g, cx, cy, rx, ry, estilo) {
+export function elipsePx(g, cx, cy, rx, ry, estilo) {
   const x0 = r(cx), y0 = r(cy), ryy = Math.max(1, r(ry));
   g.fillStyle = estilo;
   for (let dy = -ryy; dy <= ryy; dy++) {
@@ -136,7 +138,7 @@ function elipsePx(g, cx, cy, rx, ry, estilo) {
   }
 }
 
-function anelPx(g, cx, cy, rx, ry, estilo, espessura = 1) {
+export function anelPx(g, cx, cy, rx, ry, estilo, espessura = 1) {
   g.fillStyle = estilo;
   const n = Math.ceil(Math.PI * 2 * Math.max(rx, ry) * 1.4);
   for (let i = 0; i < n; i++) {
@@ -146,7 +148,7 @@ function anelPx(g, cx, cy, rx, ry, estilo, espessura = 1) {
 }
 
 // Brilho em camadas de dithering: borda rala, miolo cheio.
-function brilhoPx(g, cx, cy, raio, cor, forca = 1) {
+export function brilhoPx(g, cx, cy, raio, cor, forca = 1) {
   if (forca <= 0 || raio < 1) return;
   discoPx(g, cx, cy, raio, padrao(g, cor, 4 * forca));
   discoPx(g, cx, cy, raio * 0.62, padrao(g, cor, 9 * forca));
@@ -154,7 +156,7 @@ function brilhoPx(g, cx, cy, raio, cor, forca = 1) {
 }
 
 // Estrela de impacto em pixel (cruz + diagonais).
-function estrelaPx(g, cx, cy, tam, cor, nucleo = "#ffffff") {
+export function estrelaPx(g, cx, cy, tam, cor, nucleo = "#ffffff") {
   const x = r(cx), y = r(cy);
   g.fillStyle = cor;
   g.fillRect(x - tam, y, tam * 2 + 1, 1);
@@ -179,7 +181,7 @@ const FONTE = {
   "=": "000111000111000",
 };
 
-function textoPx(g, texto, x, y, cor, contorno, escala = 1) {
+export function textoPx(g, texto, x, y, cor, contorno, escala = 1) {
   const e = escala;
   const desenhar = (dx, dy, estilo) => {
     g.fillStyle = estilo;
@@ -195,11 +197,18 @@ function textoPx(g, texto, x, y, cor, contorno, escala = 1) {
 
 // ---------- Arena (fundo estático, desenhado uma vez) ----------
 
-const HORIZONTE = 120; // onde a parede encontra o chão
+export const HORIZONTE = 120; // onde a parede encontra o chão
+
+// Cores do vitral e da luz que entra por ele: a arena corrompida (roxa) da
+// batalha e a purificada (dourada) do fim da cutscene de vitória.
+export const TEMAS_ARENA = {
+  corrompida: { vitral: P.vitral, luz: P.luz },
+  purificada: { vitral: ["#8a5a12", "#d99a1e", "#ffd23c", "#fff3c4"], luz: "#ffe9a8" },
+};
 
 // `total`: largura real do buffer (>= LARGURA). A cena de LARGURA px fica no
 // meio; parede, chão e pilares se estendem até as bordas em telas largas.
-function construirArena(total) {
+export function construirArena(total, tema = TEMAS_ARENA.corrompida) {
   const m = (total - LARGURA) / 2;
   const x0 = -m, x1 = LARGURA + m; // bordas de verdade
   const [fundo, f] = novoCanvas(total, ALTURA);
@@ -225,18 +234,18 @@ function construirArena(total) {
 
   // vitral redondo no alto, com o halo de luz da lua em dithering
   const vx = 160, vy = 32;
-  discoPx(f, vx, vy, 34, padrao(f, P.luz, 2));
-  discoPx(f, vx, vy, 27, padrao(f, P.luz, 4));
+  discoPx(f, vx, vy, 34, padrao(f, tema.luz, 2));
+  discoPx(f, vx, vy, 27, padrao(f, tema.luz, 4));
   discoPx(f, vx, vy, 22, P.pedra);
   discoPx(f, vx, vy, 21, P.pedraLuz);
-  discoPx(f, vx, vy, 19, P.vitral[0]);
+  discoPx(f, vx, vy, 19, tema.vitral[0]);
   for (let i = 0; i < 8; i++) {
     // gomos alternados do vitral
     const a0 = (i / 8) * Math.PI * 2;
     for (let raio = 6; raio <= 18; raio++) {
       for (let k = 0; k < 6; k++) {
         const a = a0 + ((k + 1) / 7) * ((Math.PI * 2) / 8);
-        retPx(f, vx + Math.cos(a) * raio, vy + Math.sin(a) * raio, 1, 1, raio > 13 ? P.vitral[i % 2 ? 1 : 2] : P.vitral[i % 2 ? 2 : 3]);
+        retPx(f, vx + Math.cos(a) * raio, vy + Math.sin(a) * raio, 1, 1, raio > 13 ? tema.vitral[i % 2 ? 1 : 2] : tema.vitral[i % 2 ? 2 : 3]);
       }
     }
   }
@@ -288,8 +297,8 @@ function construirArena(total) {
       retPx(f, ex + 11 - k, 31 + 5 - k, k * 2 + 1, 1, P.ouro);
     }
     for (let k = 0; k <= 3; k++) {
-      retPx(f, ex + 11 - k, 31 - 3 + k, k * 2 + 1, 1, P.vitral[2]);
-      retPx(f, ex + 11 - k, 31 + 3 - k, k * 2 + 1, 1, P.vitral[2]);
+      retPx(f, ex + 11 - k, 31 - 3 + k, k * 2 + 1, 1, tema.vitral[2]);
+      retPx(f, ex + 11 - k, 31 + 3 - k, k * 2 + 1, 1, tema.vitral[2]);
     }
     retPx(f, ex + 11, 27, 1, 9, P.noite);
   }
@@ -333,7 +342,7 @@ function construirArena(total) {
   // feixes de luz do vitral até o chão
   for (let yy = 52; yy < 182; yy++) {
     const meio = (yy - 52) * 0.35;
-    retPx(f, 150 - meio, yy, 20 + meio * 2, 1, padrao(f, P.luz, yy < 120 ? 2 : 1));
+    retPx(f, 150 - meio, yy, 20 + meio * 2, 1, padrao(f, tema.luz, yy < 120 ? 2 : 1));
   }
 
   // braseiros (a chama é animada por quadro)
