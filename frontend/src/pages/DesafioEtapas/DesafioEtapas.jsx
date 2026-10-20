@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
 import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersonagemAvatar";
@@ -13,7 +13,7 @@ import Temporizador from "../../components/Temporizador";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
 import IntroEtapas from "./IntroEtapas";
-import { EXERCICIOS, TITULO_PAINEL } from "./exercicios";
+import { EXERCICIOS, TITULO_PAINEL, precarregarExercicios } from "./exercicios";
 import "../ResolverDesafio/ResolverDesafio.css";
 import "../DesafioChefe/DesafioChefe.css";
 import "./DesafioEtapas.css";
@@ -103,6 +103,7 @@ export default function DesafioEtapas() {
   function carregar() {
     return api.get(`/desafios/${mundoId}/${dificuldade}/${desafioId}`).then(({ data }) => {
       setDesafio(data);
+      precarregarExercicios(data.etapas.map((e) => e.tipo));
       // Continua de onde parou; desafio já concluído recomeça da etapa 1.
       const { concluido, etapasConcluidas, totalEtapas } = data.progresso;
       setEtapaAtual(concluido ? 1 : Math.min(etapasConcluidas + 1, totalEtapas));
@@ -510,18 +511,21 @@ export default function DesafioEtapas() {
         )}
 
         {Exercicio ? (
-          <Exercicio
-            key={`${etapaAtual}-${tentativa}`}
-            etapa={etapa}
-            nomeChefe={nomeInimigo}
-            travado={travado}
-            emErro={resultado === "erro"}
-            responder={responder}
-            verificar={verificar}
-            sofrerGolpe={sofrerGolpe}
-            limparErro={limparErro}
-            animarChefe={animarChefe}
-          />
+          // alguns tipos são carregados sob demanda (ver exercicios/index.js)
+          <Suspense fallback={<p className="painel-enunciado">Carregando…</p>}>
+            <Exercicio
+              key={`${etapaAtual}-${tentativa}`}
+              etapa={etapa}
+              nomeChefe={nomeInimigo}
+              travado={travado}
+              emErro={resultado === "erro"}
+              responder={responder}
+              verificar={verificar}
+              sofrerGolpe={sofrerGolpe}
+              limparErro={limparErro}
+              animarChefe={animarChefe}
+            />
+          </Suspense>
         ) : (
           <p className="painel-enunciado">Tipo de exercício ainda não suportado: {etapa.tipo}</p>
         )}

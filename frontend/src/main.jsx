@@ -8,6 +8,7 @@ import './index.css'
 import './estilos'
 import App from './App.jsx'
 import { carregarTela } from './telas'
+import { adiantarLeituras } from './services/adiantarLeituras'
 
 // Quem já está logado e abre direto na Home: começa a baixar o código da tela
 // JÁ, em paralelo com o resto (antes era em fila: este pacote -> checagem da
@@ -23,6 +24,11 @@ function temToken() {
 }
 if (temToken() && window.location.pathname === '/home') {
   carregarTela('Home')
+}
+// Logado: as leituras da API que a tela vai fazer saem agora, em paralelo
+// com o download do código dela (ver services/adiantarLeituras.js).
+if (temToken()) {
+  adiantarLeituras(window.location.pathname)
 }
 
 createRoot(document.getElementById('root')).render(

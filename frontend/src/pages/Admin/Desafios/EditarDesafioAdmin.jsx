@@ -3,12 +3,36 @@ import { useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../../../layouts/MainLayout";
 import BotaoPixel from "../../../components/BotaoPixel";
 import api from "../../../services/api";
+import EditorExercicio, { BotoesItem } from "./EditorExercicio";
+import {
+  TIPOS, modeloExercicio, mover, nomeDificuldade, nomePortal, rotuloTipo, tipoDoConteudo,
+} from "./tiposDesafio";
 import "./AdminDesafios.css";
 
-// Próxima letra livre pra id de uma nova alternativa (a, b, c…) — mesmo
-// esquema de ids já usado nos desafios existentes (ver seed.js).
-function proximoIdOpcao(opcoes) {
-  return String.fromCharCode(97 + opcoes.length);
+// Tipos que podem ser escolhidos ao criar uma etapa nova.
+const TIPOS_DE_ETAPA = Object.keys(TIPOS).filter((tipo) => tipo !== "etapas");
+
+// Desafio.alternativas -> estado do formulário:
+// - várias etapas (portal 3): { variasEtapas: true, etapas, resto }
+// - etapa única: { variasEtapas: false, exercicio, eraLista } — a múltipla
+//   escolha antiga (array puro) vira { tipo, opcoes } pra edição e volta a
+//   ser array ao salvar (eraLista), que é o formato que o portal 1 espera.
+function lerConteudo(alternativas) {
+  if (alternativas?.tipo === "etapas" && Array.isArray(alternativas.etapas)) {
+    const { etapas, ...resto } = alternativas;
+    return { variasEtapas: true, etapas, resto };
+  }
+  if (Array.isArray(alternativas)) {
+    return { variasEtapas: false, exercicio: { tipo: "multipla_escolha", opcoes: alternativas }, eraLista: true };
+  }
+  return { variasEtapas: false, exercicio: { ...alternativas, tipo: tipoDoConteudo(alternativas) }, eraLista: false };
+}
+
+function montarAlternativas(conteudo) {
+  if (conteudo.variasEtapas) return { ...conteudo.resto, tipo: "etapas", etapas: conteudo.etapas };
+  const { exercicio } = conteudo;
+  if (conteudo.eraLista && exercicio.tipo === "multipla_escolha") return exercicio.opcoes;
+  return exercicio;
 }
 
 function EditarDesafioAdmin() {
@@ -24,10 +48,12 @@ function EditarDesafioAdmin() {
   const [dica, setDica] = useState("");
   const [xpConcedido, setXpConcedido] = useState("10");
 
-  // "multipla" | "ordenar_blocos"
-  const [tipoAlternativas, setTipoAlternativas] = useState("multipla");
-  const [opcoes, setOpcoes] = useState([]); // [{ id, texto, correta }]
-  const [blocosJson, setBlocosJson] = useState("");
+  const [conteudo, setConteudo] = useState(null);
+  // modo avançado: o conteúdo inteiro como JSON
+  const [modoJson, setModoJson] = useState(false);
+  const [json, setJson] = useState("");
+  const [etapasAbertas, setEtapasAbertas] = useState(() => new Set());
+  const [tipoNovaEtapa, setTipoNovaEtapa] = useState("multipla_escolha");
 
   const [itensCatalogo, setItensCatalogo] = useState([]);
   // A única recompensa personalizável de um desafio é um item de
@@ -51,17 +77,8 @@ function EditarDesafioAdmin() {
         setEnunciado(d.enunciado);
         setDica(d.dica || "");
         setXpConcedido(String(d.xpConcedido));
-
-        if (Array.isArray(d.alternativas)) {
-          setTipoAlternativas("multipla");
-          setOpcoes(d.alternativas.map((alt) => ({ ...alt })));
-        } else {
-          setTipoAlternativas("ordenar_blocos");
-          setBlocosJson(JSON.stringify(d.alternativas, null, 2));
-        }
-
+        setConteudo(lerConteudo(d.alternativas));
         setItemRecompensaId(d.itemRecompensaId ? String(d.itemRecompensaId) : "");
-
         setItensCatalogo(resItens.data);
       })
       .catch(() => ativo && setErroCarregar("Não foi possível carregar este desafio."))
@@ -72,25 +89,62 @@ function EditarDesafioAdmin() {
     };
   }, [desafioId]);
 
-  function atualizarOpcao(indice, campo, valor) {
-    setOpcoes((atual) => atual.map((op, i) => (i === indice ? { ...op, [campo]: valor } : op)));
+  const voltarParaLista = () =>
+    navigate(cabecalho ? `/admin/desafios?portal=${cabecalho.mundoId}` : "/admin/desafios");
+
+  // ---------- etapas (portal 3) ----------
+  const etapas = conteudo?.variasEtapas ? conteudo.etapas : [];
+  const alterarEtapas = (novas) => setConteudo((atual) => ({ ...atual, etapas: novas }));
+  const alterarEtapa = (indice, nova) => alterarEtapas(etapas.map((e, i) => (i === indice ? nova : e)));
+
+  function alternarEtapa(indice) {
+    setEtapasAbertas((atual) => {
+      const novo = new Set(atual);
+      if (novo.has(indice)) novo.delete(indice);
+      else novo.add(indice);
+      return novo;
+    });
   }
 
-  function marcarCorreta(indice) {
-    setOpcoes((atual) => atual.map((op, i) => ({ ...op, correta: i === indice })));
+  function adicionarEtapa() {
+    alterarEtapas([...etapas, { titulo: "", enunciado: "", ...modeloExercicio(tipoNovaEtapa) }]);
+    setEtapasAbertas((atual) => new Set(atual).add(etapas.length));
   }
 
-  function adicionarOpcao() {
-    setOpcoes((atual) => [...atual, { id: proximoIdOpcao(atual), texto: "", correta: false }]);
+  function moverEtapa(indice, direcao) {
+    alterarEtapas(mover(etapas, indice, direcao));
+    // a etapa aberta acompanha a mudança de posição
+    setEtapasAbertas((atual) => {
+      const destino = indice + direcao;
+      const novo = new Set();
+      atual.forEach((i) => novo.add(i === indice ? destino : i === destino ? indice : i));
+      return novo;
+    });
   }
 
-  function removerOpcao(indice) {
-    setOpcoes((atual) => atual.filter((_, i) => i !== indice));
+  function removerEtapa(indice) {
+    const nome = etapas[indice].titulo || `Etapa ${indice + 1}`;
+    if (!window.confirm(`Remover "${nome}"? Isso só vale depois de salvar.`)) return;
+    alterarEtapas(etapas.filter((_, i) => i !== indice));
+    setEtapasAbertas(new Set());
   }
 
-  // Ao escolher um item pra recompensa, pré-preenche nome/ícone/descrição a
-  // partir do catálogo — o admin ainda pode ajustar o texto manualmente
-  // depois, já que esses campos ficam salvos no próprio Desafio.
+  // ---------- modo JSON ----------
+  function alternarModoJson() {
+    setErro("");
+    if (!modoJson) {
+      setJson(JSON.stringify(montarAlternativas(conteudo), null, 2));
+      setModoJson(true);
+      return;
+    }
+    try {
+      setConteudo(lerConteudo(JSON.parse(json)));
+      setModoJson(false);
+    } catch {
+      setErro("O JSON está mal formatado — corrija antes de voltar pro formulário.");
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setErro("");
@@ -101,28 +155,16 @@ function EditarDesafioAdmin() {
       return;
     }
 
-    let alternativasFinal;
-    if (tipoAlternativas === "multipla") {
-      if (opcoes.length < 2) {
-        setErro("Inclua ao menos duas alternativas.");
-        return;
-      }
-      if (opcoes.some((op) => !op.texto.trim())) {
-        setErro("Preencha o texto de todas as alternativas.");
-        return;
-      }
-      if (!opcoes.some((op) => op.correta)) {
-        setErro("Marque qual alternativa é a correta.");
-        return;
-      }
-      alternativasFinal = opcoes;
-    } else {
+    let alternativas;
+    if (modoJson) {
       try {
-        alternativasFinal = JSON.parse(blocosJson);
+        alternativas = JSON.parse(json);
       } catch {
-        setErro("O JSON dos blocos está mal formatado.");
+        setErro("O JSON do conteúdo está mal formatado.");
         return;
       }
+    } else {
+      alternativas = montarAlternativas(conteudo);
     }
 
     const xpNumero = Number(xpConcedido);
@@ -134,11 +176,13 @@ function EditarDesafioAdmin() {
     try {
       setSalvando(true);
 
+      // a validação completa do conteúdo (todos os tipos e etapas) é a do
+      // backend — o erro dele já diz a etapa e o problema
       await api.put(`/admin/desafios/${desafioId}`, {
         titulo,
         enunciado,
         dica: dica || null,
-        alternativas: alternativasFinal,
+        alternativas,
         xpConcedido: xpNumero,
         itemRecompensaId: itemRecompensaId ? Number(itemRecompensaId) : null,
       });
@@ -168,20 +212,36 @@ function EditarDesafioAdmin() {
     );
   }
 
+  const tipoAtual = conteudo.variasEtapas ? "etapas" : conteudo.exercicio.tipo;
+
   return (
     <MainLayout titulo="Editar desafio">
       <div className="admin-desafios">
         <BotaoPixel
           className="admin-desafios-voltar"
           classeMiolo="admin-desafios-voltar-miolo"
-          onClick={() => navigate("/admin/desafios")}
+          onClick={voltarParaLista}
         >
-          <i className="hn hn-arrow-left" aria-hidden="true" /> Desafios
+          <i className="hn hn-arrow-left" aria-hidden="true" /> Portal {cabecalho.mundoId}
         </BotaoPixel>
 
         <p className="admin-desafios-trilha-info">
-          Mundo {cabecalho.mundoId} • {cabecalho.dificuldade} • Desafio {cabecalho.numero}
+          Portal {cabecalho.mundoId} — {nomePortal(cabecalho.mundoId)} • {nomeDificuldade(cabecalho.dificuldade)} •
+          Desafio {cabecalho.numero}
+          <span className="admin-desafios-tipo">
+            <i className={`hn ${TIPOS[tipoAtual]?.icone ?? "hn-question"}`} aria-hidden="true" />
+            {rotuloTipo(tipoAtual)}
+            {conteudo.variasEtapas && ` (${etapas.length})`}
+          </span>
         </p>
+
+        {cabecalho.mundoId === 1 && (
+          <p className="admin-desafios-aviso">
+            <i className="hn hn-lightbulb" aria-hidden="true" /> As telas do Portal 1 ainda mostram o enunciado e as
+            alternativas fixos no código do jogo. O que você salva aqui é o gabarito usado pelo servidor para corrigir
+            as respostas — mantenha os dois iguais.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* ---------- Informações básicas ---------- */}
@@ -200,7 +260,7 @@ function EditarDesafioAdmin() {
               />
 
               <label className="admin-desafios-label" htmlFor="enunciado">
-                Enunciado
+                {conteudo.variasEtapas ? "Introdução do desafio" : "Enunciado"}
               </label>
               <textarea
                 id="enunciado"
@@ -228,68 +288,143 @@ function EditarDesafioAdmin() {
                 id="xp"
                 type="number"
                 min="0"
-                className="admin-desafios-input"
+                className="admin-desafios-input admin-desafios-input--curto"
                 value={xpConcedido}
                 onChange={(e) => setXpConcedido(e.target.value)}
               />
             </div>
           </section>
 
-          {/* ---------- Alternativas ---------- */}
+          {/* ---------- Conteúdo do exercício ---------- */}
           <section className="admin-desafios-card">
-            <header className="admin-desafios-card-topo">
-              Alternativas {tipoAlternativas === "ordenar_blocos" && "(ordenar blocos)"}
+            <header className="admin-desafios-card-topo admin-desafios-card-topo--acoes">
+              <span>{conteudo.variasEtapas ? `Etapas (${etapas.length})` : `Exercício — ${rotuloTipo(tipoAtual)}`}</span>
+              <button type="button" className="admin-desafios-modo" onClick={alternarModoJson}>
+                {modoJson ? "Voltar ao formulário" : "Editar como JSON"}
+              </button>
             </header>
             <div className="admin-desafios-card-corpo">
-              {tipoAlternativas === "multipla" ? (
-                <>
-                  {opcoes.map((opcao, indice) => (
-                    <div className="admin-desafios-opcao" key={indice}>
-                      <input
-                        type="radio"
-                        name="correta"
-                        checked={Boolean(opcao.correta)}
-                        onChange={() => marcarCorreta(indice)}
-                        title="Marcar como correta"
-                      />
-                      <input
-                        type="text"
-                        className="admin-desafios-input admin-desafios-opcao-texto"
-                        placeholder={`Alternativa ${opcao.id}`}
-                        value={opcao.texto}
-                        onChange={(e) => atualizarOpcao(indice, "texto", e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="admin-desafios-opcao-remover"
-                        onClick={() => removerOpcao(indice)}
-                        aria-label="Remover alternativa"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="admin-desafios-adicionar"
-                    onClick={adicionarOpcao}
-                  >
-                    + Adicionar alternativa
-                  </button>
-                </>
-              ) : (
+              {modoJson ? (
                 <>
                   <p className="admin-desafios-dica">
-                    Formato "ordenar blocos" — edite o JSON diretamente (campos: blocos e
-                    ordemCorreta).
+                    Modo avançado: o conteúdo inteiro (campo "alternativas") como JSON.
                   </p>
                   <textarea
                     className="admin-desafios-textarea admin-desafios-json"
-                    rows={12}
-                    value={blocosJson}
-                    onChange={(e) => setBlocosJson(e.target.value)}
+                    rows={20}
+                    spellCheck={false}
+                    value={json}
+                    onChange={(e) => setJson(e.target.value)}
                   />
                 </>
+              ) : conteudo.variasEtapas ? (
+                <>
+                  <p className="admin-desafios-dica">
+                    O jogador responde as etapas em ordem e só ganha o XP ao vencer todas. Reordenar ou remover etapas
+                    afeta quem está no meio deste desafio.
+                  </p>
+                  {etapas.map((etapa, indice) => {
+                    const aberta = etapasAbertas.has(indice);
+                    const tipo = tipoDoConteudo(etapa);
+                    return (
+                      <div className={`admin-etapa${aberta ? " admin-etapa--aberta" : ""}`} key={indice}>
+                        <div className="admin-etapa-topo">
+                          <button
+                            type="button"
+                            className="admin-etapa-alternar"
+                            onClick={() => alternarEtapa(indice)}
+                            aria-expanded={aberta}
+                          >
+                            <span className="admin-etapa-numero">{indice + 1}</span>
+                            <span className="admin-etapa-textos">
+                              <strong>{etapa.titulo || "Etapa sem título"}</strong>
+                              <small>
+                                <i className={`hn ${TIPOS[tipo]?.icone ?? "hn-question"}`} aria-hidden="true" />{" "}
+                                {rotuloTipo(tipo)}
+                              </small>
+                            </span>
+                            <i className={`hn ${aberta ? "hn-chevron-up" : "hn-chevron-down"}`} aria-hidden="true" />
+                          </button>
+                          <BotoesItem
+                            indice={indice}
+                            total={etapas.length}
+                            onMover={moverEtapa}
+                            onRemover={removerEtapa}
+                            rotuloRemover="Remover etapa"
+                          />
+                        </div>
+
+                        {aberta && (
+                          <div className="admin-etapa-corpo">
+                            <label className="admin-desafios-label" htmlFor={`etapa${indice}-titulo`}>
+                              Título da etapa
+                            </label>
+                            <input
+                              id={`etapa${indice}-titulo`}
+                              type="text"
+                              className="admin-desafios-input"
+                              value={etapa.titulo ?? ""}
+                              onChange={(e) => alterarEtapa(indice, { ...etapa, titulo: e.target.value })}
+                            />
+                            <label className="admin-desafios-label" htmlFor={`etapa${indice}-enunciado`}>
+                              Enunciado
+                            </label>
+                            <textarea
+                              id={`etapa${indice}-enunciado`}
+                              className="admin-desafios-textarea"
+                              rows={3}
+                              value={etapa.enunciado ?? ""}
+                              onChange={(e) => alterarEtapa(indice, { ...etapa, enunciado: e.target.value })}
+                            />
+                            <label className="admin-desafios-label" htmlFor={`etapa${indice}-dica`}>
+                              Dica (opcional)
+                            </label>
+                            <input
+                              id={`etapa${indice}-dica`}
+                              type="text"
+                              className="admin-desafios-input"
+                              value={etapa.dica ?? ""}
+                              onChange={(e) =>
+                                alterarEtapa(indice, { ...etapa, dica: e.target.value || undefined })
+                              }
+                            />
+                            <EditorExercicio
+                              exercicio={{ ...etapa, tipo }}
+                              nome={`etapa${indice}`}
+                              mostrarCodigo
+                              onChange={(nova) => alterarEtapa(indice, nova)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  <div className="admin-etapa-nova">
+                    <select
+                      className="admin-desafios-input"
+                      value={tipoNovaEtapa}
+                      onChange={(e) => setTipoNovaEtapa(e.target.value)}
+                      aria-label="Tipo da nova etapa"
+                    >
+                      {TIPOS_DE_ETAPA.map((tipo) => (
+                        <option key={tipo} value={tipo}>
+                          {rotuloTipo(tipo)}
+                        </option>
+                      ))}
+                    </select>
+                    <button type="button" className="admin-desafios-adicionar" onClick={adicionarEtapa}>
+                      + Adicionar etapa
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <EditorExercicio
+                  exercicio={conteudo.exercicio}
+                  nome="exercicio"
+                  mostrarCodigo={tipoAtual === "dissertativa"}
+                  onChange={(exercicio) => setConteudo((atual) => ({ ...atual, exercicio }))}
+                />
               )}
             </div>
           </section>

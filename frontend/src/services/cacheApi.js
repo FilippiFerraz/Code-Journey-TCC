@@ -22,7 +22,13 @@ const REGRAS = [
   { teste: /^\/progresso$/, ttl: TTL_CURTO_MS },
   { teste: /^\/personagem$/, ttl: TTL_CURTO_MS },
   { teste: /^\/baus$/, ttl: TTL_CURTO_MS },
+  // baús especiais (Rei, Cristais, Dragão) — abrir o baú é um POST, que
+  // limpa o cache, então nunca aparece "fechado" depois de aberto
+  { teste: /^\/baus\/(rei|cristal|dragao)$/, ttl: TTL_CURTO_MS },
   { teste: /^\/ranking$/, ttl: TTL_CURTO_MS },
+  // conteúdo de um desafio (portal 3, com o progresso nas etapas): responder
+  // uma etapa é um POST, que limpa o cache — a releitura vem sempre fresca
+  { teste: /^\/desafios\/\d+\/[a-z]+\/\d+$/, ttl: TTL_CURTO_MS },
   { teste: /^\/itens$/, ttl: TTL_LONGO_MS },
 ];
 

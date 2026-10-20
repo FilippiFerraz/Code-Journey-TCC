@@ -1,7 +1,7 @@
 const prisma = require("../config/prisma");
 const { registrarLog } = require("./log.service");
 const { calcularDiferencas } = require("../utils/diff");
-const { validarAlternativas } = require("./etapas.service");
+const { validarAlternativas, temVariasEtapas, tipoDoExercicio } = require("./etapas.service");
 const { limparCacheDesafios } = require("./desafiosCache");
 
 function erroDeValidacao(mensagem) {
@@ -18,17 +18,29 @@ function erroNaoEncontrado(mensagem) {
 
 // Lista todos os desafios cadastrados (qualquer mundo/trilha), só com o que
 // a tela de listagem do admin precisa mostrar — ver AdminDesafios.jsx.
+// O conteúdo (alternativas) não vai na lista: só o tipo do exercício e, nos
+// desafios de várias etapas (portal 3), quantas etapas e de quais tipos.
 async function listarDesafios() {
-  return prisma.desafio.findMany({
+  const desafios = await prisma.desafio.findMany({
     select: {
       id: true,
       mundoId: true,
       dificuldade: true,
       numero: true,
       titulo: true,
+      alternativas: true,
       itemRecompensa: { select: { nome: true, icone: true } },
     },
     orderBy: [{ mundoId: "asc" }, { dificuldade: "asc" }, { numero: "asc" }],
+  });
+
+  return desafios.map(({ alternativas, ...desafio }) => {
+    const variasEtapas = temVariasEtapas(alternativas);
+    return {
+      ...desafio,
+      tipo: variasEtapas ? "etapas" : tipoDoExercicio(alternativas),
+      tiposEtapas: variasEtapas ? alternativas.etapas.map(tipoDoExercicio) : null,
+    };
   });
 }
 

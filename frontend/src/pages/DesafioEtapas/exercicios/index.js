@@ -9,12 +9,25 @@
 //   sofrerGolpe()    tira uma vida do jogador (erro que penaliza)
 //   limparErro()     tira o destaque de erro quando o jogador mexe de novo
 // Pra redesenhar um tipo, basta trocar o componente dele aqui.
+import { lazy } from "react";
 import MultiplaEscolha from "./MultiplaEscolha";
 import OrdenarBlocos from "./OrdenarBlocos";
 import AvaliarCodigo from "./AvaliarCodigo";
-import MontarPocao from "./MontarPocao";
 import BatalhaChefe from "./BatalhaChefe";
 import Dissertativa from "./Dissertativa";
+
+// A poção usa o framer-motion (~124 KB, 41 KB comprimido) nas animações do
+// caldeirão. Carregado sob demanda: antes TODO desafio do portal 3 baixava
+// a biblioteca, mesmo sem nenhuma etapa de poção. Quem renderiza um
+// exercício precisa de um <Suspense> em volta (ver DesafioEtapas.jsx).
+const carregarMontarPocao = () => import("./MontarPocao");
+const MontarPocao = lazy(carregarMontarPocao);
+
+// Começa a baixar, em segundo plano, o código dos tipos que o desafio vai
+// usar — a etapa de poção já abre pronta quando o jogador chega nela.
+export function precarregarExercicios(tipos) {
+  if (tipos.includes("montar_pocao")) carregarMontarPocao().catch(() => {});
+}
 
 export const EXERCICIOS = {
   multipla_escolha: MultiplaEscolha,

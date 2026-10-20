@@ -232,3 +232,325 @@
   background: linear-gradient(180deg, var(--teal), var(--teal-escuro));
   font-size: 14px;
 }
+
+/* ---------- Portais (lista agrupada em sanfona) ---------- */
+.admin-portais {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-portal {
+  border: 1px solid var(--divisor);
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.admin-portal-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  color: var(--texto);
+  font-family: inherit;
+}
+
+.admin-portal--aberto .admin-portal-cabecalho {
+  background: linear-gradient(180deg, var(--roxo), var(--roxo-forte));
+  color: #ffffff;
+}
+
+.admin-portal-numero {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #efe7fb;
+  color: var(--roxo-forte);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.admin-portal--aberto .admin-portal-numero {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.admin-portal-textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.admin-portal-textos strong {
+  font-size: 15px;
+}
+
+.admin-portal-textos small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.admin-portal-corpo {
+  padding: 4px 14px 16px;
+  background: #f7f5fb;
+}
+
+.admin-portal-dificuldade {
+  margin: 14px 2px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-desafios-item-recompensa {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-desafios-item-seta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--roxo-forte);
+}
+
+/* selo com o tipo do exercício (lista e cabeçalho do editor) */
+.admin-desafios-tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #efe7fb;
+  color: var(--roxo-forte);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.admin-desafios-item-topo .admin-desafios-tipo {
+  margin-left: 0;
+}
+
+.admin-desafios-aviso {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #fff7e0;
+  border: 1px solid #f0d58a;
+  color: #6b5210;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* ---------- Editor: cabeçalho com ação, modo JSON ---------- */
+.admin-desafios-card-topo--acoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-desafios-modo {
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* ---------- Editor: itens de lista (blocos, cartas, perguntas...) ---------- */
+.admin-ex-lista {
+  margin-bottom: 14px;
+}
+
+.admin-ex-item {
+  margin-bottom: 10px;
+  padding: 10px 12px 2px;
+  border: 1px solid var(--divisor);
+  border-radius: 12px;
+  background: #fbfaff;
+}
+
+.admin-ex-item-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-ex-item-titulo {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.admin-ex-id {
+  display: inline-block;
+  min-width: 18px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #ece9f3;
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: "Consolas", "Courier New", monospace;
+  text-align: center;
+}
+
+.admin-ex-botoes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.admin-ex-botao {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--divisor);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--texto);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.admin-ex-botao:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.admin-ex-botao--remover {
+  color: var(--vermelho);
+}
+
+.admin-ex-linha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: var(--texto);
+}
+
+.admin-ex-linha .admin-desafios-input {
+  margin-bottom: 0;
+}
+
+.admin-ex-separador {
+  margin-top: 6px;
+}
+
+/* ---------- Editor: etapas (portal 3) ---------- */
+.admin-etapa {
+  margin-bottom: 10px;
+  border: 1px solid var(--divisor);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.admin-etapa--aberta {
+  border-color: var(--roxo);
+}
+
+.admin-etapa-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.admin-etapa-alternar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  color: var(--texto);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.admin-etapa-numero {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #efe7fb;
+  color: var(--roxo-forte);
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.admin-etapa-textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-etapa-textos strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-etapa-textos small {
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.admin-etapa-corpo {
+  padding: 4px 12px 4px;
+  border-top: 1px solid var(--divisor);
+  padding-top: 12px;
+}
+
+.admin-etapa-nova {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.admin-etapa-nova .admin-desafios-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.admin-etapa-nova .admin-desafios-adicionar {
+  flex-shrink: 0;
+}
