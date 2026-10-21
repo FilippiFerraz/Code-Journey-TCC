@@ -10,7 +10,8 @@
 // basta trocar os imports abaixo — nenhuma tela precisa mudar.
 import inimigo1Portal3 from "../assets/images/inimigo_1_portal3.webp";
 import fundo1Portal3 from "../assets/images/fundo_batalha_1_portal_3.webp";
-import goblinJS from "../assets/images/GoblinJS.png";
+import inimigo2Portal3 from "../assets/images/inimigo_desafio2_p3.webp";
+import fundo2Portal3 from "../assets/images/Fundo_desafio2_p3.webp";
 import mercadorInimigo from "../assets/images/mercador_inimigo.webp";
 import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
 import slime from "../assets/images/Slime.png";
@@ -37,13 +38,15 @@ const CENAS = {
     ],
   },
   2: {
-    inimigo: { imagem: goblinJS, nome: "Goblin das Garras" },
-    fundo: fundoBatalha2,
+    // Arte própria (masmorra e aranha de pedra e cristal). Sprite horizontal
+    // (668x373), igual ao do desafio 1 — mesmas larguras.
+    inimigo: { imagem: inimigo2Portal3, nome: "Aranha das Garras", largura: 170, larguraIntro: 330 },
+    fundo: fundo2Portal3,
     falas: [
-      "Um Goblin de garras afiadas salta das sombras!",
-      "Dizem que ele nunca esquece nada do lugar onde nasceu...",
+      "Das sombras da masmorra, uma aranha de pedra e cristal desce pela teia!",
+      "Dizem que ela nunca esquece nada do lugar onde nasceu...",
       "...assim como uma closure lembra das variáveis do escopo onde foi criada.",
-      "Prove que entende closures para cortar as garras dele!",
+      "Prove que entende closures para cortar as garras dela!",
     ],
   },
   3: {
