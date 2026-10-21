@@ -3,8 +3,8 @@
 O guerreiro é montado empilhando imagens de **64×64** com fundo transparente, todas na mesma grade:
 
 ```
-costas → base → botas → peitoral → capacete → arma
-(atrás)                                    (na frente)
+costas → base → botas → peitoral → luvas → escudo → capacete → arma
+(atrás)                                                     (na frente)
 ```
 
 Por isso cada item novo é **um** desenho, e não um sprite inteiro pra cada combinação de equipamentos.
@@ -19,7 +19,7 @@ Por isso cada item novo é **um** desenho, e não um sprite inteiro pra cada com
 | `unicos/{slot}/{nome}.icone.png` | Opcional: ícone próprio do item único, em qualquer tamanho. Sem ele, o ícone é recortado da camada | desenho à mão |
 | `camadas/` e `icones/` | Gerados automaticamente: **não edite à mão** | `npm run itens:gerar` |
 
-Slots: `capacete`, `peitoral`, `arma`, `costas`, `botas`.
+Slots: `capacete`, `peitoral`, `luvas`, `escudo`, `arma`, `costas`, `botas`.
 
 ## Aparências do herói
 

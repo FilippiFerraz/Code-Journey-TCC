@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Crown } from "pixelarticons/react/Crown.js";
 import { DiamondGem } from "pixelarticons/react/DiamondGem.js";
 import { Feather } from "pixelarticons/react/Feather.js";
+import { Hand } from "pixelarticons/react/Hand.js";
 import { Package } from "pixelarticons/react/Package.js";
 import { Shield } from "pixelarticons/react/Shield.js";
 import { ShieldSharp } from "pixelarticons/react/ShieldSharp.js";
@@ -25,6 +26,7 @@ import "./PerfilJogadorCard.css";
 const SLOTS = [
   { tipo: "capacete", nome: "Capacete", icone: Crown },
   { tipo: "peitoral", nome: "Peitoral", icone: Shield },
+  { tipo: "luvas", nome: "Luvas", icone: Hand },
   { tipo: "escudo", nome: "Escudo", icone: ShieldSharp },
   { tipo: "arma", nome: "Arma", icone: Sword },
   { tipo: "costas", nome: "Costas", icone: Feather },

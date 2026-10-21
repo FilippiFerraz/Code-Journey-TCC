@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HardHat, Shield, ShieldHalf, Sword, Shirt, Footprints } from "lucide-react";
+import { HardHat, Shield, ShieldHalf, Sword, Shirt, Footprints, HandFist } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
 import { itensEquipadosDoPersonagem } from "../../hooks/usePersonagemAvatar";
@@ -14,11 +14,12 @@ import EscolherAparencia from "../../components/EscolherAparencia";
 // "icone" é o componente do lucide-react (não uma instância) — a biblioteca
 // pixelada do resto do app não tem ícones de fantasia (capacete, peitoral,
 // espada...), então esses slots usam lucide-react só nesses casos.
-// Só esses 6 tipos podem ser equipados — o backend recusa qualquer outro
+// Só esses 7 tipos podem ser equipados — o backend recusa qualquer outro
 // (ver TIPOS_EQUIPAVEIS em backend/src/services/personagem.service.js).
 const SLOTS_ESQUERDA = [
   { id: "capacete", nome: "Capacete", icone: HardHat },
   { id: "peitoral", nome: "Peitoral", icone: Shield },
+  { id: "luvas", nome: "Luvas", icone: HandFist },
   { id: "escudo", nome: "Escudo", icone: ShieldHalf },
 ];
 

@@ -74,10 +74,10 @@ export function iconeDoItem(imagemUrl) {
   return imagemUrl ? ICONES[normalizarChave(imagemUrl)] : undefined;
 }
 
-// Ordem de empilhamento, de trás pra frente: a capa fica atrás do corpo, o
-// escudo (na mão esquerda) na frente da armadura e a arma na frente de tudo.
-// "base" é o próprio guerreiro.
-export const ORDEM_CAMADAS = ["costas", "base", "botas", "peitoral", "escudo", "capacete", "arma"];
+// Ordem de empilhamento, de trás pra frente: a capa fica atrás do corpo, as
+// luvas por cima das mangas da armadura, o escudo (na mão esquerda) na frente
+// das luvas e a arma na frente de tudo. "base" é o próprio guerreiro.
+export const ORDEM_CAMADAS = ["costas", "base", "botas", "peitoral", "luvas", "escudo", "capacete", "arma"];
 
 // Imagens do personagem montado, de trás pra frente: a base da aparência e
 // a camada de cada item equipado. Item sem camada desenhada é ignorado.

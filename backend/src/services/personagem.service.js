@@ -73,7 +73,7 @@ async function buscarItemDoPersonagem(personagemId, itemPersonagemId) {
 // Tipos de item (Item.tipo) que têm slot no personagem — mesmos slots de
 // EditarPersonagem.jsx. Itens de outros tipos podem existir no inventário,
 // mas não podem ser equipados.
-const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas", "botas", "escudo"];
+const TIPOS_EQUIPAVEIS = ["capacete", "peitoral", "arma", "costas", "botas", "escudo", "luvas"];
 
 // Equipa um item, desequipando antes qualquer outro item do mesmo slot
 // (Item.tipo) — EditarPersonagem.jsx só tem uma posição por slot.

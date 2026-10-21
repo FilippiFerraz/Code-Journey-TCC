@@ -236,7 +236,8 @@
   padding: 0;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  /* um espaço por slot do personagem (SLOTS em PerfilJogadorCard.jsx) */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 5px;
 }
 

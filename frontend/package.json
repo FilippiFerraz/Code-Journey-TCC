@@ -17,7 +17,8 @@
     "itens:cristal": "node scripts/importarItensCristal.mjs",
     "dragao:gerar": "node scripts/gerarDragao.mjs",
     "intro:video": "node scripts/exportarIntro.mjs",
-    "final:video": "node scripts/exportarFinalBoss.mjs"
+    "final:video": "node scripts/exportarFinalBoss.mjs",
+    "itens:arena-dragao": "node scripts/importarItensArenaDragao.mjs"
   },
   "dependencies": {
     "@fontsource/press-start-2p": "^5.3.0",

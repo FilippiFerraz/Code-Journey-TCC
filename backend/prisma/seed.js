@@ -16,6 +16,7 @@ const { PrismaClient } = require("@prisma/client");
 const desafioIA = require("./desafios/desafioIA");
 const desafiosPortal3 = require("./desafios/portal3");
 const itensGuardiaoCristal = require("./itensGuardiaoCristal");
+const itensArenaDragao = require("./itensArenaDragao");
 const { validarAlternativas } = require("../src/services/etapas.service");
 
 const prisma = new PrismaClient();
@@ -385,6 +386,9 @@ const itens = [
   },
   // Coleção "Guardião de Cristal" — também do Baú de Cristal (ver o arquivo).
   ...itensGuardiaoCristal,
+  // Coleção "Draconiana" — recompensas do Portal 3 (o campo `desafio` fica
+  // só no arquivo, não vai pro banco).
+  ...itensArenaDragao.map(({ desafio, ...item }) => item),
 ];
 
 // Qual item cada desafio dá ao ser concluído pela primeira vez, por
@@ -404,11 +408,8 @@ const RECOMPENSAS_POR_DESAFIO = {
   "2/3": "Espada Élfica",
   "2/4": "Capa Élfica",
   "2/5": "Elmo Élfico",
-  "3/1": "Botas Douradas",
-  "3/2": "Peitoral Dourado",
-  "3/3": "Espada Dourada",
-  "3/4": "Capa Dourada",
-  "3/5": "Elmo Dourado",
+  // Portal 3: coleção Draconiana (ver itensArenaDragao.js)
+  ...Object.fromEntries(itensArenaDragao.map(({ desafio, nome }) => [`3/${desafio}`, nome])),
 };
 
 // Item não tem uma coluna @unique (só "id"), então o upsert por nome é

@@ -1,5 +1,6 @@
 import { Crown } from "pixelarticons/react/Crown.js";
 import { Feather } from "pixelarticons/react/Feather.js";
+import { Hand } from "pixelarticons/react/Hand.js";
 import { Package } from "pixelarticons/react/Package.js";
 import { Shield } from "pixelarticons/react/Shield.js";
 import { ShieldSharp } from "pixelarticons/react/ShieldSharp.js";
@@ -8,7 +9,7 @@ import { iconeDoItem } from "../data/spritesPersonagem";
 import IconePixel from "./IconePixel";
 
 // Ícone de reserva por slot (Item.tipo), pra item que ainda não tem arte.
-const ICONE_POR_SLOT = { arma: Sword, peitoral: Shield, escudo: ShieldSharp, capacete: Crown, costas: Feather };
+const ICONE_POR_SLOT = { arma: Sword, peitoral: Shield, escudo: ShieldSharp, capacete: Crown, costas: Feather, luvas: Hand };
 
 // Ícone de um item de inventário: o ícone gerado da camada do item
 // (Item.imagemUrl é a chave do sprite — ver data/spritesPersonagem.js) e, se
