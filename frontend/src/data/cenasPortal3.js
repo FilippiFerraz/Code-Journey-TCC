@@ -12,13 +12,13 @@ import inimigo1Portal3 from "../assets/images/inimigo_1_portal3.webp";
 import fundo1Portal3 from "../assets/images/fundo_batalha_1_portal_3.webp";
 import inimigo2Portal3 from "../assets/images/inimigo_desafio2_p3.webp";
 import fundo2Portal3 from "../assets/images/Fundo_desafio2_p3.webp";
-import mercadorInimigo from "../assets/images/mercador_inimigo.webp";
+import inimigo3Portal3 from "../assets/images/inimigo_desafio3_p3.webp";
+import fundo3Portal3 from "../assets/images/fundo_desafio3_p3.webp";
 import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
 import slime from "../assets/images/Slime.png";
 import reiGoblinInimigo from "../assets/images/rei_goblin_inimigo.webp";
 import fundoBatalha from "../assets/images/Fundo_batalha.png";
 import fundoBatalha2 from "../assets/images/Fundo_batalha2.webp";
-import fundoDesafio4P1 from "../assets/images/Fundo_desafio_4_P1.webp";
 import fundoDesafio6P1 from "../assets/images/Fundo_desafio_6_P1.webp";
 
 // Por número do desafio (1 a 6). "chefe: true" usa a arena de chefe (sprite
@@ -50,11 +50,13 @@ const CENAS = {
     ],
   },
   3: {
-    inimigo: { imagem: mercadorInimigo, nome: "Mestre dos Arrays", largura: 136 },
-    fundo: fundoDesafio4P1,
+    // Arte própria (masmorra alagada e lagarto de escamas negras). Sprite
+    // horizontal (668x373), igual aos dos desafios 1 e 2 — mesmas larguras.
+    inimigo: { imagem: inimigo3Portal3, nome: "Mestre dos Arrays", largura: 170, larguraIntro: 330 },
+    fundo: fundo3Portal3,
     falas: [
-      "Um mercador misterioso organiza pilhas e pilhas de mercadorias.",
-      "\"Filtro, transformo e somo tudo com um só encadeamento\", ele se gaba.",
+      "Das águas escuras da masmorra, um lagarto de escamas negras ergue a cabeça.",
+      "\"Filtro, transformo e somo tudo com um só encadeamento\", ele rosna.",
       "Para passar, você vai precisar dominar map, filter e reduce.",
     ],
   },
