@@ -13,6 +13,7 @@ import Temporizador from "../../components/Temporizador";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
 import IntroEtapas from "./IntroEtapas";
+import SpriteInimigo from "./SpriteInimigo";
 import { EXERCICIOS, TITULO_PAINEL, precarregarExercicios } from "./exercicios";
 import "../ResolverDesafio/ResolverDesafio.css";
 import "../DesafioChefe/DesafioChefe.css";
@@ -325,14 +326,11 @@ export default function DesafioEtapas() {
             itensEquipados={itensEquipados}
             className={`chefe-sprite-heroi ${tomandoGolpe ? "etapas-heroi--atingido" : ""}`}
           />
-          <img
-            src={cena.inimigo.imagem}
-            alt={nomeInimigo}
+          <SpriteInimigo
+            inimigo={cena.inimigo}
             className={`chefe-sprite-chefe ${inimigoFerido ? "chefe-sprite-chefe--atingido" : ""} ${
               chefeEsquivando ? "chefe-sprite-chefe--esquivando" : ""
             } ${inimigoMorrendo ? "chefe-sprite-chefe--derrotado" : ""}`}
-            style={{ imageRendering: "pixelated" }}
-            draggable={false}
           />
         </div>
 
@@ -383,14 +381,12 @@ export default function DesafioEtapas() {
             />
           )}
 
-          <img
-            src={cena.inimigo.imagem}
-            alt={nomeInimigo}
+          <SpriteInimigo
+            inimigo={cena.inimigo}
             className={`cena-inimigo ${tomandoGolpe ? "cena-inimigo--atacando" : ""} ${
               inimigoFerido ? "etapas-inimigo--ferido" : ""
             } ${inimigoMorrendo ? "cena-inimigo--morrendo" : ""}`}
-            style={{ width: cena.inimigo.largura || 96, imageRendering: "pixelated" }}
-            draggable={false}
+            style={{ width: cena.inimigo.largura || 96 }}
           />
         </div>
 

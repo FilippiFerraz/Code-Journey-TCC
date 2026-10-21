@@ -5,21 +5,22 @@
 // etapas e gabaritos) não fica aqui — vem da API (ver
 // backend/prisma/desafios/portal3.js) —, só a "cenografia".
 //
-// ARTES PROVISÓRIAS: o portal 3 ainda não tem inimigos nem cenários
-// próprios, então reaproveita os do Portal 1. Quando as artes existirem,
-// basta trocar os imports abaixo — nenhuma tela precisa mudar.
+// Cada desafio tem fundo e inimigo próprios (originais em
+// frontend/arte-original/, WebP gerados por `npm run imagens:otimizar`).
+// O inimigo do desafio 6 não é uma imagem: `clone: true` desenha uma cópia
+// sombria do herói do jogador, com a aparência e os itens dele (ver
+// pages/DesafioEtapas/SpriteInimigo.jsx).
 import inimigo1Portal3 from "../assets/images/inimigo_1_portal3.webp";
 import fundo1Portal3 from "../assets/images/fundo_batalha_1_portal_3.webp";
 import inimigo2Portal3 from "../assets/images/inimigo_desafio2_p3.webp";
 import fundo2Portal3 from "../assets/images/Fundo_desafio2_p3.webp";
 import inimigo3Portal3 from "../assets/images/inimigo_desafio3_p3.webp";
 import fundo3Portal3 from "../assets/images/fundo_desafio3_p3.webp";
-import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
-import slime from "../assets/images/Slime.png";
-import reiGoblinInimigo from "../assets/images/rei_goblin_inimigo.webp";
-import fundoBatalha from "../assets/images/Fundo_batalha.png";
-import fundoBatalha2 from "../assets/images/Fundo_batalha2.webp";
-import fundoDesafio6P1 from "../assets/images/Fundo_desafio_6_P1.webp";
+import inimigo4Portal3 from "../assets/images/inimigo_desafio4_p3.webp";
+import fundo4Portal3 from "../assets/images/fundo_desafio4_p3.webp";
+import inimigo5Portal3 from "../assets/images/inimigo_desafio5_p3.webp";
+import fundo5Portal3 from "../assets/images/fundo_desafio5_p3.webp";
+import fundo6Portal3 from "../assets/images/fundo_desafio6_p3.webp";
 
 // Por número do desafio (1 a 6). "chefe: true" usa a arena de chefe (sprite
 // grande, barra de vida no topo) — mesmo visual de DesafioChefe.jsx.
@@ -61,34 +62,39 @@ const CENAS = {
     ],
   },
   4: {
-    inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Relógio" },
-    fundo: fundoBatalha2,
+    // Sprites horizontais (668x373), iguais aos dos desafios 1 a 3.
+    inimigo: { imagem: inimigo4Portal3, nome: "Escaravelho do Relógio", largura: 170, larguraIntro: 330 },
+    fundo: fundo4Portal3,
     falas: [
-      "No alto da torre, um relógio gigante gira fora de ordem.",
-      "A Bruxa do Relógio controla quando cada pedaço de código pode rodar.",
+      "Entre caveiras e cogumelos brilhantes, algo range como as engrenagens de um relógio.",
+      "O Escaravelho do Relógio decide quando cada pedaço de código pode rodar.",
       "Síncrono, microtarefas, timers... quem não entende o event loop se perde no tempo.",
-      "Ela vai pedir uma explicação escrita — e o mago vai avaliar suas palavras!",
+      "Ele vai pedir uma explicação escrita — e o mago vai avaliar suas palavras!",
     ],
   },
   5: {
-    inimigo: { imagem: slime, nome: "Slime dos Espelhos" },
-    fundo: fundoBatalha,
+    inimigo: { imagem: inimigo5Portal3, nome: "Morcego dos Ecos", largura: 170, larguraIntro: 330 },
+    fundo: fundo5Portal3,
     falas: [
-      "Você entra num salão cheio de espelhos.",
-      "Um Slime se multiplica nos reflexos — qual deles é o verdadeiro?",
+      "No fundo do poço em espiral, algo bate as asas na escuridão.",
+      "O Morcego dos Ecos responde a tudo com um eco — mas nem todo eco é igual ao som original.",
       "Aqui nada é o que parece: valores se convertem sozinhos e objetos iguais são diferentes.",
-      "Desconfie de tudo e quebre os espelhos!",
+      "Desconfie de cada reflexo e derrube o morcego!",
     ],
   },
   6: {
+    // Chefe do portal: uma cópia do herói do jogador, criada pelo Dragão do
+    // Código (ele dorme no trono, ao fundo). `clone` = desenhado a partir do
+    // próprio personagem — ver pages/DesafioEtapas/SpriteInimigo.jsx.
     chefe: true,
-    inimigo: { imagem: reiGoblinInimigo, nome: "Dragão do Código" },
-    fundo: fundoDesafio6P1,
+    inimigo: { clone: true, nome: "Herói Sombrio" },
+    fundo: fundo6Portal3,
     falas: [
-      "O chão treme. O centro da arena se abre em chamas...",
-      "O Dragão do Código desperta, guardião final do Portal 3.",
-      "\"Recursão, this, coerção... vamos ver se você aprendeu de verdade.\"",
-      "São 3 etapas — e a última é uma batalha direta contra ele. Prepare-se!",
+      "No salão do trono, o Dragão do Código dorme... mas alguém desce a escadaria no lugar dele.",
+      "Ele tem o seu rosto, a sua armadura e as suas armas — envolto numa aura roxa de bugs.",
+      "\"Fui criado pelo Dragão do Código a partir de você. Sou a sua versão mais forte — sem dúvidas, sem erros de digitação.\"",
+      "\"Juntos, eu e o Dragão vamos dominar o reino com bugs e erros. E você será o primeiro a cair!\"",
+      "São 3 etapas — e a última é uma batalha direta contra a sua sombra. Prepare-se!",
     ],
   },
 };

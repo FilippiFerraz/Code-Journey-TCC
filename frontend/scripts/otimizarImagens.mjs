@@ -38,6 +38,9 @@ const CONFIG = {
   // fundo do desafio 2 do portal 3 (original 2752x1536, 2,5 MB)
   "Fundo_desafio2_p3.jpg": { max: 1440, q: 82 },
   "fundo_desafio3_p3.jpg": { max: 1440, q: 82 },
+  "fundo_desafio4_p3.jpg": { max: 1440, q: 82 },
+  "fundo_desafio5_p3.jpg": { max: 1440, q: 82 },
+  "fundo_desafio6_p3.png": { max: 1440, q: 82 },
   "fundo_ranking.jpg": { q: 80 },
   "fundo_tela_selcionardesafio.png": { q: 80 },
   // mapa da Home: é a maior imagem do site e o que define o tempo da Home.
@@ -54,6 +57,8 @@ const CONFIG = {
   "inimigo_1_portal3.png": { q: 88 },
   "inimigo_desafio2_p3.png": { q: 88 },
   "inimigo_desafio3_p3.png": { q: 88 },
+  "inimigo_desafio4_p3.png": { q: 88 },
+  "inimigo_desafio5_p3.png": { q: 88 },
   // Rei Tiribyte (Desafio do Rei) — aparece com no máximo ~330 px de largura
   "rei_tiribyte.png": { max: 800, q: 85 },
   // interface

@@ -182,3 +182,51 @@
   word-break: break-word;
   font-size: 0.78rem;
 }
+
+/* ---------- Inimigo clone (chefe do Portal 3) ----------
+   Cópia sombria do herói do jogador (SpriteInimigo.jsx): o avatar em
+   camadas, virado pro herói, escurecido, com aura roxa e uma "falha"
+   digital de tempos em tempos. A raiz é quadrada (as camadas são 64x64). */
+.inimigo-clone {
+  aspect-ratio: 1;
+  height: auto;
+}
+
+/* maior que o herói (96px): é a "versão mais forte" dele */
+.chefe-sprite-chefe.inimigo-clone {
+  width: 150px;
+}
+
+.chefe-intro-sprite.inimigo-clone {
+  width: 200px;
+}
+
+.inimigo-clone .avatar-personagem-camadas {
+  transform: scaleX(-1);
+  filter: brightness(0.55) contrast(1.3) saturate(1.5) drop-shadow(0 0 3px #c04dff)
+    drop-shadow(0 0 10px rgba(155, 31, 224, 0.75));
+  animation: inimigo-clone-falha 2.8s steps(1, end) infinite;
+}
+
+@keyframes inimigo-clone-falha {
+  0%, 88%, 100% {
+    transform: scaleX(-1);
+  }
+  90% {
+    transform: scaleX(-1) translateX(4px);
+    filter: brightness(0.55) contrast(1.3) saturate(1.5) hue-rotate(70deg) drop-shadow(0 0 3px #ff2a5a)
+      drop-shadow(0 0 10px rgba(155, 31, 224, 0.75));
+  }
+  92% {
+    transform: scaleX(-1) translateX(-3px) skewX(6deg);
+  }
+  94% {
+    transform: scaleX(-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inimigo-clone .avatar-personagem-camadas {
+    animation: none;
+  }
+}

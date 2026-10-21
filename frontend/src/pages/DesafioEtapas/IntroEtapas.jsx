@@ -2,6 +2,7 @@ import { useState } from "react";
 import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
+import SpriteInimigo from "./SpriteInimigo";
 import "../DesafioIntro/DesafioIntro.css";
 import "../DesafioChefe/DesafioChefe.css";
 
@@ -88,7 +89,7 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
               <p className="chefe-intro-aviso">O chefe da trilha apareceu! Você vai precisar derrotá-lo.</p>
               <h2 className="chefe-intro-nome">{cena.inimigo.nome}</h2>
             </div>
-            <img src={cena.inimigo.imagem} alt={cena.inimigo.nome} className="chefe-intro-sprite" draggable={false} />
+            <SpriteInimigo inimigo={cena.inimigo} className="chefe-intro-sprite" />
           </div>
 
           {!mostrarEnunciado && (
@@ -127,12 +128,10 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
           <p className="intro-inimigo-aviso">Um inimigo surgiu no seu caminho! Você vai precisar enfrentá-lo.</p>
           <h2 className="intro-inimigo-nome">{cena.inimigo.nome}</h2>
         </div>
-        <img
-          src={cena.inimigo.imagem}
-          alt={cena.inimigo.nome}
+        <SpriteInimigo
+          inimigo={cena.inimigo}
           className="intro-inimigo-destaque"
           style={cena.inimigo.larguraIntro ? { width: cena.inimigo.larguraIntro } : undefined}
-          draggable={false}
         />
       </div>
 
