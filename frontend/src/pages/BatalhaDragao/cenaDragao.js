@@ -100,6 +100,7 @@ const cachePadroes = new WeakMap();
 export function padrao(g, cor, nivel) {
   const n = Math.max(0, Math.min(16, r(nivel)));
   if (n >= 16) return cor;
+  if (g instanceof TelaPixels) return { cor, n }; // pontilhado calculado pixel a pixel
   let mapa = cachePadroes.get(g);
   if (!mapa) cachePadroes.set(g, (mapa = new Map()));
   const chave = `${cor}|${n}`;
@@ -112,6 +113,77 @@ export function padrao(g, cor, nivel) {
     mapa.set(chave, p);
   }
   return p;
+}
+
+// "Canvas" em memória pra desenhos ESTÁTICOS feitos de muitos retângulos
+// (a arena): implementa só o que as primitivas daqui usam — fillStyle (cor
+// "#rrggbb" ou o pontilhado de padrao()), fillRect com coordenadas inteiras
+// e translate — escrevendo direto num buffer de pixels.
+//
+// Por quê: num canvas de verdade, construirArena registra milhares de
+// fillRect (muitos com pontilhado) e o navegador só os executa quando o
+// canvas é usado pela primeira vez — e aí trava a página: medido ~1,3 a
+// 2,6 s POR ARENA mesmo sem limitar a CPU, e a cutscene final monta duas no
+// começo da luta (a tela ficava congelada vários segundos). Escrevendo os
+// pixels direto, a mesma arena sai em poucos milissegundos, idêntica pixel
+// a pixel (só cores opacas, sem suavização).
+class TelaPixels {
+  constructor(w, h) {
+    this.w = w;
+    this.h = h;
+    this.px = new Uint32Array(w * h); // RGBA little-endian; 0 = transparente
+    this.tx = 0;
+    this.ty = 0;
+    this.fillStyle = "#000000";
+    this.cores = new Map(); // "#rrggbb" -> pixel empacotado
+  }
+
+  translate(x, y) {
+    this.tx += x;
+    this.ty += y;
+  }
+
+  cor(hex) {
+    let v = this.cores.get(hex);
+    if (v === undefined) {
+      const n = parseInt(hex.slice(1, 7), 16);
+      v = (0xff000000 | ((n & 0xff) << 16) | (n & 0xff00) | ((n >> 16) & 0xff)) >>> 0;
+      this.cores.set(hex, v);
+    }
+    return v;
+  }
+
+  fillRect(x, y, w, h) {
+    // largura/altura negativas: o canvas desenha pro outro lado
+    if (w < 0) { x += w; w = -w; }
+    if (h < 0) { y += h; h = -h; }
+    const x0 = Math.max(0, x + this.tx), y0 = Math.max(0, y + this.ty);
+    const x1 = Math.min(this.w, x + this.tx + w), y1 = Math.min(this.h, y + this.ty + h);
+    if (x0 >= x1 || y0 >= y1) return;
+    const estilo = this.fillStyle;
+    const px = this.px;
+    if (typeof estilo === "string") {
+      const v = this.cor(estilo);
+      for (let yy = y0; yy < y1; yy++) px.fill(v, yy * this.w + x0, yy * this.w + x1);
+      return;
+    }
+    // pontilhado (Bayer 4x4), preso à grade do sistema de coordenadas atual
+    // — igual a um createPattern do canvas desenhado com o mesmo translate
+    const v = this.cor(estilo.cor);
+    for (let yy = y0; yy < y1; yy++) {
+      const by = ((((yy - this.ty) % 4) + 4) % 4) * 4;
+      for (let xx = x0; xx < x1; xx++) {
+        if (BAYER[by + ((((xx - this.tx) % 4) + 4) % 4)] < estilo.n) px[yy * this.w + xx] = v;
+      }
+    }
+  }
+
+  // Passa pra um canvas de verdade (uma única operação de desenho).
+  paraCanvas() {
+    const [c, g] = novoCanvas(this.w, this.h);
+    g.putImageData(new ImageData(new Uint8ClampedArray(this.px.buffer), this.w, this.h), 0, 0);
+    return c;
+  }
 }
 
 export function retPx(g, x, y, w, h, estilo) {
@@ -211,7 +283,8 @@ export const TEMAS_ARENA = {
 export function construirArena(total, tema = TEMAS_ARENA.corrompida) {
   const m = (total - LARGURA) / 2;
   const x0 = -m, x1 = LARGURA + m; // bordas de verdade
-  const [fundo, f] = novoCanvas(total, ALTURA);
+  // desenhada em memória e passada pro canvas de uma vez (ver TelaPixels)
+  const f = new TelaPixels(total, ALTURA);
   f.translate(m, 0);
 
   // parede de tijolos, cada um com luz em cima/esquerda e sombra embaixo/direita
@@ -365,7 +438,7 @@ export function construirArena(total, tema = TEMAS_ARENA.corrompida) {
       }
     }
   }
-  return fundo;
+  return f.paraCanvas();
 }
 
 // ---------- Cena ----------
@@ -402,7 +475,9 @@ export function criarCenaDragao(canvas, { camadas = [] } = {}) {
 
   function ajustarTamanho() {
     const caixa = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    // densidade limitada a 2x: a arena tem 320 px de largura — em telas 3x o
+    // canvas pintava até 2,4 milhões de pixels por quadro sem ganho visível
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.max(1, Math.round(caixa.width * dpr));
     canvas.height = Math.max(1, Math.round(caixa.height * dpr));
     // tela mais larga que 16:10: a arena cresce pros lados (até LARGURA_MAXIMA)
@@ -932,10 +1007,17 @@ export function criarCenaDragao(canvas, { camadas = [] } = {}) {
     tremor = tremor > 0.3 ? tremor * 0.86 : 0;
   }
 
+  // No máximo ~60 quadros por segundo: em telas de 90/120 Hz o rAF vem até
+  // 2x mais vezes — o dobro de trabalho, e as partículas (que andam um passo
+  // por quadro) ficavam com o dobro da velocidade planejada.
+  const INTERVALO_MIN_MS = 1000 / 60 - 2;
+  let ultimoQuadro = -Infinity;
   function laco(agora) {
+    idQuadro = requestAnimationFrame(laco);
+    if (agora - ultimoQuadro < INTERVALO_MIN_MS) return;
+    ultimoQuadro = agora;
     quadro++;
     desenhar(agora);
-    idQuadro = requestAnimationFrame(laco);
   }
 
   const observador = new ResizeObserver(ajustarTamanho);

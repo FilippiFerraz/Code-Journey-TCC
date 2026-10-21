@@ -27,6 +27,10 @@ export function criarMotor(canvas, recursos, { aoTerminar, aoMudarFala, reduzirM
     }
   }
 
+  // no máximo ~60 quadros por segundo (telas de 120 Hz desenhavam o dobro)
+  const INTERVALO_MIN_MS = 1000 / 60 - 2;
+  let ultimoDesenho = -Infinity;
+
   function passo(agora) {
     if (!rodando) return;
     // delta time do quadro (nunca negativo: o 1º rAF pode vir com timestamp
@@ -39,7 +43,10 @@ export function criarMotor(canvas, recursos, { aoTerminar, aoMudarFala, reduzirM
       aoTerminar?.();
       return;
     }
-    desenhar();
+    if (agora - ultimoDesenho >= INTERVALO_MIN_MS) {
+      ultimoDesenho = agora;
+      desenhar();
+    }
     raf = requestAnimationFrame(passo);
   }
 

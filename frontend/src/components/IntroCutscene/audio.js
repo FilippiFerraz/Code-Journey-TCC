@@ -39,17 +39,28 @@ const ACORDE_FINAL = [62, 66, 69];
 // Exportados também pra cutscene final (components/BossDefeatCutscene/audio.js).
 export const freq = (midi) => 440 * 2 ** ((midi - 69) / 12);
 
+// Onda e ruído são criados UMA vez por AudioContext (o agendamento em
+// janelas, abaixo, pede os dois a cada janela).
+const cacheOndas = new WeakMap(); // ac -> Map(ciclo -> PeriodicWave)
+const cacheRuido = new WeakMap(); // ac -> AudioBuffer
+
 // Onda de pulso 25% via série de Fourier (o OscillatorNode só tem 50%).
 export function ondaPulso(ac, ciclo = 0.25) {
+  let porCiclo = cacheOndas.get(ac);
+  if (!porCiclo) cacheOndas.set(ac, (porCiclo = new Map()));
+  if (porCiclo.has(ciclo)) return porCiclo.get(ciclo);
   const n = 32;
   const real = new Float32Array(n);
   const imag = new Float32Array(n);
   for (let k = 1; k < n; k++) imag[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * ciclo);
-  return ac.createPeriodicWave(real, imag);
+  const onda = ac.createPeriodicWave(real, imag);
+  porCiclo.set(ciclo, onda);
+  return onda;
 }
 
 // Ruído branco determinístico (igual em toda execução — vídeo idêntico).
 export function bufferRuido(ac) {
+  if (cacheRuido.has(ac)) return cacheRuido.get(ac);
   const tamanho = ac.sampleRate;
   const buffer = ac.createBuffer(1, tamanho, ac.sampleRate);
   const dados = buffer.getChannelData(0);
@@ -58,7 +69,37 @@ export function bufferRuido(ac) {
     semente = (semente * 1103515245 + 12345) & 0x7fffffff;
     dados[i] = (semente / 0x7fffffff) * 2 - 1;
   }
+  cacheRuido.set(ac, buffer);
   return buffer;
+}
+
+// Agenda os sons de uma cutscene AOS POUCOS: a cada 250 ms, só o que toca
+// nos próximos ~1,5 s. Criar de uma vez todos os osciladores da cutscene
+// (centenas de nós de áudio) travava a página justo quando ela começava —
+// medido ~0,4 s num celular médio na cutscene da vitória. O relógio do
+// AudioContext continua sendo a referência, então nada sai do tempo.
+//
+// `agendarJanela(desdeMs, inicioRelogio, ateMs)` agenda os sons do trecho
+// [desdeMs, ateMs) da cutscene (ver os agendarAudio). Devolve uma função que
+// para o agendamento.
+const ANTECEDENCIA_S = 1.5;
+const INTERVALO_MS = 250;
+
+export function agendarEmJanelas(ac, agendarJanela, { desdeMs = 0, duracaoMs }) {
+  // instante do relógio do áudio que corresponde ao tempo 0 da cutscene
+  const t0 = ac.currentTime + 0.03 - desdeMs / 1000;
+  let proximo = desdeMs; // ms da cutscene ainda não agendados
+  let timer = 0;
+  function janela() {
+    const ate = Math.min(duracaoMs, (ac.currentTime - t0 + ANTECEDENCIA_S) * 1000);
+    if (ate > proximo) {
+      agendarJanela(proximo, t0 + proximo / 1000, ate >= duracaoMs ? Infinity : ate);
+      proximo = ate;
+    }
+    if (proximo < duracaoMs) timer = setTimeout(janela, INTERVALO_MS);
+  }
+  janela();
+  return () => clearTimeout(timer);
 }
 
 export function nota(ac, destino, { tipo, onda, frequencia, inicio, duracao, volume }) {
@@ -96,10 +137,12 @@ export function ruidoFiltrado(ac, destino, ruido, { inicio, duracao, volume, fil
 
 // Agenda a trilha e os efeitos. `desdeMs` permite começar do meio (quando o
 // navegador só liberou o som depois que a cutscene já tinha começado): tudo
-// antes desse instante é pulado.
-export function agendarAudio(ac, destino, desdeMs = 0, inicioRelogio = ac.currentTime + 0.03) {
+// antes desse instante é pulado. `ateMs` limita o trecho (agendamento em
+// janelas — ver agendarEmJanelas): só entra o que COMEÇA em [desde, ate).
+export function agendarAudio(ac, destino, desdeMs = 0, inicioRelogio = ac.currentTime + 0.03, ateMs = Infinity) {
   const t0 = inicioRelogio - desdeMs / 1000;
   const desde = desdeMs / 1000;
+  const ate = ateMs / 1000;
   const pulso = ondaPulso(ac);
   const ruido = bufferRuido(ac);
 
@@ -110,14 +153,14 @@ export function agendarAudio(ac, destino, desdeMs = 0, inicioRelogio = ac.curren
       const inicio = pos * COLCHEIA;
       const duracao = colcheias * COLCHEIA * 0.92;
       pos += colcheias;
-      if (midi === null || inicio < desde) continue;
+      if (midi === null || inicio < desde || inicio >= ate) continue;
       nota(ac, destino, { ...opcoes, frequencia: freq(midi), inicio: t0 + inicio, duracao });
     }
   };
   tocarSequencia(MELODIA, { onda: pulso, volume: 0.07 });
   tocarSequencia(BAIXO, { tipo: "triangle", volume: 0.16 });
   const fimSeg = DURACAO_MS / 1000;
-  if (fimSeg - 1 >= desde) {
+  if (fimSeg - 1 >= desde && fimSeg - 1 < ate) {
     for (const m of ACORDE_FINAL) {
       nota(ac, destino, { onda: pulso, frequencia: freq(m), inicio: t0 + fimSeg - 1, duracao: 0.95, volume: 0.04 });
     }
@@ -126,7 +169,7 @@ export function agendarAudio(ac, destino, desdeMs = 0, inicioRelogio = ac.curren
   // efeitos sonoros
   for (const ev of eventosDeAudio()) {
     const seg = ev.tempo / 1000;
-    if (seg < desde) continue;
+    if (seg < desde || seg >= ate) continue;
     const inicio = t0 + seg;
     switch (ev.tipo) {
       case "blip":
@@ -178,6 +221,7 @@ export function criarAudioIntro({ mudo = false } = {}) {
   let mestre = null;
   let parado = false;
   let agendado = false;
+  let pararJanelas = () => {};
 
   function agendar(desdeMs) {
     if (agendado || parado || !ac) return;
@@ -185,7 +229,12 @@ export function criarAudioIntro({ mudo = false } = {}) {
     mestre = ac.createGain();
     mestre.gain.value = mudo ? 0 : 1;
     mestre.connect(ac.destination);
-    agendarAudio(ac, mestre, desdeMs);
+    const destino = mestre;
+    pararJanelas = agendarEmJanelas(
+      ac,
+      (de, inicio, ate) => agendarAudio(ac, destino, de, inicio, ate),
+      { desdeMs, duracaoMs: DURACAO_MS }
+    );
   }
 
   return {
@@ -206,6 +255,7 @@ export function criarAudioIntro({ mudo = false } = {}) {
     },
     parar() {
       parado = true;
+      pararJanelas();
       if (!mestre || !ac) return;
       // desconectar o volume mestre silencia na hora tudo o que já estava
       // agendado (sem fechar o AudioContext, que é compartilhado)

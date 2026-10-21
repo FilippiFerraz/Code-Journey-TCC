@@ -7,7 +7,9 @@
 // são agendados de uma vez no relógio do AudioContext. agendarAudio() serve
 // pro jogo (AudioContext) e pra exportação de vídeo (OfflineAudioContext).
 import { obterAudioContexto } from "../../utils/audioContexto";
-import { bufferParaWav, bufferRuido, freq, nota, ondaPulso, ruidoFiltrado } from "../IntroCutscene/audio";
+import {
+  agendarEmJanelas, bufferParaWav, bufferRuido, freq, nota, ondaPulso, ruidoFiltrado,
+} from "../IntroCutscene/audio";
 import { ruido as sorteio } from "../IntroCutscene/pixel";
 import { DURACAO_MS, eventosDeAudio } from "./marcos";
 
@@ -42,16 +44,19 @@ const FANFARRA = [
 const BAIXO_FANFARRA = [[48, 0, 0.33], [43, 0.33, 0.33], [48, 0.66, 0.84]];
 const ACORDE = [72, 76, 79];
 
-export function agendarAudio(ac, destino, desdeMs = 0, inicioRelogio = ac.currentTime + 0.03) {
+// `ateMs`: só agenda o que começa em [desde, ate) — usado no agendamento em
+// janelas (ver criarAudioFinal e IntroCutscene/audio.js::agendarEmJanelas).
+export function agendarAudio(ac, destino, desdeMs = 0, inicioRelogio = ac.currentTime + 0.03, ateMs = Infinity) {
   const t0 = inicioRelogio - desdeMs / 1000;
   const desde = desdeMs / 1000;
+  const ate = ateMs / 1000;
   const pulso = ondaPulso(ac);
   const pulso50 = ondaPulso(ac, 0.5);
   const ruido = bufferRuido(ac);
 
   for (const ev of eventosDeAudio()) {
     const seg = ev.tempo / 1000;
-    if (seg < desde) continue;
+    if (seg < desde || seg >= ate) continue;
     const inicio = t0 + seg;
     switch (ev.tipo) {
       case "impacto":
@@ -127,6 +132,7 @@ export function criarAudioFinal({ mudo = false } = {}) {
   let mestre = null;
   let parado = false;
   let agendado = false;
+  let pararJanelas = () => {};
 
   function agendar(desdeMs) {
     if (agendado || parado || !ac) return;
@@ -134,7 +140,14 @@ export function criarAudioFinal({ mudo = false } = {}) {
     mestre = ac.createGain();
     mestre.gain.value = mudo ? 0 : 1;
     mestre.connect(ac.destination);
-    agendarAudio(ac, mestre, desdeMs);
+    const destino = mestre;
+    // aos poucos, não tudo de uma vez: criar todos os nós de áudio no
+    // começo da cutscene travava a página (ver agendarEmJanelas)
+    pararJanelas = agendarEmJanelas(
+      ac,
+      (de, inicio, ate) => agendarAudio(ac, destino, de, inicio, ate),
+      { desdeMs, duracaoMs: DURACAO_MS }
+    );
   }
 
   return {
@@ -150,6 +163,7 @@ export function criarAudioFinal({ mudo = false } = {}) {
     },
     parar() {
       parado = true;
+      pararJanelas();
       if (!mestre || !ac) return;
       // desconectar o volume mestre silencia na hora o que já estava agendado
       const m = mestre;

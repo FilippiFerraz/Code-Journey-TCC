@@ -37,10 +37,12 @@ function esperarImagem(img) {
 }
 
 // Copia do sprite com cada pixel opaco transformado por `fn(r, g, b)`.
-function variacao(img, fn) {
-  const [c, g] = novoCanvas(img.width, img.height);
-  g.drawImage(img, 0, 0);
-  const dados = g.getImageData(0, 0, img.width, img.height);
+// `original` = os pixels do sprite já lidos UMA vez (ler pixels de um canvas
+// obriga o navegador a terminar todo desenho pendente — antes eram 5
+// leituras seguidas).
+function variacao(original, w, h, fn) {
+  const [c, g] = novoCanvas(w, h);
+  const dados = new ImageData(new Uint8ClampedArray(original), w, h);
   const px = dados.data;
   for (let i = 0; i < px.length; i += 4) {
     if (!px[i + 3]) continue;
@@ -52,6 +54,10 @@ function variacao(img, fn) {
   g.putImageData(dados, 0, 0);
   return c;
 }
+
+// Devolve a vez pro navegador entre as etapas do preparo: cada uma é curta,
+// e a batalha (que roda enquanto isso) não engasga.
+const pausa = () => new Promise((ok) => setTimeout(ok, 0));
 
 // Parte pesada (dragão + arenas + fonte): preparada uma vez e guardada. A
 // batalha chama preCarregar() quando a luta começa, então na vitória a
@@ -70,7 +76,7 @@ export async function carregarRecursos({ camadas = [] } = {}) {
   return { ...base, heroi };
 }
 
-function prepararFixos(imgDragao) {
+async function prepararFixos(imgDragao) {
   // ---- dragão ----
   let dragao = null;
   if (imgDragao) {
@@ -82,6 +88,7 @@ function prepararFixos(imgDragao) {
     // pixels pra dissolução: cada um se solta num instante, de baixo pra
     // cima (a linha de baixo primeiro), com um pouco de sorteio fixo
     const dados = gn.getImageData(0, 0, w, h).data;
+    await pausa();
     const lista = [];
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
@@ -107,18 +114,16 @@ function prepararFixos(imgDragao) {
       pixels.particula[i] = ruido(i * 1.31) < 0.5 ? 1 : 0;
     });
 
-    dragao = {
-      w,
-      h,
-      normal,
-      branco: variacao(imgDragao, () => [255, 255, 255]),
-      vermelho: variacao(imgDragao, () => [255, 42, 90]),
-      dourado: variacao(imgDragao, () => [255, 210, 60]),
-      invertido: variacao(imgDragao, (r, g, b) => [255 - r, 255 - g, 255 - b]),
-      pixels,
-    };
+    await pausa();
+    const branco = variacao(dados, w, h, () => [255, 255, 255]);
+    const vermelho = variacao(dados, w, h, () => [255, 42, 90]);
+    await pausa();
+    const dourado = variacao(dados, w, h, () => [255, 210, 60]);
+    const invertido = variacao(dados, w, h, (r, g, b) => [255 - r, 255 - g, 255 - b]);
+    dragao = { w, h, normal, branco, vermelho, dourado, invertido, pixels };
   }
 
+  await pausa();
   return {
     dragao,
     arenas: { corrompida: montarArena("corrompida"), purificada: montarArena("purificada") },

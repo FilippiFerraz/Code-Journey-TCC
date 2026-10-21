@@ -16,12 +16,17 @@ import "./BatalhaDragao.css";
 // começa (ver comecar), pra já estar pronta na hora da vitória.
 const carregarCutsceneFinal = () => import("../../components/BossDefeatCutscene/BossDefeatCutscene");
 const BossDefeatCutscene = lazy(carregarCutsceneFinal);
-// baixa o código e já prepara sprite, arenas e fonte da cutscene
+// baixa o código e já prepara sprite, arenas e fonte da cutscene — com o
+// navegador ocioso: a luta acabou de começar e a 1ª pergunta tem que
+// aparecer e responder na hora (a vitória leva várias rodadas, sobra tempo)
 function prepararCutsceneFinal() {
-  carregarCutsceneFinal()
-    .then(() => import("../../components/BossDefeatCutscene/recursos"))
-    .then((m) => m.preCarregar())
-    .catch(() => {});
+  const preparar = () =>
+    carregarCutsceneFinal()
+      .then(() => import("../../components/BossDefeatCutscene/recursos"))
+      .then((m) => m.preCarregar())
+      .catch(() => {});
+  if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(preparar, { timeout: 3000 });
+  else setTimeout(preparar, 1000);
 }
 
 // Prêmio do Baú do Dragão já sorteado no servidor ANTES da cutscene (a
