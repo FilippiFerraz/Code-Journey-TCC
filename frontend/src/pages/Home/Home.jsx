@@ -7,6 +7,7 @@ import mapa from "../../assets/images/mapa.webp";
 import mapaPrevia from "../../assets/images/mapa-previa.webp";
 import portalDesafios from "../../assets/images/Portal_Desafios.webp";
 import cadeadoPortal from "../../assets/images/Cadeado_portal.webp";
+import lojinha from "../../assets/images/lojinha.webp";
 // nuvens recortadas do céu do próprio mapa (ver scripts/gerarNuvens.mjs);
 // ?no-inline: arquivos à parte, baixados só ao rolar até o fim do mapa
 import nuvem1 from "../../assets/images/nuvens/nuvem-1.webp?no-inline";
@@ -22,6 +23,7 @@ import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
 import PersonagemNoMapa from "./PersonagemNoMapa";
 import { Gift } from "pixelarticons/react/Gift.js";
+import { Coins } from "pixelarticons/react/Coins.js";
 import IconePixel from "../../components/IconePixel";
 import { lerUltimoPortal, salvarUltimoPortal, trechoEntre } from "./caminhoMapa";
 import "./Home.css";
@@ -60,6 +62,11 @@ const PORTAIS = [
 // depois que os dois primeiros portais estão concluídos. Centro e tamanho
 // em % da imagem do mapa, cobrindo o desenho do castelo.
 const CASTELO = { top: "21%", left: "80.5%", largura: "33%", altura: "19%" };
+
+// Lojinha do Mago: desenhada por cima da casinha de telhado azul da vila
+// (canto superior esquerdo da arte), cobrindo ela inteira. Centro e largura
+// em % da imagem do mapa; a altura segue a proporção da arte. Sempre aberta.
+const LOJA = { top: "17%", left: "8.4%", largura: "16.5%" };
 
 // Cristal Gigante e a cachoeira ao lado dele (lado esquerdo da arte): os
 // dois abrem o Desafio da Cachoeira de Cristais, liberado com o portal 1
@@ -400,6 +407,20 @@ function Home() {
           fetchPriority="high"
           decoding="async"
         />
+
+        <button
+          type="button"
+          className="home-loja"
+          style={{ top: LOJA.top, left: LOJA.left, width: LOJA.largura }}
+          onClick={() => !destino && navigate("/loja")}
+          aria-label="Lojinha do Mago: compre itens com suas moedas"
+        >
+          <img src={lojinha} alt="" aria-hidden="true" className="home-loja-imagem" draggable={false} />
+          <span className="home-loja-placa">
+            <IconePixel icone={Coins} className="home-loja-icone" />
+            Lojinha do Mago
+          </span>
+        </button>
 
         {PONTOS_CRISTAIS.map((ponto) => (
           <button

@@ -70,6 +70,13 @@ const CONFIG = {
   "Portal_Desafios.gif": { max: 180, q: 80, animado: true },
   // cadeado dos portais trancados: aparece com 40 px
   "Cadeado_portal.png": { max: 120, q: 85 },
+  // Lojinha do Mago: a casinha do mapa (aparece com ~16% da largura do
+  // mapa) e o fundo da tela da loja (o mago pintado nele foi apagado — o
+  // vendedor é o Mago.webp, desenhado por cima em Loja.jsx)
+  "lojinha.png": { max: 420, q: 88 },
+  "fundo_loja.png": { max: 1440, q: 82 },
+  // mochila dos itens de ajuda nas telas de desafio: aparece com ~44 px
+  "mochila.png": { max: 128, q: 90 },
 };
 
 fs.mkdirSync(ORIGINAIS, { recursive: true });

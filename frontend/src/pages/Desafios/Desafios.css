@@ -706,6 +706,92 @@
   animation: des-aparecer 0.2s ease-out both;
 }
 
+/* ---------- Pergaminho do Atalho (item da Lojinha do Mago) ---------- */
+
+.desafios-atalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(58, 31, 94, 0.12);
+  border: 2px dashed var(--des-pergaminho-mancha);
+  animation: des-aparecer 0.2s ease-out both;
+}
+
+.desafios-atalho-icone {
+  font-size: 18px;
+  color: var(--des-roxo);
+}
+
+.desafios-atalho-texto {
+  flex: 1 1 180px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--des-texto-escuro);
+}
+
+.desafios-atalho-botoes {
+  display: flex;
+  gap: 6px;
+}
+
+.desafios-atalho-botao {
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--des-creme);
+  background: var(--des-madeira-clara);
+  border: 2px solid var(--des-madeira);
+  box-shadow: 2px 2px 0 var(--des-madeira);
+  cursor: pointer;
+}
+
+.desafios-atalho-botao--usar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.desafios-atalho-icone-botao {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.desafios-atalho-botao--usar,
+.desafios-atalho-botao--sim {
+  color: var(--des-texto-escuro);
+  background: var(--des-dourado);
+  border-color: var(--des-dourado-sombra);
+  box-shadow: 2px 2px 0 var(--des-dourado-sombra);
+}
+
+.desafios-atalho-botao:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.desafios-atalho-botao:focus-visible {
+  outline: 3px solid var(--des-roxo-claro);
+  outline-offset: 2px;
+}
+
+.desafios-atalho-botao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.desafios-atalho-mensagem {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--des-roxo);
+}
+
 /* ---------- Emblema do rodapé ---------- */
 
 .desafios-emblema {

@@ -143,3 +143,59 @@
     animation: none;
   }
 }
+
+/* ---------- Ampulheta Congelada (Lojinha do Mago) ---------- */
+
+.temporizador--congelado {
+  --cor-numeros: #bfe9ff;
+}
+
+.temporizador--congelado .temporizador-desenho {
+  filter: hue-rotate(170deg) saturate(0.7) brightness(1.15);
+}
+
+/* abaixo do timer, alinhado à direita (os timers ficam no canto superior
+   direito das cenas): o selo do gelo e a mochila de itens */
+.temporizador-extra {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: normal;
+}
+
+.temporizador-congelado-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  /* fonte comum (não a pixel): no Silkscreen o "s" de "27s" parece um 5 */
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #e6f7ff;
+  white-space: nowrap;
+  background: #3a8fd0;
+  border: 2px solid #9fd8ff;
+  animation: temporizador-gelo 1.2s ease-in-out infinite;
+}
+
+@keyframes temporizador-gelo {
+  0%,
+  100% {
+    box-shadow: 2px 2px 0 #0d0c18, 0 0 4px rgba(159, 216, 255, 0.5);
+  }
+  50% {
+    box-shadow: 2px 2px 0 #0d0c18, 0 0 12px rgba(159, 216, 255, 0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temporizador-congelado-selo {
+    animation: none;
+  }
+}

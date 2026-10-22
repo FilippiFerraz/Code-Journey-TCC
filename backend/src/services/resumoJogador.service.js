@@ -3,14 +3,15 @@ const { listarBaus } = require("./bau.service");
 
 // Resumo do jogador pro Card de Perfil (coluna direita da Home no desktop —
 // frontend/src/components/PerfilJogadorCard.jsx) e pra tela de Perfil.
-// Nada aqui tem coluna própria no banco: tudo é calculado do progresso que
-// já existe, então nunca fica fora de sincronia.
+// Quase nada aqui tem coluna própria no banco: é calculado do progresso que
+// já existe, então nunca fica fora de sincronia (a exceção é o ouro).
 //
 // - nivel: 1 a cada XP_POR_NIVEL de XP (Usuario.xpTotal).
 // - diasOfensiva: dias seguidos, até hoje, com pelo menos um desafio
 //   concluído (Progresso.dataConclusao). Se hoje ainda não teve, a
 //   ofensiva continua valendo a partir de ontem.
-// - ouro: o próprio XP total (cada XP vira 1 de ouro).
+// - ouro: as moedas guardadas pra Lojinha do Mago (Usuario.moedas — a
+//   única coisa daqui que tem coluna própria, porque é gasta na loja).
 // - cristais: 1 por baú aberto, +2 por minijogo do mapa vencido (os baús
 //   especiais — Desafio do Rei, Cachoeira de Cristais, Dragão).
 // - titulo: a maior conquista do jogador (ver TITULOS).
@@ -56,7 +57,7 @@ function calcularOfensiva(datasConclusao, agora = new Date()) {
   return total;
 }
 
-async function resumoJogador(usuarioId, xpTotal) {
+async function resumoJogador(usuarioId, xpTotal, moedas = 0) {
   const [conclusoes, trilhas, especiais] = await Promise.all([
     prisma.progresso.findMany({
       where: { usuarioId, concluido: true, dataConclusao: { not: null } },
@@ -78,7 +79,7 @@ async function resumoJogador(usuarioId, xpTotal) {
   return {
     nivel: Math.floor(xpTotal / XP_POR_NIVEL) + 1,
     diasOfensiva: calcularOfensiva(conclusoes.map((c) => c.dataConclusao)),
-    ouro: xpTotal,
+    ouro: moedas,
     cristais: bausDeModulo + minijogos.size * (1 + CRISTAIS_EXTRAS_POR_MINIJOGO),
     titulo: { nome: titulo.titulo, icone: titulo.icone },
   };

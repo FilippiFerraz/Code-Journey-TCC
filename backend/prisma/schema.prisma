@@ -36,6 +36,12 @@ model Usuario {
   // começa com 0.
   xpTotal Int @default(0)
 
+  // Moedas (o "Ouro" do card de perfil) guardadas pra gastar na Lojinha do
+  // Mago. Ganhas ao vencer um desafio pela primeira vez (ver
+  // MOEDAS_POR_DESAFIO em loja.service.js). A migração começou cada conta
+  // com o xpTotal, que era o que o "Ouro" mostrava antes da loja existir.
+  moedas Int @default(0)
+
   // Marca se o jogador já viu o tutorial guiado da Home (portais, perfil,
   // ranking, configurações). Ver TutorialHome.jsx / POST /api/perfil/tutorial-visto.
   tutorialVisto Boolean @default(false)
@@ -89,8 +95,28 @@ model Usuario {
   bausMundo      BauMundo[]
   logsAdmin      LogAdmin[]
   loginHistorico LoginHistorico[]
+  itensLoja      ItemLojaUsuario[]
 
   @@map("usuarios")
+}
+
+// Itens consumíveis comprados na Lojinha do Mago e ainda não usados
+// (ver ITENS_LOJA em loja.service.js): "congelar" (Ampulheta Congelada),
+// "pular" (Pergaminho do Atalho) e "elixir" (Elixir do Sábio), usados pela
+// mochila nas telas de desafio. "elixirAtivo" (quantidade 1) marca um elixir
+// já bebido, gasto na próxima vitória inédita. O Baú Misterioso abre na
+// hora da compra e não fica guardado aqui.
+model ItemLojaUsuario {
+  id Int @id @default(autoincrement())
+
+  usuarioId  Int
+  chave      String
+  quantidade Int    @default(0)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@unique([usuarioId, chave])
+  @@map("itens_loja_usuario")
 }
 
 // Histórico de tentativas de login (sucesso e falha), pra auditoria de

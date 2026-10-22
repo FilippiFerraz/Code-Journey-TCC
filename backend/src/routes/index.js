@@ -31,4 +31,7 @@ router.use("/conta", contaRoutes);
 const desafiosRoutes = require("./desafios.routes.js");
 router.use("/desafios", desafiosRoutes);
 
+const lojaRoutes = require("./loja.routes.js");
+router.use("/loja", lojaRoutes);
+
 module.exports = router;

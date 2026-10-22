@@ -6,11 +6,14 @@ import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersona
 import { APARENCIA_PADRAO } from "../../data/spritesPersonagem";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
+import { useCongelarTempo } from "../../hooks/useCongelarTempo";
+import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
+import MochilaItens from "../../components/MochilaItens";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
@@ -326,7 +329,10 @@ function ResolverDesafio() {
   // contar contra a pontuação. Usado pro bônus de velocidade no backend (ver
   // registrarVitoria) e mostrado ao vivo na cena (ver HUD abaixo).
   const cronometroAtivo = resultado === null || resultado === "erro";
-  const [segundosDecorridos, reiniciarCronometro] = useCronometro(cronometroAtivo);
+  const congelamento = useCongelarTempo(cronometroAtivo);
+  const [segundosDecorridos, reiniciarCronometro] = useCronometro(
+    cronometroAtivo && !congelamento.congelado
+  );
 
   function selecionarOpcao(id) {
     if (travado) return;
@@ -695,6 +701,7 @@ function ResolverDesafio() {
               <span className="vitoria-recompensa-valor">
                 +{recompensaApi.xpConcedidoAgora} XP • Tempo: {formatarTempo(recompensaApi.tempoSegundos ?? segundosDecorridos)}
                 {recompensaApi.acertouDePrimeira ? " • Acertou de primeira!" : ""}
+                {textoMoedasElixir(recompensaApi)}
               </span>
             </div>
           )}
@@ -1098,7 +1105,10 @@ function ResolverDesafio() {
           regressivo={false}
           tamanho="medio"
           pausado={!cronometroAtivo}
-        />
+          congelamento={congelamento}
+        >
+          <MochilaItens congelamento={congelamento} />
+        </Temporizador>
 
         {tomandoGolpe && <div className="cena-flash" />}
       </section>

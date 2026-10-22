@@ -57,6 +57,7 @@ async function buscarPerfil(usuarioId) {
         email: true,
         criadoEm: true,
         xpTotal: true,
+        moedas: true,
         tutorialVisto: true,
         introVista: true,
         role: true,
@@ -80,7 +81,7 @@ async function buscarPerfil(usuarioId) {
 
   const [posicao, resumo] = await Promise.all([
     posicaoDoUsuario(usuario.xpTotal),
-    resumoJogador(usuario.id, usuario.xpTotal),
+    resumoJogador(usuario.id, usuario.xpTotal, usuario.moedas),
   ]);
 
   return {
@@ -145,6 +146,7 @@ async function buscarPerfilPublico(usuarioId) {
         email: true,
         criadoEm: true,
         xpTotal: true,
+        moedas: true,
         rankingVisivel: true,
         // aparência do herói (Personagem.aparencia), na mesma consulta
         personagem: { select: { aparencia: true } },
@@ -163,7 +165,7 @@ async function buscarPerfilPublico(usuarioId) {
   const nomeUsuario = usuario.email.split("@")[0];
   const [posicao, resumo] = await Promise.all([
     usuario.rankingVisivel ? posicaoDoUsuario(usuario.xpTotal) : null,
-    resumoJogador(usuario.id, usuario.xpTotal),
+    resumoJogador(usuario.id, usuario.xpTotal, usuario.moedas),
   ]);
 
   return {

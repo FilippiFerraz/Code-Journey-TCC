@@ -292,4 +292,11 @@ function filtroItensBauEspecial(chave) {
   return configBauEspecial(chave).filtroItens;
 }
 
-module.exports = { listarBaus, abrirBau, situacaoBauEspecial, abrirBauEspecial, filtroItensBauEspecial };
+module.exports = {
+  listarBaus,
+  abrirBau,
+  situacaoBauEspecial,
+  abrirBauEspecial,
+  filtroItensBauEspecial,
+  sortearPorRaridade,
+};

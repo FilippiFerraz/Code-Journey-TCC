@@ -1,3 +1,5 @@
+import { Snowflake } from "pixelarticons/react/Snowflake.js";
+import IconePixel from "./IconePixel";
 import "./Temporizador.css";
 
 // Temporizador em pixel art (medalhão de pedra com ampulheta + faixa com o
@@ -15,6 +17,11 @@ import "./Temporizador.css";
 // - tamanho: "pequeno" | "medio" | "grande" (padrão "medio")
 // - pausado: para a animação da ampulheta
 // - className: posicionamento vindo da tela (top/right...)
+// - congelamento: o objeto de useCongelarTempo (Ampulheta Congelada da
+//   Lojinha do Mago). Enquanto congelado, o timer fica azulado e mostra
+//   quantos segundos de gelo faltam.
+// - children: o que vai logo abaixo do timer, alinhado à direita (as telas
+//   de desafio colocam ali a mochila de itens — ver MochilaItens.jsx)
 
 // O desenho é uma grade de 56 x 22 "pixels" (proporção ~2,5:1 — um pouco
 // mais comprida que a referência pra "MM:SS" caber legível na fonte pixel). Cada pixel
@@ -191,7 +198,10 @@ export default function Temporizador({
   tamanho = "medio",
   pausado = false,
   className = "",
+  congelamento = null,
+  children,
 }) {
+  const congelado = Boolean(congelamento?.congelado);
   const esgotado = regressivo && segundos <= 0;
   const alerta = regressivo && !esgotado && segundos <= limiteAlerta;
   const estado = esgotado ? "esgotado" : alerta ? "alerta" : "normal";
@@ -207,8 +217,8 @@ export default function Temporizador({
   return (
     <div
       className={`temporizador temporizador--${tamanho} temporizador--${estado} ${
-        parado ? "temporizador--parado" : ""
-      } ${className}`}
+        parado || congelado ? "temporizador--parado" : ""
+      } ${congelado ? "temporizador--congelado" : ""} ${className}`}
       role="timer"
       aria-label={rotulo}
     >
@@ -235,6 +245,22 @@ export default function Temporizador({
       <span className="temporizador-aviso" aria-live="polite">
         {aviso}
       </span>
+
+      {(congelado || children) && (
+        <div className="temporizador-extra">
+          {congelado && (
+            <span
+              className="temporizador-congelado-selo"
+              role="status"
+              aria-label={`Tempo congelado: faltam ${congelamento.restante} segundos`}
+            >
+              <IconePixel icone={Snowflake} />
+              {congelamento.restante}s
+            </span>
+          )}
+          {children}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica } from "./components
 const {
   Cadastro, VerificarEmail, EsqueciSenha, Home, SelecionarDificuldade, Desafios,
   DesafioIntro, ResolverDesafio, DesafioChefe, DesafioIntroPocao, ResolverDesafioPocao,
-  DesafioEtapas, Perfil, Ranking, EditarPersonagem, RecompensaDesafio, BauDaSorte, DesafioRei, DesafioCristais, BatalhaDragao,
+  DesafioEtapas, Perfil, Ranking, EditarPersonagem, RecompensaDesafio, BauDaSorte, DesafioRei, DesafioCristais, BatalhaDragao, Loja,
   Configuracoes, Conta, Admin, AdminUsuarios, AdminDesafios, EditarDesafioAdmin,
   AdminDashboard, AdminLogs, AdminLoginHistorico,
 } = telas;
@@ -62,6 +62,10 @@ function App() {
                 e o Baú do Dragão — liberados com os três portais concluídos */}
             <Route path="/batalha-do-dragao" element={<BatalhaDragao />} />
             <Route path="/bau-dragao" element={<BauDaSorte bauEspecial="dragao" />} />
+            {/* Lojinha do Mago (casinha do canto do mapa) e a roleta do Baú
+                Misterioso comprado nela */}
+            <Route path="/loja" element={<Loja />} />
+            <Route path="/bau-loja" element={<BauDaSorte bauEspecial="loja" />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/perfil/:usuarioId" element={<Perfil />} />
             <Route path="/ranking" element={<Ranking />} />

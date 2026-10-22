@@ -397,6 +397,74 @@
   }
 }
 
+/* Lojinha do Mago: a arte da loja cobre a casinha azul da vila (posição em
+   LOJA, Home.jsx) e a placa fica logo abaixo dela. */
+.home-loja {
+  position: absolute;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-loja-imagem {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: filter 0.15s ease-out;
+}
+
+.home-loja:hover .home-loja-imagem,
+.home-loja:focus-visible .home-loja-imagem {
+  filter: brightness(1.15) drop-shadow(0 0 6px rgba(244, 197, 66, 0.8));
+}
+
+.home-loja:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* a placa sai do fluxo pra não mudar o centro (translate -50%) do botão;
+   alinhada à esquerda porque a loja encosta na borda do mapa (centrada,
+   ela sairia da tela no celular) */
+.home-loja-placa {
+  position: absolute;
+  top: 88%;
+  left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-weight: 900;
+  color: #f3e9d2;
+  white-space: nowrap;
+  background: #2a1f5e;
+  border: 2px solid #f4c542;
+  box-shadow: 0 0 8px rgba(244, 197, 66, 0.6);
+  animation: home-castelo-brilho 1.8s ease-in-out infinite;
+}
+
+.home-loja-icone {
+  font-size: 12px;
+  color: #f4c542;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-loja-placa {
+    animation: none;
+  }
+}
+
 /* Cristal Gigante e cachoeira -> Desafio da Cachoeira de Cristais. Botões
    sem fundo cobrindo os desenhos; a placa é um botão à parte, entre os dois. */
 .home-cristais {

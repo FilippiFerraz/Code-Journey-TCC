@@ -4,6 +4,8 @@ import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
+import { useCongelarTempo } from "../../hooks/useCongelarTempo";
+import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { pararSom, tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
@@ -11,6 +13,7 @@ import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFala
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
+import MochilaItens from "../../components/MochilaItens";
 import reiGoblinInimigo from "../../assets/images/rei_goblin_inimigo.webp";
 import fundoDesafio6P1 from "../../assets/images/Fundo_desafio_6_P1.webp";
 import "./DesafioChefe.css";
@@ -152,7 +155,8 @@ function DesafioChefe() {
   // conta desde o início da batalha até a vitória, pausando durante a
   // animação final de derrota do chefe. Mesmo hook usado em ResolverDesafio.jsx.
   const cronometroAtivo = fase === "batalha" && resultado !== "vitoria";
-  const [segundosBatalha] = useCronometro(cronometroAtivo);
+  const congelamento = useCongelarTempo(cronometroAtivo);
+  const [segundosBatalha] = useCronometro(cronometroAtivo && !congelamento.congelado);
 
   // Som de entrada do chefe, tocado assim que a cena abre. Para ao sair da
   // tela pra não continuar tocando por cima das outras páginas.
@@ -372,7 +376,10 @@ function DesafioChefe() {
           regressivo={false}
           tamanho="medio"
           pausado={!cronometroAtivo}
-        />
+          congelamento={congelamento}
+        >
+          <MochilaItens congelamento={congelamento} />
+        </Temporizador>
 
         <div className="chefe-card chefe-card-jogador">
           <span className="chefe-jogador-nome">{NOME_PERSONAGEM_PADRAO}</span>
@@ -406,6 +413,7 @@ function DesafioChefe() {
               <span className="vitoria-recompensa-valor">
                 +{recompensaApi.xpConcedidoAgora} XP • Tempo: {formatarTempo(recompensaApi.tempoSegundos ?? segundosBatalha)}
                 {recompensaApi.acertouDePrimeira ? " • Acertou de primeira!" : ""}
+                {textoMoedasElixir(recompensaApi)}
               </span>
             </div>
           )}

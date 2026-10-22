@@ -227,4 +227,27 @@ const desafioJogo = {
   },
 };
 
-module.exports = { auth, conta, perfil, personagem, progresso, bau, admin, desafioJogo };
+// ---------- /api/loja ----------
+
+// Mesmas chaves de ITENS_LOJA em services/loja.service.js.
+const ITENS_LOJA = ["congelar", "elixir", "pular", "bau"];
+
+const loja = {
+  comprar: {
+    body: { chave: campo("item", r.umDe(ITENS_LOJA)) },
+  },
+  // o elixir é bebido no desafio aberto (mundoId/dificuldade/numero)
+  usar: {
+    body: {
+      chave: campo("item", r.umDe(["congelar", "elixir"])),
+      mundoId: campo("mundo", r.opcional(r.idPositivo)),
+      dificuldade: campo("dificuldade", r.opcional(r.umDe(DIFICULDADES))),
+      numero: campo("número do desafio", r.opcional(r.idPositivo)),
+    },
+  },
+  pular: {
+    body: paramsDesafio,
+  },
+};
+
+module.exports = { auth, conta, perfil, personagem, progresso, bau, admin, desafioJogo, loja };

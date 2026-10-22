@@ -108,6 +108,15 @@ function Desafios() {
   const timeoutTremorRef = useRef(null);
   const timeoutMensagemRef = useRef(null);
 
+  // Pergaminho do Atalho (Lojinha do Mago): quantos o jogador tem, se está
+  // confirmando o uso e a mensagem do resultado. Sobe a cada uso pra
+  // recarregar o progresso.
+  const [pergaminhos, setPergaminhos] = useState(0);
+  const [confirmandoAtalho, setConfirmandoAtalho] = useState(false);
+  const [usandoAtalho, setUsandoAtalho] = useState(false);
+  const [mensagemAtalho, setMensagemAtalho] = useState("");
+  const [versaoProgresso, setVersaoProgresso] = useState(0);
+
   useEffect(() => {
     let ativo = true;
 
@@ -124,7 +133,23 @@ function Desafios() {
     return () => {
       ativo = false;
     };
-  }, [mundoId, dificuldade]);
+  }, [mundoId, dificuldade, versaoProgresso]);
+
+  useEffect(() => {
+    let ativo = true;
+    api
+      .get("/loja")
+      .then((res) => {
+        if (!ativo) return;
+        setPergaminhos(res.data.itens.find((item) => item.chave === "pular")?.quantidade ?? 0);
+      })
+      .catch(() => {
+        // sem loja — o atalho só não aparece
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -154,6 +179,30 @@ function Desafios() {
       etapasConcluidas: doProgresso?.etapasConcluidas ?? 0,
     };
   });
+
+  // O atalho vale pro próximo desafio liberado e ainda não vencido — nunca
+  // pra batalha de chefe (o backend também recusa).
+  const desafioParaPular = desafios.find((d) => d.estado === "disponivel" && !d.chefe);
+
+  async function usarAtalho() {
+    if (!desafioParaPular || usandoAtalho) return;
+    setUsandoAtalho(true);
+    try {
+      const { data } = await api.post("/loja/pular", {
+        mundoId: Number(mundoId),
+        dificuldade,
+        numero: desafioParaPular.numero,
+      });
+      setPergaminhos(data.quantidade);
+      setMensagemAtalho(`Desafio ${data.numero} pulado! O caminho à frente se abriu.`);
+      setVersaoProgresso((v) => v + 1);
+    } catch (erro) {
+      setMensagemAtalho(erro.response?.data?.erro || "O pergaminho falhou... tente de novo.");
+    } finally {
+      setUsandoAtalho(false);
+      setConfirmandoAtalho(false);
+    }
+  }
 
   const cena = CENAS_POR_MUNDO[mundoId] ?? CENA_PADRAO;
   const infoDificuldade = DIFICULDADES[dificuldade] ?? { nome: dificuldade, cor: "neutra" };
@@ -321,6 +370,56 @@ function Desafios() {
             <p className="desafios-mensagem-bloqueio" role="status" aria-live="polite">
               {mensagemBloqueio}
             </p>
+
+            {pergaminhos > 0 && desafioParaPular && (
+              <div className="desafios-atalho">
+                {confirmandoAtalho ? (
+                  <>
+                    <span className="desafios-atalho-icone" aria-hidden="true">
+                      <IconePixel icone={Script} />
+                    </span>
+                    <span className="desafios-atalho-texto">
+                      Pular o Desafio {desafioParaPular.numero}? Você não ganha XP nem moedas por ele.
+                    </span>
+                    <span className="desafios-atalho-botoes">
+                      <button
+                        type="button"
+                        className="desafios-atalho-botao desafios-atalho-botao--sim"
+                        onClick={usarAtalho}
+                        disabled={usandoAtalho}
+                      >
+                        Pular
+                      </button>
+                      <button
+                        type="button"
+                        className="desafios-atalho-botao"
+                        onClick={() => setConfirmandoAtalho(false)}
+                        disabled={usandoAtalho}
+                      >
+                        Cancelar
+                      </button>
+                    </span>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="desafios-atalho-botao desafios-atalho-botao--usar"
+                    onClick={() => {
+                      setMensagemAtalho("");
+                      setConfirmandoAtalho(true);
+                    }}
+                  >
+                    <IconePixel icone={Script} className="desafios-atalho-icone-botao" />
+                    Pergaminho do Atalho (x{pergaminhos}): pular o Desafio {desafioParaPular.numero}
+                  </button>
+                )}
+              </div>
+            )}
+            {mensagemAtalho && (
+              <p className="desafios-atalho-mensagem" role="status">
+                {mensagemAtalho}
+              </p>
+            )}
 
             <div className="desafios-emblema">
               <span className="desafios-emblema-linha" aria-hidden="true" />

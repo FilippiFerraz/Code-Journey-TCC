@@ -3,11 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import api from "../../services/api";
 import { useCronometro } from "../../hooks/useCronometro";
+import { useCongelarTempo } from "../../hooks/useCongelarTempo";
+import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
+import MochilaItens from "../../components/MochilaItens";
 import caldeirao from "../../assets/images/caldeirao.webp";
 import "./ResolverDesafioPocao.css";
 
@@ -104,7 +107,8 @@ function ResolverDesafioPocao() {
   const timeoutRejeicaoRef = useRef(null);
 
   const cronometroAtivo = !sucesso;
-  const [segundosDecorridos] = useCronometro(cronometroAtivo);
+  const congelamento = useCongelarTempo(cronometroAtivo);
+  const [segundosDecorridos] = useCronometro(cronometroAtivo && !congelamento.congelado);
 
   const ingredienteArrastando = ingredientesDisponiveis.find((i) => i.id === idArrastando);
 
@@ -234,7 +238,10 @@ function ResolverDesafioPocao() {
           segundos={segundosDecorridos}
           regressivo={false}
           tamanho="medio"
-        />
+          congelamento={congelamento}
+        >
+          <MochilaItens congelamento={congelamento} />
+        </Temporizador>
       )}
 
       {sucesso ? (
@@ -289,6 +296,7 @@ function ResolverDesafioPocao() {
               <span className="pocao-sucesso-recompensa-valor">
                 +{recompensaApi.xpConcedidoAgora} XP • Tempo:{" "}
                 {formatarTempo(recompensaApi.tempoSegundos ?? segundosDecorridos)}
+                {textoMoedasElixir(recompensaApi)}
               </span>
             </div>
           )}

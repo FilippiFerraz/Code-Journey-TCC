@@ -1,0 +1,394 @@
+/* ============================================================
+   Loja.css — Lojinha do Mago (tela cheia).
+
+   Cena no topo (fundo_loja.webp em 16:9 com o Mago.webp por cima, no
+   lugar do mago que foi apagado da arte), balcão de madeira embaixo com a
+   fala do Mago e a vitrine dos itens. Paleta tirada da própria arte:
+   azul-noite das cortinas, madeira do balcão e o âmbar das lanternas.
+   ============================================================ */
+
+.loja-tela {
+  --loja-noite: #141029;
+  --loja-noite-clara: #221c46;
+  --loja-cortina: #2e2a6e;
+  --loja-madeira: #3b2416;
+  --loja-madeira-clara: #5a3822;
+  --loja-madeira-borda: #24150c;
+  --loja-ambar: #f4a742;
+  --loja-dourado: #f4c542;
+  --loja-dourado-sombra: #8a5a12;
+  --loja-creme: #f3e9d2;
+  --loja-pergaminho: #e6d2a6;
+
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--loja-creme);
+  background: var(--loja-noite);
+  animation: loja-aparecer 0.35s ease-out both;
+}
+
+/* ---------- Cena (fundo + Mago) ---------- */
+
+.loja-cena {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: var(--loja-noite);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* escurece a base da cena, emendando com o balcão de baixo */
+.loja-cena::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 70%, var(--loja-noite) 100%);
+}
+
+/* Posição medida sobre a arte (1672x941): o corpo do Mago cobre a área
+   onde ficava o mago pintado, com os pés no tampo do balcão. A
+   "respiração" cresce a partir dos pés, então ele nunca sai do balcão. */
+.loja-mago {
+  position: absolute;
+  left: 37.1%;
+  top: 24.2%;
+  width: 22.1%;
+  height: auto;
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: 50% 92%;
+  animation: loja-mago-respirar 2.8s ease-in-out infinite;
+}
+
+.loja-voltar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  background: var(--loja-dourado-sombra);
+}
+
+.loja-voltar-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+  color: var(--loja-creme);
+  font-size: 20px;
+}
+
+.loja-voltar:focus-visible {
+  outline: none;
+}
+
+.loja-voltar:focus-visible .botao-pixel-miolo,
+.loja-comprar:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+.loja-bolsa {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-family: "Silkscreen", "Courier New", monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--loja-dourado);
+  background: rgba(20, 16, 41, 0.85);
+  border: 2px solid var(--loja-dourado-sombra);
+  box-shadow: 2px 2px 0 #000;
+  font-variant-numeric: tabular-nums;
+}
+
+.loja-moeda {
+  color: var(--loja-dourado);
+  flex-shrink: 0;
+}
+
+/* ---------- Balcão (fala + vitrine) ---------- */
+
+.loja-balcao {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 16px 24px;
+}
+
+.loja-titulo {
+  margin: 0;
+  font-family: "Silkscreen", "Courier New", monospace;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 1px;
+  color: var(--loja-dourado);
+  text-shadow: 2px 2px 0 var(--loja-madeira-borda);
+}
+
+/* balão de fala com a ponta apontando pro Mago, lá em cima */
+.loja-fala {
+  position: relative;
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #2a1a0a;
+  background: var(--loja-pergaminho);
+  border: 3px solid var(--loja-madeira);
+  box-shadow: 3px 3px 0 var(--loja-madeira-borda);
+}
+
+.loja-fala::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 48%;
+  border: 6px solid transparent;
+  border-bottom-color: var(--loja-madeira);
+  border-bottom-width: 9px;
+  border-top: none;
+}
+
+.loja-aviso {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  text-align: center;
+  color: var(--loja-pergaminho);
+}
+
+.loja-aviso p {
+  margin: 0;
+}
+
+/* ---------- Itens ---------- */
+
+.loja-itens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loja-item {
+  --loja-item-cor: var(--loja-dourado);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px;
+  background: linear-gradient(180deg, var(--loja-madeira-clara), var(--loja-madeira));
+  border: 3px solid var(--loja-madeira-borda);
+  box-shadow: inset 0 0 0 2px rgba(244, 167, 66, 0.18), 3px 3px 0 #000;
+  animation: loja-item-entrar 0.3s ease-out both;
+}
+
+.loja-item:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.loja-item:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.loja-item:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+.loja-item--gelo {
+  --loja-item-cor: #9fd8ff;
+}
+.loja-item--verde {
+  --loja-item-cor: #8fe07a;
+}
+.loja-item--roxo {
+  --loja-item-cor: #c9a2ff;
+}
+.loja-item--dourado {
+  --loja-item-cor: var(--loja-dourado);
+}
+
+.loja-item-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loja-item-icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  font-size: 26px;
+  color: var(--loja-item-cor);
+  background: var(--loja-noite);
+  border: 2px solid var(--loja-item-cor);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--loja-item-cor) 45%, transparent);
+}
+
+.loja-item-titulos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.loja-item-nome {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--loja-item-cor);
+}
+
+.loja-item-estoque {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--loja-pergaminho);
+  opacity: 0.85;
+}
+
+.loja-item-descricao {
+  flex: 1;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--loja-creme);
+}
+
+.loja-item-uso {
+  margin: 0;
+  font-size: 0.7rem;
+  font-style: italic;
+  color: var(--loja-pergaminho);
+  opacity: 0.8;
+}
+
+.loja-comprar {
+  width: 100%;
+  height: 40px;
+  margin-top: 2px;
+  background: var(--loja-dourado-sombra);
+}
+
+.loja-comprar-miolo {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 12px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: #2a1a0a;
+  background: linear-gradient(180deg, #ffd96a, var(--loja-dourado) 55%, #d99a1e);
+}
+
+/* o botão "TENTAR DE NOVO" do aviso de erro só tem texto */
+.loja-aviso .loja-comprar {
+  width: auto;
+}
+
+.loja-aviso .loja-comprar-miolo {
+  justify-content: center;
+  padding: 0 18px;
+}
+
+.loja-preco {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: "Silkscreen", "Courier New", monospace;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.loja-preco .loja-moeda {
+  color: #7a4a0a;
+}
+
+.loja-comprar:disabled {
+  cursor: default;
+  background: #2b2338;
+}
+
+.loja-comprar:disabled .loja-comprar-miolo {
+  color: var(--loja-pergaminho);
+  background: linear-gradient(180deg, #4a4458, #3a3048);
+}
+
+.loja-comprar:disabled .loja-preco .loja-moeda {
+  color: var(--loja-pergaminho);
+}
+
+.loja-dica {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--loja-pergaminho);
+  opacity: 0.85;
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes loja-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loja-mago-respirar {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.015, 1.035);
+  }
+}
+
+@keyframes loja-item-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loja-tela,
+  .loja-mago,
+  .loja-item {
+    animation: none;
+  }
+}

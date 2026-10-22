@@ -4,12 +4,15 @@ import api from "../../services/api";
 import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersonagemAvatar";
 import { APARENCIA_PADRAO } from "../../data/spritesPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
+import { useCongelarTempo } from "../../hooks/useCongelarTempo";
+import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
+import MochilaItens from "../../components/MochilaItens";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
 import IntroEtapas from "./IntroEtapas";
@@ -99,7 +102,8 @@ export default function DesafioEtapas() {
 
   // Tempo TOTAL do desafio (todas as etapas), pausado em animações/espera.
   const cronometroAtivo = fase === "batalha" && (resultado === null || resultado === "erro") && !enviando;
-  const [segundos] = useCronometro(cronometroAtivo);
+  const congelamento = useCongelarTempo(cronometroAtivo);
+  const [segundos] = useCronometro(cronometroAtivo && !congelamento.congelado);
 
   function carregar() {
     return api.get(`/desafios/${mundoId}/${dificuldade}/${desafioId}`).then(({ data }) => {
@@ -334,7 +338,9 @@ export default function DesafioEtapas() {
           />
         </div>
 
-        <Temporizador className="chefe-cronometro" segundos={segundos} regressivo={false} tamanho="medio" pausado={!cronometroAtivo} />
+        <Temporizador className="chefe-cronometro" segundos={segundos} regressivo={false} tamanho="medio" pausado={!cronometroAtivo} congelamento={congelamento}>
+          <MochilaItens congelamento={congelamento} />
+        </Temporizador>
 
         <div className="chefe-card chefe-card-jogador">
           <span className="chefe-jogador-nome">Etapa {etapaAtual} de {total}</span>
@@ -400,7 +406,9 @@ export default function DesafioEtapas() {
 
         {coracoes}
 
-        <Temporizador className="cena-cronometro" segundos={segundos} regressivo={false} tamanho="medio" pausado={!cronometroAtivo} />
+        <Temporizador className="cena-cronometro" segundos={segundos} regressivo={false} tamanho="medio" pausado={!cronometroAtivo} congelamento={congelamento}>
+          <MochilaItens congelamento={congelamento} />
+        </Temporizador>
 
         {tomandoGolpe && <div className="cena-flash" />}
       </section>
@@ -439,6 +447,7 @@ export default function DesafioEtapas() {
               <span className="vitoria-recompensa-valor">
                 +{resultadoApi.xpConcedidoAgora} XP • Tempo: {formatarTempo(resultadoApi.tempoSegundos ?? segundos)}
                 {resultadoApi.acertouDePrimeira ? " • Sem errar nenhuma etapa!" : ""}
+                {textoMoedasElixir(resultadoApi)}
               </span>
             </div>
           )}

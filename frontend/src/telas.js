@@ -32,6 +32,7 @@ const carregadores = {
   DesafioRei: () => import("./pages/DesafioRei/DesafioRei"),
   DesafioCristais: () => import("./pages/DesafioCristais/DesafioCristais"),
   BatalhaDragao: () => import("./pages/BatalhaDragao/BatalhaDragao"),
+  Loja: () => import("./pages/Loja/Loja"),
   Configuracoes: () => import("./pages/Configuracoes/Configuracoes"),
   Conta: () => import("./pages/Configuracoes/Conta/Conta"),
   Admin: () => import("./pages/Admin/Admin"),

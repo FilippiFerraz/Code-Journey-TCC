@@ -120,6 +120,15 @@ const BAUS_ESPECIAIS = {
     subtitulo: "Tesouros das cinzas do Dragão!",
     trancado: "O Baú do Dragão ainda está trancado.",
   },
+  // Baú Misterioso da Lojinha do Mago: a compra (POST /api/loja/comprar) já
+  // sorteia o item e o guarda em bauPendente:loja — aqui só gira a roleta.
+  // Sem prêmio pendente (ex: recarregou a página) não há o que abrir.
+  loja: {
+    titulo: "BAÚ MISTERIOSO!",
+    subtitulo: "Um tesouro escolhido pelo Mago!",
+    trancado: "Compre um Baú Misterioso na Lojinha do Mago para abrir.",
+    voltar: "/loja",
+  },
 };
 
 // Prêmio já sorteado pela tela anterior e guardado na sessão: a Batalha do
@@ -142,6 +151,7 @@ function premioPendente(chave) {
 async function abrirOuRecuperarBauEspecial(chave) {
   const pendente = premioPendente(chave);
   if (pendente) return { situacao: "aberto", premio: pendente };
+  if (chave === "loja") return { situacao: "bloqueado", mensagem: BAUS_ESPECIAIS.loja.trancado };
   try {
     const res = await api.post(`/baus/${chave}/abrir`);
     return { situacao: "aberto", premio: res.data.itemGanho };
@@ -317,7 +327,7 @@ function BauDaSorte({ bauEspecial = null }) {
   }
 
   function irParaHome() {
-    navigate("/home", { replace: true });
+    navigate((bauEspecial && BAUS_ESPECIAIS[bauEspecial].voltar) || "/home", { replace: true });
   }
 
   const voltarDesabilitado = fase === "carregando" || fase === "preparando" || fase === "girando";

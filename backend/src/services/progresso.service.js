@@ -3,6 +3,7 @@ const { concederItemSeNaoTiver } = require("./personagem.service");
 const { corrigirRespostaDissertativa } = require("./ia.service");
 const { temVariasEtapas } = require("./etapas.service");
 const { listarDesafiosResumo } = require("./desafiosCache");
+const { consumirElixir, moedasPorVitoria } = require("./loja.service");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -336,6 +337,16 @@ async function responderDesafio({
       : null;
   }
 
+  // Primeira vitória: moedas pra Lojinha do Mago e, se houver um Elixir do
+  // Sábio ativo, ele é gasto e o XP dobra (ver loja.service.js).
+  let moedasGanhas = 0;
+  let elixirUsado = false;
+  if (primeiraVezConcluindo) {
+    moedasGanhas = moedasPorVitoria(acertouDePrimeira);
+    elixirUsado = await consumirElixir(usuarioId);
+    if (elixirUsado) dados.xpGanho *= 2;
+  }
+
   const progresso = progressoAnterior
     ? await prisma.progresso.update({
         where: { usuarioId_desafioId: { usuarioId, desafioId: idDesafio } },
@@ -348,7 +359,7 @@ async function responderDesafio({
   if (primeiraVezConcluindo) {
     await prisma.usuario.update({
       where: { id: usuarioId },
-      data: { xpTotal: { increment: dados.xpGanho } },
+      data: { xpTotal: { increment: dados.xpGanho }, moedas: { increment: moedasGanhas } },
     });
   }
 
@@ -386,6 +397,9 @@ async function responderDesafio({
     recompensaJaRecebida,
     // Só nos desafios dissertativos: explicação da IA sobre a correção.
     feedbackIA,
+    // Lojinha do Mago: moedas ganhas agora e se um Elixir do Sábio dobrou o XP.
+    moedasGanhas,
+    elixirUsado,
   };
 }
 
@@ -482,6 +496,15 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
       : null;
   }
 
+  // Mesmas moedas e Elixir do Sábio dos desafios de etapa única.
+  let moedasGanhas = 0;
+  let elixirUsado = false;
+  if (concluiAgora) {
+    moedasGanhas = moedasPorVitoria(semErros);
+    elixirUsado = await consumirElixir(usuarioId);
+    if (elixirUsado) dados.xpGanho *= 2;
+  }
+
   const progresso = progressoAnterior
     ? await prisma.progresso.update({ where: chave, data: dados })
     : await prisma.progresso.create({ data: { usuarioId, desafioId: desafio.id, ...dados } });
@@ -489,7 +512,7 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
   if (concluiAgora) {
     await prisma.usuario.update({
       where: { id: usuarioId },
-      data: { xpTotal: { increment: dados.xpGanho } },
+      data: { xpTotal: { increment: dados.xpGanho }, moedas: { increment: moedasGanhas } },
     });
   }
 
@@ -522,6 +545,8 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
     jaConcluidoAntes: correta && ultimaEtapa && jaConcluido,
     recompensaJaRecebida,
     feedbackIA,
+    moedasGanhas,
+    elixirUsado,
   };
 }
 
