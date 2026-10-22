@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Download } from "lucide-react";
 import MainLayout from "../../../layouts/MainLayout";
@@ -25,6 +25,8 @@ function AdminUsuarios() {
   const [erro, setErro] = useState("");
   const [processandoId, setProcessandoId] = useState(null);
   const [exportando, setExportando] = useState(false);
+  // Linha com a faixa de ações aberta (botão "Gerenciar"); null = nenhuma.
+  const [expandidoId, setExpandidoId] = useState(null);
 
   useEffect(() => {
     api
@@ -144,6 +146,36 @@ function AdminUsuarios() {
     }
   }
 
+  // Libera o jogo inteiro pra conta (contas de teste/apresentação): todos os
+  // desafios concluídos — portais, minijogos e baús liberados — e todos os
+  // itens no inventário, sem dar XP (não mexe no ranking). Não apaga nada;
+  // pra voltar atrás, "Reiniciar progresso".
+  async function liberarTudo(usuario) {
+    const identificacao = usuario.nome || usuario.email;
+    const confirmado = window.confirm(
+      `Liberar o jogo inteiro para "${identificacao}"?\n\n` +
+        "• Todos os desafios ficam concluídos (portais, minijogos e baús liberados)\n" +
+        "• Todos os itens do jogo vão para o inventário\n" +
+        "• Não dá XP nem moedas (o ranking não muda)\n\n" +
+        'Para desfazer, use "Reiniciar progresso".'
+    );
+    if (!confirmado) return;
+
+    setProcessandoId(usuario.id);
+    try {
+      const { data } = await api.post(`/admin/usuarios/${usuario.id}/liberar-tudo`);
+      window.alert(
+        `Jogo liberado para "${identificacao}": ${data.desafiosLiberados} desafio(s) concluído(s) agora ` +
+          `(${data.totalDesafios} no jogo) e ${data.itensNovos} item(ns) novo(s) ` +
+          `(${data.totalItens} no jogo).`
+      );
+    } catch (err) {
+      window.alert(err.response?.data?.erro || "Não foi possível liberar o jogo para este usuário.");
+    } finally {
+      setProcessandoId(null);
+    }
+  }
+
   // Baixa os mesmos usuários da busca atual como planilha .xlsx. Precisa
   // passar pelo axios (não um <a href> direto) pra ir com o header
   // Authorization — é assim que a rota, protegida por autenticar, aceita a
@@ -237,71 +269,107 @@ function AdminUsuarios() {
                     const processando = processandoId === usuario.id;
                     const ehAdmin = usuario.role === "administrador";
 
+                    const expandido = expandidoId === usuario.id;
+
                     return (
-                      <tr
-                        key={usuario.id}
-                        className={!usuario.ativo ? "admin-usuarios-linha--inativo" : ""}
-                      >
-                        <td>{usuario.nome || "—"}</td>
-                        <td>{usuario.email || "—"}</td>
-                        <td>
-                          <span
-                            className={`admin-usuarios-selo ${ehAdmin ? "admin-usuarios-selo--admin" : ""}`}
-                          >
-                            {ehAdmin ? "Admin" : "Jogador"}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`admin-usuarios-selo ${
-                              usuario.ativo ? "admin-usuarios-selo--ativo" : "admin-usuarios-selo--inativo"
-                            }`}
-                          >
-                            {usuario.ativo ? "Ativo" : "Desativado"}
-                          </span>
-                        </td>
-                        <td>{usuario.xpTotal}</td>
-                        <td>{formatarData(usuario.criadoEm)}</td>
-                        <td className="admin-usuarios-acoes">
-                          <button
-                            type="button"
-                            className="admin-usuarios-acao"
-                            disabled={souEu || processando}
-                            title={souEu ? "Você não pode alterar seu próprio papel" : undefined}
-                            onClick={() => alternarRole(usuario)}
-                          >
-                            {ehAdmin ? "Remover admin" : "Promover"}
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-usuarios-acao admin-usuarios-acao--perigo"
-                            disabled={souEu || processando}
-                            title={souEu ? "Você não pode desativar sua própria conta" : undefined}
-                            onClick={() => alternarAtivo(usuario)}
-                          >
-                            {usuario.ativo ? "Desativar" : "Reativar"}
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-usuarios-acao admin-usuarios-acao--aviso"
-                            disabled={processando}
-                            onClick={() => resetarProgresso(usuario)}
-                          >
-                            Reiniciar progresso
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-usuarios-acao"
-                            onClick={() =>
-                              navigate(
-                                `/admin/login-historico?busca=${encodeURIComponent(usuario.email)}`
-                              )
-                            }
-                          >
-                            Ver logins
-                          </button>
-                        </td>
-                      </tr>
+                      <Fragment key={usuario.id}>
+                        <tr
+                          className={`${!usuario.ativo ? "admin-usuarios-linha--inativo" : ""} ${
+                            expandido ? "admin-usuarios-linha--expandida" : ""
+                          }`}
+                        >
+                          <td>{usuario.nome || "—"}</td>
+                          <td className="admin-usuarios-email">{usuario.email || "—"}</td>
+                          <td>
+                            <span
+                              className={`admin-usuarios-selo ${ehAdmin ? "admin-usuarios-selo--admin" : ""}`}
+                            >
+                              {ehAdmin ? "Admin" : "Jogador"}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              className={`admin-usuarios-selo ${
+                                usuario.ativo ? "admin-usuarios-selo--ativo" : "admin-usuarios-selo--inativo"
+                              }`}
+                            >
+                              {usuario.ativo ? "Ativo" : "Desativado"}
+                            </span>
+                          </td>
+                          <td>{usuario.xpTotal}</td>
+                          <td>{formatarData(usuario.criadoEm)}</td>
+                          <td>
+                            <button
+                              type="button"
+                              className={`admin-usuarios-acao admin-usuarios-gerenciar ${
+                                expandido ? "admin-usuarios-gerenciar--aberto" : ""
+                              }`}
+                              onClick={() => setExpandidoId(expandido ? null : usuario.id)}
+                              aria-expanded={expandido}
+                              aria-controls={`acoes-usuario-${usuario.id}`}
+                            >
+                              Gerenciar {expandido ? "▴" : "▾"}
+                            </button>
+                          </td>
+                        </tr>
+                        {/* Ações da conta numa faixa abaixo da linha: com todos os
+                            botões na própria linha, a coluna empurrava a tabela
+                            pra fora da tela no desktop. */}
+                        {expandido && (
+                        <tr className="admin-usuarios-linha-acoes" id={`acoes-usuario-${usuario.id}`}>
+                          <td colSpan={7}>
+                            <div className="admin-usuarios-acoes-lista">
+                              <button
+                                type="button"
+                                className="admin-usuarios-acao"
+                                disabled={souEu || processando}
+                                title={souEu ? "Você não pode alterar seu próprio papel" : undefined}
+                                onClick={() => alternarRole(usuario)}
+                              >
+                                {ehAdmin ? "Remover admin" : "Promover"}
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-usuarios-acao admin-usuarios-acao--perigo"
+                                disabled={souEu || processando}
+                                title={souEu ? "Você não pode desativar sua própria conta" : undefined}
+                                onClick={() => alternarAtivo(usuario)}
+                              >
+                                {usuario.ativo ? "Desativar" : "Reativar"}
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-usuarios-acao admin-usuarios-acao--aviso"
+                                disabled={processando}
+                                onClick={() => resetarProgresso(usuario)}
+                              >
+                                Reiniciar progresso
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-usuarios-acao admin-usuarios-acao--sucesso"
+                                disabled={!usuario.ativo || processando}
+                                title={!usuario.ativo ? "Reative a conta antes de liberar o jogo" : undefined}
+                                onClick={() => liberarTudo(usuario)}
+                              >
+                                Liberar tudo
+                              </button>
+                              <button
+                                type="button"
+                                className="admin-usuarios-acao"
+                                onClick={() =>
+                                  navigate(
+                                    `/admin/login-historico?busca=${encodeURIComponent(usuario.email)}`
+                                  )
+                                }
+                              >
+                                Ver logins
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        )}
+                      </Fragment>
                     );
                   })}
                 </tbody>

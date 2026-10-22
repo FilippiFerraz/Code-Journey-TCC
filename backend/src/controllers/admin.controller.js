@@ -78,6 +78,16 @@ async function postResetarProgresso(req, res, next) {
   }
 }
 
+async function postLiberarTudo(req, res, next) {
+  try {
+    const usuarioIdAlvo = idParametroOuFalhar(req);
+    const resultado = await adminService.liberarTudoParaUsuario(req.usuarioAdmin, usuarioIdAlvo);
+    res.status(200).json(resultado);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getStatus,
   getUsuarios,
@@ -85,4 +95,5 @@ module.exports = {
   putUsuarioRole,
   putUsuarioAtivo,
   postResetarProgresso,
+  postLiberarTudo,
 };

@@ -6,6 +6,7 @@ const {
   putUsuarioRole,
   putUsuarioAtivo,
   postResetarProgresso,
+  postLiberarTudo,
 } = require("../controllers/admin.controller.js");
 const {
   getDesafios,
@@ -49,6 +50,11 @@ router.put("/usuarios/:usuarioId/ativo", validar(esquemas.alterarAtivo), putUsua
 // concluídos, itens do inventário e baús abertos, e zera o XP. A conta em
 // si (nome, e-mail, senha, papel) não é tocada. Ação irreversível.
 router.post("/usuarios/:usuarioId/resetar-progresso", validar(esquemas.usuarioId), postResetarProgresso);
+
+// POST /api/admin/usuarios/:usuarioId/liberar-tudo — conclui todos os
+// desafios (sem XP) e dá todos os itens do jogo pra conta: portais,
+// minijogos e baús liberados. Não duplica nada; pode repetir.
+router.post("/usuarios/:usuarioId/liberar-tudo", validar(esquemas.usuarioId), postLiberarTudo);
 
 // GET /api/admin/desafios — lista todos os desafios cadastrados (qualquer
 // mundo/trilha), pra tela de gestão de desafios e recompensas.

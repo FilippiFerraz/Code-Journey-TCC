@@ -92,14 +92,16 @@
 
 .admin-usuarios-tabela {
   width: 100%;
-  min-width: 760px;
+  /* abaixo disso (celular) a tabela rola na horizontal */
+  min-width: 620px;
   border-collapse: collapse;
   font-size: 13px;
 }
 
 .admin-usuarios-tabela th,
 .admin-usuarios-tabela td {
-  padding: 10px 12px;
+  /* 8px nas laterais: com 12px a tabela passava da largura do desktop */
+  padding: 10px 8px;
   text-align: left;
   white-space: nowrap;
 }
@@ -154,9 +156,18 @@
 }
 
 /* ---------- Ações ---------- */
-.admin-usuarios-acoes {
+/* botões de ação da conta, na faixa aberta pelo "Gerenciar" */
+.admin-usuarios-acoes-lista {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
+}
+
+/* e-mail longo quebra em vez de alargar a tabela */
+.admin-usuarios-tabela td.admin-usuarios-email {
+  white-space: normal;
+  word-break: break-all;
+  min-width: 140px;
 }
 
 .admin-usuarios-acao {
@@ -186,6 +197,12 @@
 .admin-usuarios-acao--aviso {
   border-color: var(--laranja);
   color: var(--laranja);
+}
+
+/* "Liberar tudo" (dá acesso ao jogo inteiro) */
+.admin-usuarios-acao--sucesso {
+  border-color: #15803d;
+  color: #15803d;
 }
 
 /* ---------- Paginação ---------- */
@@ -218,4 +235,24 @@
   color: var(--texto-suave);
   text-align: center;
   flex: 1;
+}
+
+/* ---------- Faixa de ações (botão "Gerenciar") ---------- */
+.admin-usuarios-gerenciar--aberto {
+  color: #ffffff;
+  background: var(--roxo-forte);
+  border-color: var(--roxo-forte);
+}
+
+.admin-usuarios-linha--expandida td {
+  border-bottom-color: transparent;
+}
+
+.admin-usuarios-linha-acoes td {
+  padding-top: 0;
+  background: #f7f5fb;
+}
+
+.admin-usuarios-linha-acoes .admin-usuarios-acoes-lista {
+  padding: 10px 0 4px;
 }

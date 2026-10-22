@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const { esquecerConta } = require("../utils/sessaoCache");
 const { registrarLog } = require("./log.service");
+const { liberarTudo } = require("./liberacao.service");
 
 const PAPEIS_VALIDOS = ["jogador", "administrador"];
 const LIMITE_PADRAO = 20;
@@ -216,6 +217,36 @@ async function resetarProgresso(admin, usuarioId) {
   return { id: usuarioId, xpTotal: 0 };
 }
 
+// Libera o jogo inteiro pra conta escolhida no painel: todos os desafios
+// concluídos (portais, minijogos e baús liberados) e todos os itens no
+// inventário — ver liberacao.service.js. Pensado pra contas de teste e de
+// apresentação; fica registrado no log de auditoria.
+async function liberarTudoParaUsuario(admin, usuarioId) {
+  const usuario = await buscarUsuarioOuFalhar(usuarioId);
+  if (usuario.deletedAt) throw erroDeValidacao("Reative a conta antes de liberar o jogo pra ela.");
+
+  const resultado = await liberarTudo(usuarioId);
+
+  await registrarLog({
+    usuarioId: admin.id,
+    nomeUsuario: admin.nome,
+    role: admin.role,
+    acao: "usuario.liberarTudo",
+    entidade: "Usuario",
+    entidadeId: usuarioId,
+    descricao:
+      `Liberou o jogo inteiro para "${usuario.nome || usuario.email}" — ` +
+      `${resultado.desafiosLiberados} desafio(s) concluído(s) agora e ` +
+      `${resultado.itensNovos} item(ns) novo(s) no inventário.`,
+    alteracoes: {
+      desafiosLiberados: { de: 0, para: resultado.desafiosLiberados },
+      itensNovos: { de: 0, para: resultado.itensNovos },
+    },
+  });
+
+  return { id: usuarioId, ...resultado };
+}
+
 // Gera a planilha XLSX com os mesmos usuários (e o mesmo filtro de busca)
 // que a tabela de administração mostra — sem paginação, pra sair tudo que
 // bate com a busca de uma vez. Devolve o arquivo já como Buffer, pronto
@@ -279,5 +310,6 @@ module.exports = {
   alterarRole,
   alterarAtivo,
   resetarProgresso,
+  liberarTudoParaUsuario,
   exportarUsuariosXlsx,
 };
