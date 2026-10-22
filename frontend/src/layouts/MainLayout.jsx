@@ -5,6 +5,7 @@ import { NavLink, useLocation } from "react-router-dom";
 // principal que TODA tela (inclusive o Login, no celular) baixa primeiro.
 const PerfilJogadorCard = lazy(() => import("../components/PerfilJogadorCard"));
 import logo from "../assets/images/logo.webp";
+import ControleMusica from "../components/ControleMusica";
 import { useEhAdministrador } from "../hooks/useEhAdministrador";
 import { useIsMobile } from "../hooks/useIsMobile";
 import "./MainLayout.css";
@@ -197,7 +198,10 @@ function MainLayout({ titulo, children, buscaHeader }) {
             coluna do meio (1fr) em vez da direita quando ninguém passa
             buscaHeader. */}
         <div className="layout-header-busca">{buscaHeader}</div>
-        <img src={logo} alt="Code Journey" className="layout-header-logo" />
+        <div className="layout-header-acoes">
+          <ControleMusica variante="cabecalho" />
+          <img src={logo} alt="Code Journey" className="layout-header-logo" />
+        </div>
       </header>
       <div className="layout-linha-gradiente" />
 

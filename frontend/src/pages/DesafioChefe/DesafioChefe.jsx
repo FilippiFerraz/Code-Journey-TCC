@@ -15,6 +15,7 @@ import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
 import MochilaItens from "../../components/MochilaItens";
+import ControleMusica from "../../components/ControleMusica";
 import reiGoblinInimigo from "../../assets/images/rei_goblin_inimigo.webp";
 import fundoDesafio6P1 from "../../assets/images/Fundo_desafio_6_P1.webp";
 import "./DesafioChefe.css";
@@ -374,6 +375,7 @@ function DesafioChefe() {
           pausado={!cronometroAtivo}
           congelamento={congelamento}
         >
+          <ControleMusica variante="jogo" />
           <MochilaItens congelamento={congelamento} />
         </Temporizador>
 

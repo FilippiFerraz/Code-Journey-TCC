@@ -12,6 +12,7 @@ import { useSalvarVitoria } from "../../hooks/useSalvarVitoria";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
 import MochilaItens from "../../components/MochilaItens";
+import ControleMusica from "../../components/ControleMusica";
 import caldeirao from "../../assets/images/caldeirao.webp";
 import "./ResolverDesafioPocao.css";
 
@@ -236,6 +237,7 @@ function ResolverDesafioPocao() {
           tamanho="medio"
           congelamento={congelamento}
         >
+          <ControleMusica variante="jogo" />
           <MochilaItens congelamento={congelamento} />
         </Temporizador>
       )}

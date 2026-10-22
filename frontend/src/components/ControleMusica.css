@@ -1,0 +1,184 @@
+/* ============================================================
+   ControleMusica.css — botão de volume da música + painel (deslizante e
+   mudo). Ver ControleMusica.jsx.
+   ============================================================ */
+
+.musica-controle {
+  position: relative;
+  line-height: normal;
+}
+
+.musica-botao {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.musica-botao:focus-visible,
+.musica-mudo:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* telas de jogo: mesmo tamanho/estilo da mochila */
+.musica-controle--jogo .musica-botao {
+  width: 46px;
+  height: 46px;
+  font-size: 26px;
+  color: #f4c542;
+  background: rgba(20, 16, 41, 0.78);
+  border: 2px solid #8a5a12;
+  box-shadow: 2px 2px 0 #0d0c18;
+}
+
+/* cabeçalho roxo do MainLayout */
+.musica-controle--cabecalho .musica-botao {
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+}
+
+.musica-controle--cabecalho .musica-botao:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.musica-botao--mudo {
+  opacity: 0.75;
+}
+
+/* ---------- Painel ---------- */
+
+.musica-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  color: #f3e9d2;
+}
+
+/* aberto pelo botão: cartão abaixo dele, alinhado à direita */
+.musica-painel--popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1100;
+  width: 230px;
+  box-sizing: border-box;
+  padding: 12px;
+  background: linear-gradient(180deg, #5a3822, #3b2416);
+  border: 3px solid #24150c;
+  box-shadow: inset 0 0 0 2px rgba(244, 167, 66, 0.25), 3px 3px 0 #000;
+  animation: musica-abrir 0.15s ease-out both;
+}
+
+.musica-painel-rotulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #f4c542;
+}
+
+.musica-painel-valor {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: #f3e9d2;
+}
+
+.musica-painel-linha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.musica-mudo {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 20px;
+  color: #2a1a0a;
+  background: linear-gradient(180deg, #ffd96a, #f4c542 55%, #d99a1e);
+  border: 2px solid #8a5a12;
+  cursor: pointer;
+}
+
+.musica-mudo--ativo {
+  color: #f3e9d2;
+  background: #4a4458;
+  border-color: #24150c;
+}
+
+/* deslizante em pixel: trilho escuro preenchido de dourado até o valor */
+.musica-volume {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.musica-volume::-webkit-slider-runnable-track {
+  height: 10px;
+  background: linear-gradient(90deg, #f4c542 var(--preenchido), #141029 var(--preenchido));
+  border: 2px solid #24150c;
+}
+
+.musica-volume::-moz-range-track {
+  height: 10px;
+  background: linear-gradient(90deg, #f4c542 var(--preenchido), #141029 var(--preenchido));
+  border: 2px solid #24150c;
+}
+
+.musica-volume::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 22px;
+  margin-top: -8px;
+  background: #f3e9d2;
+  border: 2px solid #24150c;
+  box-shadow: 2px 2px 0 #000;
+}
+
+.musica-volume::-moz-range-thumb {
+  width: 16px;
+  height: 20px;
+  background: #f3e9d2;
+  border: 2px solid #24150c;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 #000;
+}
+
+.musica-volume:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+@keyframes musica-abrir {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .musica-painel--popover {
+    animation: none;
+  }
+}

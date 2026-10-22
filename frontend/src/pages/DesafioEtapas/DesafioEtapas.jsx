@@ -13,6 +13,7 @@ import BotaoPixel from "../../components/BotaoPixel";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
 import MochilaItens from "../../components/MochilaItens";
+import ControleMusica from "../../components/ControleMusica";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
 import IntroEtapas from "./IntroEtapas";
@@ -339,6 +340,7 @@ export default function DesafioEtapas() {
         </div>
 
         <Temporizador className="chefe-cronometro" segundos={segundos} regressivo={false} tamanho="medio" pausado={!cronometroAtivo} congelamento={congelamento}>
+          <ControleMusica variante="jogo" />
           <MochilaItens congelamento={congelamento} />
         </Temporizador>
 
@@ -407,6 +409,7 @@ export default function DesafioEtapas() {
         {coracoes}
 
         <Temporizador className="cena-cronometro" segundos={segundos} regressivo={false} tamanho="medio" pausado={!cronometroAtivo} congelamento={congelamento}>
+          <ControleMusica variante="jogo" />
           <MochilaItens congelamento={congelamento} />
         </Temporizador>
 

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import BotaoPixel from "../../components/BotaoPixel";
+import { PainelVolume } from "../../components/ControleMusica";
 import personagemIcon from "../../assets/images/personagem.png";
 import portaIcon from "../../assets/images/porta.png";
 import "./Configuracoes.css";
@@ -33,6 +34,13 @@ function Configuracoes() {
             <img src={personagemIcon} alt="" className="configuracoes-icone" />
             Conta
           </BotaoPixel>
+        </section>
+
+        {/* Som: volume e mudo da música de fundo (mesmos controles do botão
+            de alto-falante do cabeçalho — ver components/ControleMusica.jsx) */}
+        <section className="configuracoes-secao">
+          <h2 className="configuracoes-secao-titulo">Som</h2>
+          <PainelVolume className="configuracoes-musica" />
         </section>
 
         {/* Seção de Ações (embaixo, próximo ao footer) */}

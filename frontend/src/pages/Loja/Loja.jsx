@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import IconePixel from "../../components/IconePixel";
+import ControleMusica from "../../components/ControleMusica";
 import { tocarSom } from "../../utils/sons";
 import fundoLoja from "../../assets/images/fundo_loja.webp";
 import mago from "../../assets/images/Mago.webp";
@@ -197,10 +198,13 @@ function Loja() {
 
         <img src={mago} alt="O Mago, dono da loja" className="loja-mago" draggable={false} />
 
-        {/* mesmo saldo do "Ouro" do card de perfil */}
-        <div className="loja-bolsa" aria-label={`Você tem ${moedas} moedas de ouro`}>
-          <IconePixel icone={Coins} className="loja-moeda" />
-          <span>{fase === "pronta" ? moedas : "..."}</span>
+        <div className="loja-topo-direita">
+          <ControleMusica variante="jogo" />
+          {/* mesmo saldo do "Ouro" do card de perfil */}
+          <div className="loja-bolsa" aria-label={`Você tem ${moedas} moedas de ouro`}>
+            <IconePixel icone={Coins} className="loja-moeda" />
+            <span>{fase === "pronta" ? moedas : "..."}</span>
+          </div>
         </div>
       </section>
 

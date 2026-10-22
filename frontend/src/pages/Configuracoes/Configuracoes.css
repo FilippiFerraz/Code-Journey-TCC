@@ -42,6 +42,14 @@
   text-transform: uppercase;
 }
 
+/* Volume da música: o painel de ControleMusica.css num cartão no roxo da tela */
+.configuracoes-musica {
+  padding: 14px 16px;
+  background: var(--roxo-forte);
+  border: 3px solid var(--roxo-forte);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+
 /* ---------- Botões ---------- */
 .configuracoes-botao {
   display: block;

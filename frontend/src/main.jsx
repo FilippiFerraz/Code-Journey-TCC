@@ -9,6 +9,7 @@ import './estilos'
 import App from './App.jsx'
 import { carregarTela } from './telas'
 import { adiantarLeituras } from './services/adiantarLeituras'
+import { iniciarMusica } from './utils/musica'
 
 // Quem já está logado e abre direto na Home: começa a baixar o código da tela
 // JÁ, em paralelo com o resto (antes era em fila: este pacote -> checagem da
@@ -30,6 +31,17 @@ if (temToken() && window.location.pathname === '/home') {
 if (temToken()) {
   adiantarLeituras(window.location.pathname)
 }
+
+// Música de fundo: os navegadores só deixam tocar som depois de uma
+// interação do jogador — começa no primeiro clique/toque/tecla (ver
+// utils/musica.js).
+function comecarMusica() {
+  iniciarMusica()
+  window.removeEventListener('pointerdown', comecarMusica)
+  window.removeEventListener('keydown', comecarMusica)
+}
+window.addEventListener('pointerdown', comecarMusica)
+window.addEventListener('keydown', comecarMusica)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

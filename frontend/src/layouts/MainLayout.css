@@ -67,6 +67,13 @@
   font-size: 16px;
 }
 
+/* coluna da direita: volume da música + logo */
+.layout-header-acoes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .layout-header-logo {
   width: 40px;
   height: 40px;

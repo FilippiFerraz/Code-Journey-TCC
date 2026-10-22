@@ -16,6 +16,7 @@ import { useSalvarVitoria } from "../../hooks/useSalvarVitoria";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
 import MochilaItens from "../../components/MochilaItens";
+import ControleMusica from "../../components/ControleMusica";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
@@ -1106,6 +1107,7 @@ function ResolverDesafio() {
           pausado={!cronometroAtivo}
           congelamento={congelamento}
         >
+          <ControleMusica variante="jogo" />
           <MochilaItens congelamento={congelamento} />
         </Temporizador>
 

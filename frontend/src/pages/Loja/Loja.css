@@ -96,11 +96,24 @@
   outline-offset: -7px;
 }
 
-.loja-bolsa {
+/* canto superior direito da cena: volume da música + bolsa de moedas */
+.loja-topo-direita {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 2;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loja-topo-direita .musica-botao {
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+}
+
+.loja-bolsa {
   display: flex;
   align-items: center;
   gap: 6px;

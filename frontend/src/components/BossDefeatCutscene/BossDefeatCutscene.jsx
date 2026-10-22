@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { usePausarMusica } from "../../utils/musica";
 import "@fontsource/press-start-2p/latin-400.css";
 import { ALTURA, LARGURA } from "./cenario";
 import { carregarRecursos } from "./recursos";
@@ -39,6 +40,10 @@ function lerMudo() {
 }
 
 export default function BossDefeatCutscene({ camadas = [], permitirPular = false, onConcluir }) {
+  // A cutscene tem trilha própria: a música de fundo do jogo fica em silêncio
+  // enquanto ela estiver na tela (ver utils/musica.js).
+  usePausarMusica();
+
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
   const concluirRef = useRef(() => {});
