@@ -2,13 +2,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 
 // Velocidade da caminhada em "% da altura do mapa por segundo" — com o
-// mapa atual, ir de um portal ao vizinho leva uns 2 s, em qualquer tamanho
+// mapa atual, ir de um portal ao vizinho leva uns 1 s, em qualquer tamanho
 // de tela (a distância é medida na proporção real da imagem).
-const VELOCIDADE = 14;
+const VELOCIDADE = 28;
 // Teto pra viagens longas (ex: da estrada de início até o último portal).
-const DURACAO_MAXIMA_MS = 4000;
+const DURACAO_MAXIMA_MS = 2200;
 // Mesma duração da animação home-viajante-entrar em Home.css.
-const DURACAO_ENTRADA_MS = 550;
+const DURACAO_ENTRADA_MS = 420;
 
 // Personagem do jogador andando pela estrada do mapa da Home, de ponto em
 // ponto de `pontos` (ver trechoEntre em caminhoMapa.js), com o mesmo visual

@@ -11,6 +11,8 @@ import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
+import AvisoSalvamento from "../../components/AvisoSalvamento";
+import { useSalvarVitoria } from "../../hooks/useSalvarVitoria";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
 import MochilaItens from "../../components/MochilaItens";
@@ -300,7 +302,9 @@ function ResolverDesafio() {
   // Resposta de POST /api/progresso (xpGanho, itemGanho, ...), levada pra
   // tela de recompensa. Fica null se a chamada ainda não voltou ou falhou —
   // RecompensaDesafio cai de volta pro conteúdo hardcoded nesse caso.
-  const [recompensaApi, setRecompensaApi] = useState(null);
+  // Vitória salva no servidor (ou não) — ver hooks/useSalvarVitoria.js.
+  const salvamento = useSalvarVitoria({ mundoId, dificuldade, desafioId });
+  const recompensaApi = salvamento.resultado;
 
   // Popup de confirmação do botão "Voltar" — sair no meio de uma tentativa
   // descarta a vida/blocos/resposta em andamento (nada disso é persistido),
@@ -352,20 +356,13 @@ function ResolverDesafio() {
   // tiver um) assim que a resposta certa é confirmada. Roda em paralelo com
   // a animação de vencer() — se falhar (ex: offline), o jogo continua e a
   // tela de recompensa usa o conteúdo hardcoded como reserva.
-  async function registrarVitoria(respostaExtra) {
-    try {
-      const resposta = await api.post("/progresso", {
-        mundoId: Number(mundoId),
-        dificuldade,
-        numero: Number(desafioId),
-        tempoSegundos: segundosDecorridos,
-        ...respostaExtra,
-      });
-      setRecompensaApi(resposta.data);
-    } catch (erro) {
-      console.error("Não foi possível registrar o progresso no servidor:", erro);
-    }
+  function registrarVitoria(respostaExtra) {
+    salvamento.salvar({
+      tempoSegundos: segundosDecorridos,
+      ...respostaExtra,
+    });
   }
+
 
   function vencer() {
     tocarSom("acerto");
@@ -481,7 +478,7 @@ function ResolverDesafio() {
     setFeedbackDissertativa(dados.feedbackIA || "");
 
     if (dados.correta) {
-      setRecompensaApi(dados);
+      salvamento.marcarSalvo(dados);
       vencer();
     } else {
       sofrerGolpe(vida - 1);
@@ -628,7 +625,7 @@ function ResolverDesafio() {
     setResultado(null);
     setOpcaoSelecionada(null);
     setTomandoGolpe(false);
-    setRecompensaApi(null);
+    salvamento.reiniciar();
     reiniciarCronometro();
     // reset das flags de animação da batalha anterior, senão uma nova
     // tentativa pode começar com o slime já "morto" ou a câmera focada nele
@@ -706,10 +703,12 @@ function ResolverDesafio() {
             </div>
           )}
 
+          <AvisoSalvamento salvamento={salvamento} onRefazer={() => navigate(0)} />
           <BotaoPixel
             className="botao-avante"
             classeMiolo="botao-avante-miolo"
             onClick={irParaRecompensa}
+            disabled={!salvamento.salvo}
           >
             VER RECOMPENSA
           </BotaoPixel>

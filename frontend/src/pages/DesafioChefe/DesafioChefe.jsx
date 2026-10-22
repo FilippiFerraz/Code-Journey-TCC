@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
@@ -9,6 +8,8 @@ import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { pararSom, tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
+import AvisoSalvamento from "../../components/AvisoSalvamento";
+import { useSalvarVitoria } from "../../hooks/useSalvarVitoria";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
@@ -134,7 +135,9 @@ function DesafioChefe() {
 
   // Resposta de POST /api/progresso, levada pra tela de recompensa — mesmo
   // padrão de ResolverDesafio.jsx.
-  const [recompensaApi, setRecompensaApi] = useState(null);
+  // Vitória salva no servidor (ou não) — ver hooks/useSalvarVitoria.js.
+  const salvamento = useSalvarVitoria({ mundoId, dificuldade, desafioId });
+  const recompensaApi = salvamento.resultado;
 
   // Popup de confirmação do botão "Voltar" — mesmo padrão de
   // ResolverDesafio.jsx: sair no meio da batalha descarta a vida do chefe
@@ -192,20 +195,13 @@ function DesafioChefe() {
   // fluxo de ResolverDesafio.jsx — roda em paralelo com a animação de
   // derrota do chefe; se falhar, a tela de recompensa cai pro conteúdo
   // hardcoded como reserva.
-  async function registrarVitoria(respostas) {
-    try {
-      const resposta = await api.post("/progresso", {
-        mundoId: Number(mundoId),
-        dificuldade,
-        numero: Number(desafioId),
-        tempoSegundos: segundosBatalha,
-        respostas,
-      });
-      setRecompensaApi(resposta.data);
-    } catch (erro) {
-      console.error("Não foi possível registrar o progresso no servidor:", erro);
-    }
+  function registrarVitoria(respostas) {
+    salvamento.salvar({
+      tempoSegundos: segundosBatalha,
+      respostas,
+    });
   }
+
 
   function irParaRecompensa() {
     navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
@@ -418,10 +414,12 @@ function DesafioChefe() {
             </div>
           )}
 
+          <AvisoSalvamento salvamento={salvamento} onRefazer={() => navigate(0)} />
           <BotaoPixel
             className="botao-avante"
             classeMiolo="botao-avante-miolo"
             onClick={irParaRecompensa}
+            disabled={!salvamento.salvo}
           >
             VER RECOMPENSA
           </BotaoPixel>

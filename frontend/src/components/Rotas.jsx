@@ -4,6 +4,7 @@ import MainLayout from "../layouts/MainLayout";
 import api from "../services/api";
 import { temToken, verificarAdmin, verificarSessao } from "../services/sessao";
 import { desafioConcluido, desafioLiberado, mundoLiberado } from "../data/progresso";
+import { temTelaPropria } from "../data/telasDesafio";
 import { prefetchTelas } from "../telas";
 import { precarregarSons } from "../utils/sons";
 
@@ -75,6 +76,18 @@ export function RotaAdmin() {
 export function RotaPublica() {
   if (temToken()) return <Navigate to="/home" replace />;
   return <Outlet />;
+}
+
+// Telas com conteúdo fixo no frontend (ver data/telasDesafio.js): só abrem
+// os desafios que elas conhecem. Qualquer outro (link antigo, URL digitada,
+// desafio novo cadastrado pelo admin) vai pra tela genérica /etapas, que
+// busca conteúdo e correção na API — antes caía no conteúdo do desafio 1.
+export function TelaPropria({ tela, children }) {
+  const { mundoId, dificuldade, desafioId } = useParams();
+  if (!temTelaPropria(tela, mundoId, desafioId)) {
+    return <Navigate to={`/etapas/${mundoId}/${dificuldade}/${desafioId}`} replace />;
+  }
+  return children;
 }
 
 // Telas de jogo que dependem do progresso (GET /api/progresso), com as

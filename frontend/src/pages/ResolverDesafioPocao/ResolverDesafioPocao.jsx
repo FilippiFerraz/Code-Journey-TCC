@@ -1,13 +1,14 @@
 import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import api from "../../services/api";
 import { useCronometro } from "../../hooks/useCronometro";
 import { useCongelarTempo } from "../../hooks/useCongelarTempo";
 import { textoMoedasElixir } from "../../utils/loja";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
+import AvisoSalvamento from "../../components/AvisoSalvamento";
+import { useSalvarVitoria } from "../../hooks/useSalvarVitoria";
 import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
 import Temporizador from "../../components/Temporizador";
 import MochilaItens from "../../components/MochilaItens";
@@ -96,7 +97,9 @@ function ResolverDesafioPocao() {
   // padrão de ResolverDesafio.jsx. Hoje o backend ainda não conhece o tipo
   // "montar_pocao" (ver TODO no topo do arquivo), então essa chamada tende
   // a falhar por enquanto — o catch já trata isso sem travar o jogo.
-  const [recompensaApi, setRecompensaApi] = useState(null);
+  // Vitória salva no servidor (ou não) — ver hooks/useSalvarVitoria.js.
+  const salvamento = useSalvarVitoria({ mundoId, dificuldade, desafioId });
+  const recompensaApi = salvamento.resultado;
 
   // Popup de confirmação do botão "Voltar" — mesmo padrão de
   // ResolverDesafio.jsx e DesafioChefe.jsx.
@@ -112,20 +115,13 @@ function ResolverDesafioPocao() {
 
   const ingredienteArrastando = ingredientesDisponiveis.find((i) => i.id === idArrastando);
 
-  async function registrarVitoria() {
-    try {
-      const resposta = await api.post("/progresso", {
-        mundoId: Number(mundoId),
-        dificuldade,
-        numero: Number(desafioId),
-        tempoSegundos: segundosDecorridos,
-        ingredientes: desafio.ingredientesCorretos.map((i) => i.id),
-      });
-      setRecompensaApi(resposta.data);
-    } catch (erro) {
-      console.error("Não foi possível registrar o progresso no servidor:", erro);
-    }
+  function registrarVitoria() {
+    salvamento.salvar({
+      tempoSegundos: segundosDecorridos,
+      ingredientes: desafio.ingredientesCorretos.map((i) => i.id),
+    });
   }
+
 
   function abrirConfirmarSair() {
     setMostrarConfirmarSair(true);
@@ -301,10 +297,12 @@ function ResolverDesafioPocao() {
             </div>
           )}
 
+          <AvisoSalvamento salvamento={salvamento} onRefazer={() => navigate(0)} />
           <BotaoPixel
             className="botao-avante"
             classeMiolo="botao-avante-miolo"
             onClick={irParaRecompensa}
+            disabled={!salvamento.salvo}
           >
             VER RECOMPENSA
           </BotaoPixel>

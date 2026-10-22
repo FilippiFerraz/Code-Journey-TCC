@@ -2,7 +2,9 @@ import { Crown } from "pixelarticons/react/Crown.js";
 import { Skull } from "pixelarticons/react/Skull.js";
 import { Sword } from "pixelarticons/react/Sword.js";
 import IconePixel from "../../components/IconePixel";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import fundoTela from "../../assets/images/fundo_tela_selcionardesafio.webp";
 import "./SelecionarDificuldade.css";
@@ -34,7 +36,33 @@ function SelecionarDificuldade() {
   const { mundoId } = useParams();
   const navigate = useNavigate();
 
+  // Trilhas deste portal que têm desafios cadastrados (GET /api/progresso
+  // traz um item por desafio existente). Trilha sem nenhum fica "EM BREVE"
+  // e não abre — antes abria uma lista com o desafio 1 liberado, cujo
+  // conteúdo era o do portal 1 e cuja vitória nunca era salva. null =
+  // ainda carregando (ou falhou): aí não bloqueia nada.
+  const [trilhasComDesafios, setTrilhasComDesafios] = useState(null);
+
+  useEffect(() => {
+    let ativo = true;
+    api
+      .get("/progresso")
+      .then((res) => {
+        if (!ativo) return;
+        setTrilhasComDesafios(
+          new Set(res.data.filter((p) => Number(p.mundoId) === Number(mundoId)).map((p) => p.dificuldade))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, [mundoId]);
+
+  const emBreve = (valor) => trilhasComDesafios !== null && !trilhasComDesafios.has(valor);
+
   function selecionar(valor) {
+    if (emBreve(valor)) return;
     navigate(`/desafios/${mundoId}/${valor}`);
   }
 
@@ -82,10 +110,11 @@ function SelecionarDificuldade() {
                 <button
                   key={d.valor}
                   type="button"
-                  className="dif-opcao"
+                  className={`dif-opcao ${emBreve(d.valor) ? "dif-opcao--em-breve" : ""}`}
                   style={{ animationDelay: `${0.45 + indice * 0.1}s` }}
                   onClick={() => selecionar(d.valor)}
-                  aria-label={`Dificuldade ${d.nome}`}
+                  aria-label={`Dificuldade ${d.nome}${emBreve(d.valor) ? " (em breve)" : ""}`}
+                  aria-disabled={emBreve(d.valor) ? "true" : undefined}
                   title={d.descricao}
                 >
                   <span className="dif-opcao-canto dif-opcao-canto--se" aria-hidden="true" />
@@ -98,6 +127,7 @@ function SelecionarDificuldade() {
                   </span>
                   <span className="dif-opcao-losango" aria-hidden="true" />
                   <span className="dif-opcao-rotulo">{d.rotulo}</span>
+                  {emBreve(d.valor) && <span className="dif-opcao-em-breve">EM BREVE</span>}
                 </button>
               ))}
             </div>

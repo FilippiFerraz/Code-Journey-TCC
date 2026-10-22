@@ -186,7 +186,10 @@ async function resetarProgresso(admin, usuarioId) {
 
     await tx.progresso.deleteMany({ where: { usuarioId } });
     await tx.bauMundo.deleteMany({ where: { usuarioId } });
-    await tx.usuario.update({ where: { id: usuarioId }, data: { xpTotal: 0 } });
+    // Lojinha do Mago: moedas e itens da mochila também voltam do zero —
+    // senão o jogador "recomeçava" com o saldo e os atalhos da vida passada.
+    await tx.itemLojaUsuario.deleteMany({ where: { usuarioId } });
+    await tx.usuario.update({ where: { id: usuarioId }, data: { xpTotal: 0, moedas: 0 } });
 
     return { totalItens, totalProgresso, totalBaus };
   });

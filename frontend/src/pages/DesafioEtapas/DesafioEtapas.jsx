@@ -60,7 +60,7 @@ export default function DesafioEtapas() {
   // O GIF de ataque é do guerreiro original: as outras aparências fazem a
   // investida (mesma animação CSS) com o próprio avatar em camadas.
   const usaGifAtaque = (useAparenciaPropria() ?? APARENCIA_PADRAO) === APARENCIA_PADRAO;
-  const cena = cenaDoDesafio(Number(desafioId));
+  const cena = cenaDoDesafio(Number(desafioId), Number(mundoId));
   const nomeInimigo = cena.inimigo.nome;
 
   const [desafio, setDesafio] = useState(null);
@@ -343,7 +343,7 @@ export default function DesafioEtapas() {
         </Temporizador>
 
         <div className="chefe-card chefe-card-jogador">
-          <span className="chefe-jogador-nome">Etapa {etapaAtual} de {total}</span>
+          <span className="chefe-jogador-nome">{total > 1 ? `Etapa ${etapaAtual} de ${total}` : "Batalha final"}</span>
           {coracoes}
         </div>
 
@@ -439,7 +439,10 @@ export default function DesafioEtapas() {
         <div className="vitoria">
           <h2 className="vitoria-titulo">{nomeInimigo} derrotado!</h2>
           <p className="vitoria-fala">
-            {feedbackIA || `Você venceu as ${total} etapas! O caminho à frente está livre.`}
+            {feedbackIA ||
+              (total > 1
+                ? `Você venceu as ${total} etapas! O caminho à frente está livre.`
+                : `${nomeInimigo} foi derrotado! O caminho à frente está livre.`)}
           </p>
           {resultadoApi?.xpConcedidoAgora > 0 && (
             <div className="vitoria-recompensa">
@@ -502,7 +505,7 @@ export default function DesafioEtapas() {
         {!ehBatalhaChefe && (
           <>
             <span className="etapas-tag">
-              Etapa {etapaAtual} de {total}
+              {total > 1 ? `Etapa ${etapaAtual} de ${total}` : "Desafio"}
               {etapa.titulo ? ` · ${etapa.titulo}` : ""}
             </span>
             <h2 className="painel-titulo">{TITULO_PAINEL[etapa.tipo]}</h2>

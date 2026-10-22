@@ -58,8 +58,8 @@ async function verificarAcaoDaEtapa(usuarioId, { mundoId, dificuldade, numero },
   const desafio = await prisma.desafio.findUnique({
     where: { mundoId_dificuldade_numero: { mundoId, dificuldade, numero } },
   });
-  if (!desafio || !temVariasEtapas(desafio.alternativas)) {
-    const erro = new Error("Desafio com etapas não encontrado.");
+  if (!desafio) {
+    const erro = new Error("Desafio não encontrado.");
     erro.status = 404;
     throw erro;
   }
@@ -67,7 +67,10 @@ async function verificarAcaoDaEtapa(usuarioId, { mundoId, dificuldade, numero },
 
   // Mesma regra de ordem de POST /api/progresso: só a próxima etapa (ou
   // qualquer uma, se o desafio já foi concluído e está sendo refeito).
-  const etapas = desafio.alternativas.etapas;
+  // Desafio de etapa única vira uma lista de 1 (etapasDoDesafio) — é assim
+  // que a tela genérica (DesafioEtapas) joga os desafios dos portais 1 e 2
+  // que não têm tela própria no frontend.
+  const etapas = etapasDoDesafio(desafio);
   const progresso = await prisma.progresso.findUnique({
     where: { usuarioId_desafioId: { usuarioId, desafioId: desafio.id } },
     select: { concluido: true, etapasConcluidas: true },

@@ -134,6 +134,11 @@ function Home() {
   // quais portais estão liberados. Começa vazio — enquanto não chega (ou se
   // a chamada falhar), só o portal 1 aparece liberado, nunca o contrário.
   const [progresso, setProgresso] = useState([]);
+  // Falha ao buscar o progresso: os portais ficam trancados (nunca liberados
+  // por engano), mas com um aviso — senão parecia que o jogador tinha
+  // perdido o que já venceu. Sobe a cada "tentar de novo".
+  const [erroProgresso, setErroProgresso] = useState(false);
+  const [versaoProgresso, setVersaoProgresso] = useState(0);
   // Baús de fim de mundo (GET /api/baus): um por trilha, com "disponivel"
   // quando todos os desafios dela foram concluídos e o baú ainda não foi
   // aberto — é isso que faz o ícone do baú aparecer ao lado do portal.
@@ -187,11 +192,14 @@ function Home() {
     api
       .get("/progresso")
       .then((res) => {
-        if (ativo) setProgresso(res.data);
+        if (!ativo) return;
+        setProgresso(res.data);
+        setErroProgresso(false);
       })
       .catch(() => {
         // sem progresso carregado (ex: offline) — mantém todo portal além
-        // do 1 bloqueado em vez de liberar por engano
+        // do 1 bloqueado em vez de liberar por engano, e avisa
+        if (ativo) setErroProgresso(true);
       });
 
     api
@@ -206,7 +214,7 @@ function Home() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [versaoProgresso]);
 
   // Busca jogadores pelo nome com um pequeno debounce, pra não disparar uma
   // requisição a cada tecla digitada.
@@ -390,6 +398,15 @@ function Home() {
   return (
     <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined}>
       {ehMobile && barraBusca}
+
+      {erroProgresso && (
+        <div className="home-aviso-progresso" role="alert">
+          <span>Não consegui carregar seu progresso — seus desafios vencidos continuam salvos.</span>
+          <button type="button" onClick={() => setVersaoProgresso((v) => v + 1)}>
+            Tentar de novo
+          </button>
+        </div>
+      )}
 
       <div
         className={`home-mapa ${abrindoDragao ? "home-mapa--tremendo" : ""}`}

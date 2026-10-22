@@ -157,26 +157,26 @@ async function comprar(usuarioId, chave) {
   }
 
   return prisma.$transaction(async (tx) => {
-    const guardado = await tx.itemLojaUsuario.findUnique({
+    // Garante a linha e soma 1 só se ainda couber — conferência e soma numa
+    // operação só (como o débito), então compras simultâneas não passam do
+    // limite. Qualquer erro depois desfaz tudo (transação).
+    await tx.itemLojaUsuario.upsert({
       where: { usuarioId_chave: { usuarioId, chave } },
+      update: {},
+      create: { usuarioId, chave, quantidade: 0 },
     });
-    if ((guardado?.quantidade ?? 0) >= config.maximo) {
-      throw erroComStatus(
-        config.maximo === 1
-          ? `Você já tem um ${config.nome} ativo.`
-          : `Você já carrega o máximo de ${config.maximo} ${config.nome}.`,
-        409
-      );
+    const { count } = await tx.itemLojaUsuario.updateMany({
+      where: { usuarioId, chave, quantidade: { lt: config.maximo } },
+      data: { quantidade: { increment: 1 } },
+    });
+    if (count === 0) {
+      throw erroComStatus(`Sua mochila já tem o máximo de ${config.maximo} ${config.nome}.`, 409);
     }
 
     await debitarMoedas(tx, usuarioId, config.preco);
-    const atualizado = await tx.itemLojaUsuario.upsert({
-      where: { usuarioId_chave: { usuarioId, chave } },
-      update: { quantidade: { increment: 1 } },
-      create: { usuarioId, chave, quantidade: 1 },
-    });
+    const quantidade = await quantidadeGuardada(usuarioId, chave, tx);
     const { moedas } = await tx.usuario.findUnique({ where: { id: usuarioId }, select: { moedas: true } });
-    return { moedas, chave, quantidade: atualizado.quantidade };
+    return { moedas, chave, quantidade };
   });
 }
 
@@ -218,12 +218,19 @@ async function usarItem(usuarioId, { chave, mundoId, dificuldade, numero }) {
   }
 
   if (chave !== "elixir") throw erroComStatus("Este item não é usado assim.", 400);
+  if (!mundoId || !dificuldade || !numero) {
+    throw erroComStatus("Informe em qual desafio o Elixir do Sábio vai ser bebido.", 400);
+  }
 
+  // require aqui dentro: progresso.service também importa este arquivo.
+  const { verificarDesafioLiberado } = require("./progresso.service");
   const resumo = await listarDesafiosResumo();
   const desafio = resumo.find(
     (d) => d.mundoId === Number(mundoId) && d.dificuldade === dificuldade && d.numero === Number(numero)
   );
   if (!desafio) throw erroComStatus("Desafio não encontrado.", 404);
+  // mesma regra do Pergaminho do Atalho: só em desafio já liberado
+  await verificarDesafioLiberado(usuarioId, desafio);
   const progresso = await prisma.progresso.findUnique({
     where: { usuarioId_desafioId: { usuarioId, desafioId: desafio.id } },
     select: { concluido: true },
@@ -272,21 +279,38 @@ async function pularDesafio(usuarioId, { mundoId, dificuldade, numero }) {
   const chave = { usuarioId_desafioId: { usuarioId, desafioId: desafio.id } };
   const progresso = await prisma.progresso.findUnique({ where: chave, select: { concluido: true } });
   if (progresso?.concluido) throw erroComStatus("Este desafio já foi concluído.", 409);
+  // sem item nenhum: avisa antes de mexer no progresso
+  if ((await quantidadeGuardada(usuarioId, "pular")) <= 0) {
+    throw erroComStatus("Você não tem nenhum Pergaminho do Atalho. Compre um na Lojinha do Mago!", 400);
+  }
 
+  const jaConcluido = () => erroComStatus("Este desafio já foi concluído.", 409);
   return prisma.$transaction(async (tx) => {
-    if (!(await gastarItem(usuarioId, "pular", tx))) {
-      throw erroComStatus("Você não tem nenhum Pergaminho do Atalho. Compre um na Lojinha do Mago!", 400);
-    }
     const dados = {
       concluido: true,
       dataConclusao: new Date(),
       etapasConcluidas: desafio.totalEtapas > 1 ? desafio.totalEtapas : 0,
     };
-    await tx.progresso.upsert({
-      where: chave,
-      update: dados,
-      create: { usuarioId, desafioId: desafio.id, ...dados },
-    });
+    // Marca como concluído só se ainda não estava — conferência e escrita
+    // juntas, então dois pulos simultâneos do mesmo desafio não gastam dois
+    // pergaminhos (o segundo cai aqui e a transação dele é desfeita).
+    if (progresso) {
+      const { count } = await tx.progresso.updateMany({
+        where: { usuarioId, desafioId: desafio.id, concluido: false },
+        data: dados,
+      });
+      if (count === 0) throw jaConcluido();
+    } else {
+      try {
+        await tx.progresso.create({ data: { usuarioId, desafioId: desafio.id, ...dados } });
+      } catch (erro) {
+        if (erro.code === "P2002") throw jaConcluido(); // outro pulo criou antes
+        throw erro;
+      }
+    }
+    if (!(await gastarItem(usuarioId, "pular", tx))) {
+      throw erroComStatus("Você não tem nenhum Pergaminho do Atalho. Compre um na Lojinha do Mago!", 400);
+    }
     const guardado = await tx.itemLojaUsuario.findUnique({
       where: { usuarioId_chave: { usuarioId, chave: "pular" } },
     });

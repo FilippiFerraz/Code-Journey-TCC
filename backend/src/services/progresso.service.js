@@ -378,6 +378,13 @@ async function responderDesafio({
 
   return {
     correta,
+    // Mesmos campos da resposta de etapa (responderEtapa): a tela genérica
+    // de desafios (DesafioEtapas) joga um desafio de etapa única como "1
+    // etapa" e decide a vitória por desafioConcluido.
+    etapa: 1,
+    totalEtapas: 1,
+    etapasConcluidas: progresso.concluido ? 1 : 0,
+    desafioConcluido: correta,
     concluido: progresso.concluido,
     tentativas: progresso.tentativas,
     xpGanho: progresso.xpGanho,

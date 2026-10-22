@@ -242,7 +242,7 @@
   position: absolute;
   z-index: 3; /* acima dos portais e do baú */
   /* acompanha a largura do mapa (no desktop o mapa é bem maior) */
-  width: clamp(64px, 13%, 112px);
+  width: clamp(46px, 9%, 78px);
   aspect-ratio: 1;
   transform: translate(-50%, -82%);
   pointer-events: none;
@@ -274,7 +274,7 @@
   height: 100%;
   /* contorno claro pra não sumir na estrada escura */
   filter: drop-shadow(0 0 1px #ffffff) drop-shadow(0 0 3px rgba(255, 255, 255, 0.55));
-  animation: home-viajante-passo 0.32s ease-in-out infinite alternate;
+  animation: home-viajante-passo 0.2s ease-in-out infinite alternate;
 }
 
 .home-viajante--entrando::before {
@@ -282,7 +282,7 @@
 }
 
 .home-viajante--entrando .home-viajante-avatar {
-  animation: home-viajante-entrar 0.55s ease-in forwards;
+  animation: home-viajante-entrar 0.42s ease-in forwards;
 }
 
 @keyframes home-viajante-surgir {
@@ -299,7 +299,7 @@
     transform: translateY(0) rotate(-3deg);
   }
   to {
-    transform: translateY(-4px) rotate(3deg);
+    transform: translateY(-3px) rotate(3deg);
   }
 }
 
@@ -854,4 +854,34 @@
   .home-fim-nuvem--espelhada {
     transform: scaleX(-1);
   }
+}
+
+/* Aviso quando o progresso não carrega (portais ficam trancados até tentar
+   de novo) — ver erroProgresso em Home.jsx */
+.home-aviso-progresso {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  color: #f3e9d2;
+  background: #4a1c2a;
+  border: 2px solid #ff6b4a;
+}
+
+.home-aviso-progresso button {
+  padding: 5px 10px;
+  font: inherit;
+  font-weight: 800;
+  color: #2a1a0a;
+  background: #f4c542;
+  border: 2px solid #8a5a12;
+  cursor: pointer;
 }

@@ -7,6 +7,7 @@ import fundoPersonagem from "../../assets/images/Fundo_personagem.webp";
 import detalheDesafios from "../../assets/images/Detalhe_desafios.webp";
 import api from "../../services/api";
 import { desafioConcluido, desafioLiberado } from "../../data/progresso";
+import { rotaDoDesafio } from "../../data/telasDesafio";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { BookOpen } from "pixelarticons/react/BookOpen.js";
@@ -32,17 +33,6 @@ const IDS_DESAFIOS = [1, 2, 3, 4, 5, 6];
 // próprios dados do desafio (ex: desafio.tipo === "chefe"), em vez de fixo
 // na posição da trilha.
 const ID_DESAFIO_CHEFE = IDS_DESAFIOS[IDS_DESAFIOS.length - 1];
-
-// Desafios que usam a mecânica de "montar poção" (ver
-// src/pages/DesafioIntroPocao e src/pages/ResolverDesafioPocao) em vez da
-// batalha de múltipla escolha/ordenar blocos/avaliar código padrão. Mesmo
-// TODO do ID_DESAFIO_CHEFE acima: por enquanto fixo por mundo+posição, até
-// a API de desafios existir de verdade e trazer isso marcado nos dados.
-const DESAFIOS_POCAO = [{ mundoId: "1", numero: 5 }];
-
-function ehDesafioPocao(mundoId, numero) {
-  return DESAFIOS_POCAO.some((d) => d.mundoId === String(mundoId) && d.numero === numero);
-}
 
 // Ícone de cada card, pela posição na trilha. Aceita emoji ou caminho de
 // imagem (.png/.gif — ver IconeDesafio).
@@ -117,17 +107,25 @@ function Desafios() {
   const [mensagemAtalho, setMensagemAtalho] = useState("");
   const [versaoProgresso, setVersaoProgresso] = useState(0);
 
+  // "carregando" | "ok" | "erro" — sem isso, uma falha ao buscar o progresso
+  // deixava tudo além do desafio 1 bloqueado, como se o jogador tivesse
+  // perdido o que já venceu.
+  const [carga, setCarga] = useState("carregando");
+
   useEffect(() => {
     let ativo = true;
 
     api
       .get("/progresso", { params: { mundoId, dificuldade } })
       .then((res) => {
-        if (ativo) setProgresso(res.data);
+        if (!ativo) return;
+        setProgresso(res.data);
+        setCarga("ok");
       })
       .catch(() => {
         // sem progresso carregado (ex: offline) — mantém os desafios além
-        // do 1 bloqueados em vez de liberar por engano
+        // do 1 bloqueados em vez de liberar por engano, e avisa
+        if (ativo) setCarga("erro");
       });
 
     return () => {
@@ -158,9 +156,15 @@ function Desafios() {
     };
   }, []);
 
+  // Trilha sem nenhum desafio cadastrado no banco (ex: "guerreiro" hoje):
+  // nada pra jogar — antes o desafio 1 aparecia liberado, abria o conteúdo
+  // do portal 1 e a vitória nunca era salva (o servidor não acha o desafio).
+  const trilhaVazia = carga === "ok" && progresso.length === 0;
+
   const desafios = IDS_DESAFIOS.map((id) => {
     let estado = "bloqueado";
-    if (desafioConcluido(progresso, mundoId, dificuldade, id)) estado = "concluido";
+    if (trilhaVazia) estado = "bloqueado";
+    else if (desafioConcluido(progresso, mundoId, dificuldade, id)) estado = "concluido";
     else if (desafioLiberado(progresso, mundoId, dificuldade, id)) estado = "disponivel";
 
     // Desafios com várias etapas (portal 3) vêm marcados no progresso da API
@@ -214,7 +218,11 @@ function Desafios() {
     requestAnimationFrame(() => setIdTremendo(desafio.id));
     timeoutTremorRef.current = setTimeout(() => setIdTremendo(null), DURACAO_TREMOR_MS);
 
-    setMensagemBloqueio("Este caminho ainda está selado. Vença o desafio anterior!");
+    setMensagemBloqueio(
+      trilhaVazia
+        ? "Esta trilha ainda não tem desafios — em breve!"
+        : "Este caminho ainda está selado. Vença o desafio anterior!"
+    );
     clearTimeout(timeoutMensagemRef.current);
     timeoutMensagemRef.current = setTimeout(
       () => setMensagemBloqueio(""),
@@ -227,15 +235,17 @@ function Desafios() {
       avisarBloqueado(desafio);
       return;
     }
-    if (desafio.totalEtapas > 1) {
-      navigate(`/etapas/${mundoId}/${dificuldade}/${desafio.id}`);
-    } else if (desafio.chefe) {
-      navigate(`/desafio-chefe/${mundoId}/${dificuldade}/${desafio.id}`);
-    } else if (ehDesafioPocao(mundoId, desafio.id)) {
-      navigate(`/desafio-pocao/${mundoId}/${dificuldade}/${desafio.id}`);
-    } else {
-      navigate(`/desafio/${mundoId}/${dificuldade}/${desafio.id}`);
-    }
+    // Tela própria (conteúdo fixo) ou a genérica, com conteúdo da API — ver
+    // data/telasDesafio.js.
+    navigate(
+      rotaDoDesafio({
+        mundoId,
+        dificuldade,
+        numero: desafio.id,
+        chefe: desafio.chefe,
+        totalEtapas: desafio.totalEtapas,
+      })
+    );
   }
 
   return (
@@ -366,6 +376,27 @@ function Desafios() {
                 );
               })}
             </div>
+
+            {carga === "erro" && (
+              <div className="desafios-aviso-carga" role="alert">
+                <span>Não consegui carregar seu progresso. Seus desafios vencidos continuam salvos.</span>
+                <button
+                  type="button"
+                  className="desafios-atalho-botao desafios-atalho-botao--usar"
+                  onClick={() => {
+                    setCarga("carregando");
+                    setVersaoProgresso((v) => v + 1);
+                  }}
+                >
+                  Tentar de novo
+                </button>
+              </div>
+            )}
+            {trilhaVazia && (
+              <p className="desafios-aviso-carga" role="status">
+                Esta trilha ainda não tem desafios — em breve novos desafios por aqui!
+              </p>
+            )}
 
             <p className="desafios-mensagem-bloqueio" role="status" aria-live="polite">
               {mensagemBloqueio}

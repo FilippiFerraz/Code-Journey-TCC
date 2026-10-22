@@ -326,8 +326,11 @@ function BauDaSorte({ bauEspecial = null }) {
     if (fase === "girando") finalizarGiro();
   }
 
+  // Baú Misterioso volta pra Lojinha do Mago; os outros, pro mapa.
+  const voltaPraLoja = Boolean(bauEspecial && BAUS_ESPECIAIS[bauEspecial].voltar);
+
   function irParaHome() {
-    navigate((bauEspecial && BAUS_ESPECIAIS[bauEspecial].voltar) || "/home", { replace: true });
+    navigate(voltaPraLoja ? BAUS_ESPECIAIS[bauEspecial].voltar : "/home", { replace: true });
   }
 
   const voltarDesabilitado = fase === "carregando" || fase === "preparando" || fase === "girando";
@@ -389,7 +392,7 @@ function BauDaSorte({ bauEspecial = null }) {
         <>
           <p className="sorte-mensagem">{mensagemBloqueio}</p>
           <BotaoPixel className="sorte-botao" classeMiolo="sorte-botao-miolo" onClick={irParaHome}>
-            VOLTAR AO MAPA
+            {voltaPraLoja ? "VOLTAR À LOJA" : "VOLTAR AO MAPA"}
           </BotaoPixel>
         </>
       );
@@ -449,7 +452,7 @@ function BauDaSorte({ bauEspecial = null }) {
         classeMiolo="sorte-voltar-miolo"
         onClick={irParaHome}
         disabled={voltarDesabilitado}
-        aria-label="Voltar para o mapa"
+        aria-label={voltaPraLoja ? "Voltar para a loja" : "Voltar para o mapa"}
       >
         <i className="hn hn-arrow-left" aria-hidden="true" />
       </BotaoPixel>

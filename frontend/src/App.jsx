@@ -4,7 +4,7 @@ import "./App.css";
 import Login from "./pages/Login/Login";
 import { telas } from "./telas";
 import TelaCarregando from "./components/TelaCarregando";
-import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica } from "./components/Rotas";
+import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica, TelaPropria } from "./components/Rotas";
 
 // Cada tela é um arquivo à parte, baixado só quando o jogador entra nela
 // (ver telas.js) — o Login, primeira tela, continua no pacote principal.
@@ -41,11 +41,11 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/dificuldade/:mundoId" element={<RotaDesafio exigir="mundo"><SelecionarDificuldade /></RotaDesafio>} />
             <Route path="/desafios/:mundoId/:dificuldade" element={<RotaDesafio exigir="mundo"><Desafios /></RotaDesafio>} />
-            <Route path="/desafio/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioIntro /></RotaDesafio>} />
-            <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><ResolverDesafio /></RotaDesafio>} />
-            <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioChefe /></RotaDesafio>} />
-            <Route path="/desafio-pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioIntroPocao /></RotaDesafio>} />
-            <Route path="/pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><ResolverDesafioPocao /></RotaDesafio>} />
+            <Route path="/desafio/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><TelaPropria tela="resolver"><DesafioIntro /></TelaPropria></RotaDesafio>} />
+            <Route path="/codigo/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><TelaPropria tela="resolver"><ResolverDesafio /></TelaPropria></RotaDesafio>} />
+            <Route path="/desafio-chefe/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><TelaPropria tela="chefe"><DesafioChefe /></TelaPropria></RotaDesafio>} />
+            <Route path="/desafio-pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><TelaPropria tela="pocao"><DesafioIntroPocao /></TelaPropria></RotaDesafio>} />
+            <Route path="/pocao/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><TelaPropria tela="pocao"><ResolverDesafioPocao /></TelaPropria></RotaDesafio>} />
             {/* Desafios com várias etapas (portal 3): tela genérica, conteúdo vindo da API */}
             <Route path="/etapas/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="desafio"><DesafioEtapas /></RotaDesafio>} />
             <Route path="/recompensa/:mundoId/:dificuldade/:desafioId" element={<RotaDesafio exigir="concluido"><RecompensaDesafio /></RotaDesafio>} />

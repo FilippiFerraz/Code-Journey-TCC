@@ -21,6 +21,9 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
   const falas = cena.falas;
   const { concluido, etapasConcluidas } = desafio.progresso;
   const continuando = !concluido && etapasConcluidas > 0;
+  // Desafio de etapa única (portais 1 e 2 jogados nesta tela): sem a lista
+  // e sem "N ETAPAS" no card.
+  const variasEtapas = desafio.etapas.length > 1;
 
   function avancar() {
     if (mostrarEnunciado) return;
@@ -44,22 +47,25 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
     <div className="intro-enunciado-overlay">
       <div className="intro-enunciado-card" onClick={(e) => e.stopPropagation()}>
         <span className="intro-enunciado-tag">
-          {cena.chefe ? "CHEFE · " : ""}DESAFIO {desafio.numero} · {desafio.etapas.length} ETAPAS
+          {cena.chefe ? "CHEFE · " : ""}DESAFIO {desafio.numero}
+          {variasEtapas ? ` · ${desafio.etapas.length} ETAPAS` : ""}
         </span>
         <h2 className="intro-enunciado-titulo">{desafio.titulo}</h2>
         <p className="intro-enunciado-texto">{desafio.enunciado}</p>
 
-        <ol className="etapas-intro-lista">
-          {desafio.etapas.map((etapa) => (
-            <li
-              key={etapa.numero}
-              className={etapa.numero <= etapasConcluidas && !concluido ? "etapas-intro-lista--feita" : ""}
-            >
-              <span>{etapa.numero <= etapasConcluidas && !concluido ? <i className="hn hn-check-solid" aria-label="concluída" /> : etapa.numero}</span>
-              {etapa.titulo || `Etapa ${etapa.numero}`}
-            </li>
-          ))}
-        </ol>
+        {variasEtapas && (
+          <ol className="etapas-intro-lista">
+            {desafio.etapas.map((etapa) => (
+              <li
+                key={etapa.numero}
+                className={etapa.numero <= etapasConcluidas && !concluido ? "etapas-intro-lista--feita" : ""}
+              >
+                <span>{etapa.numero <= etapasConcluidas && !concluido ? <i className="hn hn-check-solid" aria-label="concluída" /> : etapa.numero}</span>
+                {etapa.titulo || `Etapa ${etapa.numero}`}
+              </li>
+            ))}
+          </ol>
+        )}
 
         {desafio.dica && <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(desafio.dica)}</p>}
         {continuando && (

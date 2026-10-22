@@ -42,7 +42,10 @@ export function useCongelarTempo(ativo) {
     return () => clearTimeout(id);
   }, [ativo, restante]);
 
-  const congelado = restante > 0;
+  // Só "congelado" com o cronômetro rodando: numa pausa (animação, vitória)
+  // o selo de gelo some em vez de ficar parado na tela, e os segundos que
+  // sobraram voltam a valer se o desafio continuar.
+  const congelado = ativo && restante > 0;
   const podeUsar = ativo && !congelado && !usando && quantidade > 0;
 
   async function usar() {

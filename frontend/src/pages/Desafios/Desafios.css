@@ -706,6 +706,25 @@
   animation: des-aparecer 0.2s ease-out both;
 }
 
+/* aviso de progresso que não carregou / trilha ainda sem desafios */
+.desafios-aviso-carga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--des-texto-escuro);
+  background: rgba(168, 36, 44, 0.12);
+  border: 2px dashed var(--des-vermelho);
+}
+
 /* ---------- Pergaminho do Atalho (item da Lojinha do Mago) ---------- */
 
 .desafios-atalho {

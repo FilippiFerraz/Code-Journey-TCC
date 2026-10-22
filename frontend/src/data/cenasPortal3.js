@@ -21,6 +21,13 @@ import fundo4Portal3 from "../assets/images/fundo_desafio4_p3.webp";
 import inimigo5Portal3 from "../assets/images/inimigo_desafio5_p3.webp";
 import fundo5Portal3 from "../assets/images/fundo_desafio5_p3.webp";
 import fundo6Portal3 from "../assets/images/fundo_desafio6_p3.webp";
+// portal 2 (ver CENAS_PORTAL_2)
+import esqueletoInimigo from "../assets/images/esqueleto_inimigo.webp";
+import mercadorInimigo from "../assets/images/mercador_inimigo.webp";
+import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
+import slime from "../assets/images/Slime.png";
+import goblinJS from "../assets/images/GoblinJS.png";
+import fundoBatalha2 from "../assets/images/Fundo_batalha2.webp";
 
 // Por número do desafio (1 a 6). "chefe: true" usa a arena de chefe (sprite
 // grande, barra de vida no topo) — mesmo visual de DesafioChefe.jsx.
@@ -99,8 +106,64 @@ const CENAS = {
   },
 };
 
+// ---- Portal 2 (Acampamento Goblin) ----
+//
+// Desafios 3 a 6 do portal 2 foram cadastrados pelo painel de admin e não
+// têm tela própria no frontend (só o 1 e o 2 têm, em ResolverDesafio.jsx):
+// eles são jogados na tela genérica (DesafioEtapas, conteúdo e correção
+// vindos da API), com estas cenas. Antes caíam no conteúdo do desafio 1 do
+// portal 1 e a vitória nunca era salva.
+const CENAS_PORTAL_2 = {
+  3: {
+    inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto do Laço", largura: 130, larguraIntro: 260 },
+    fundo: fundoBatalha2,
+    falas: [
+      "Entre as tendas do acampamento, ossos começam a se mexer sozinhos...",
+      "O Esqueleto do Laço repete os mesmos passos, de novo e de novo, sem parar.",
+      "Entenda como o laço anda e quebre o ciclo dele!",
+    ],
+  },
+  4: {
+    inimigo: { imagem: mercadorInimigo, nome: "Mercador do Inventário", largura: 140, larguraIntro: 270 },
+    fundo: fundoBatalha2,
+    falas: [
+      "Um mercador estende o tapete cheio de mercadorias... e de código suspeito.",
+      "\"Metade do meu inventário funciona, metade não. Sabe dizer qual é qual?\"",
+      "Avalie cada pedaço de código e não caia na lábia dele!",
+    ],
+  },
+  5: {
+    inimigo: { imagem: slime, nome: "Slime Feiticeiro", largura: 110, larguraIntro: 220 },
+    fundo: fundoBatalha2,
+    falas: [
+      "Uma gosma brilhante borbulha perto da fogueira — é o Slime Feiticeiro!",
+      "O feitiço dele só funciona com as linhas de código na ordem certa.",
+      "Monte o programa antes que ele termine de conjurar!",
+    ],
+  },
+  6: {
+    chefe: true,
+    inimigo: { imagem: bruxaInimigo, nome: "Bruxa Suprema", largura: 200, larguraIntro: 330 },
+    fundo: fundoBatalha2,
+    falas: [
+      "No centro do acampamento, o caldeirão ferve e as tochas ficam roxas...",
+      "A Bruxa Suprema governa os goblins com feitiços de código.",
+      "Vença a batalha final do Acampamento Goblin e abra o caminho para a Arena do Dragão!",
+    ],
+  },
+};
+
 // Desafio sem cena própria (ex: um 7º desafio cadastrado no futuro) usa o
 // visual do desafio 1 com o nome genérico, em vez de quebrar a tela.
-export function cenaDoDesafio(numero) {
+// mundoId: 2 usa as cenas do portal 2; qualquer outro, as do portal 3.
+export function cenaDoDesafio(numero, mundoId = 3) {
+  if (Number(mundoId) === 2) {
+    return (
+      CENAS_PORTAL_2[numero] ?? {
+        ...CENAS_PORTAL_2[3],
+        inimigo: { ...CENAS_PORTAL_2[3].inimigo, nome: "Goblin do Acampamento", imagem: goblinJS },
+      }
+    );
+  }
   return CENAS[numero] ?? { ...CENAS[1], inimigo: { ...CENAS[1].inimigo, nome: "Guardião da Arena" } };
 }
