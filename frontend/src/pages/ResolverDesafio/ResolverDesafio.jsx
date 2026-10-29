@@ -144,28 +144,9 @@ const DESAFIOS = {
     },
   },
   2: {
-    // Mesmo conteúdo do desafio 1 do mundo 2 em backend/prisma/seed.js —
-    // os ids dos blocos e a ordem correta precisam bater com o banco, que é
-    // quem valida a resposta.
-    1: {
-      numero: 1,
-      tipo: "ordenar_blocos",
-      titulo: "Desafio JavaScript",
-      enunciado:
-        'Você está desenvolvendo um sistema que verifica se uma pessoa pode acessar uma área restrita.\n\nO programa deve receber a idade de uma pessoa e verificar se ela possui 18 anos ou mais. Caso tenha, deve exibir "Acesso permitido". Caso contrário, deve exibir "Acesso negado".\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.',
-      dica: "o bloco if/else só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
-      inimigo: { imagem: goblinJS, nome: "Goblin Sentinela" },
-      fundo: fundoBatalha2,
-      blocos: [
-        { id: "b1", codigo: "let idade = 20;" },
-        { id: "b2", codigo: "if (idade >= 18) {" },
-        { id: "b3", codigo: 'console.log("Acesso permitido");', indent: 1 },
-        { id: "b4", codigo: "} else {" },
-        { id: "b5", codigo: 'console.log("Acesso negado");', indent: 1 },
-        { id: "b6", codigo: "}" },
-      ],
-      ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
-    },
+    // Os desafios 1, 3, 4, 5 e 6 do portal 2 não têm tela própria: vêm da
+    // API e são jogados na tela genérica (ver data/telasDesafio.js e
+    // backend/prisma/desafios/portal2.js).
     // Desafio corrigido por IA. Enunciado e código iguais aos de
     // backend/prisma/desafios/desafioIA.js — os critérios de correção ficam
     // SÓ no backend (o jogador não deve ver o gabarito pelo navegador).

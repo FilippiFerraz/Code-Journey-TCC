@@ -13,7 +13,9 @@
 // DesafioChefe, ResolverDesafioPocao, DesafioIntroPocao)? Ajuste aqui.
 const TELAS_PROPRIAS = {
   // ResolverDesafio + DesafioIntro (múltipla escolha, blocos, cartas, dissertativa)
-  resolver: { 1: [1, 2, 3, 4], 2: [1, 2] },
+  // (portal 2: só o 2, O Enigma da Bruxa — os demais vêm da API, ver
+  // backend/prisma/desafios/portal2.js)
+  resolver: { 1: [1, 2, 3, 4], 2: [2] },
   // ResolverDesafioPocao + DesafioIntroPocao
   pocao: { 1: [5] },
   // DesafioChefe (o último desafio da trilha)

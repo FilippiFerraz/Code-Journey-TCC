@@ -42,17 +42,21 @@ const falasPorMundo = {
       ],
     ],
   },
+  // Portal 2 — Acampamento Goblin (conteúdo em
+  // backend/prisma/desafios/portal2.js e desafios/desafioIA.js).
   2: {
     1: [
       [
-        { texto: 'Impressionante, aventureiro! Você escolheu o caminho certo usando ' },
-        { texto: 'if/else', destaque: true },
-        { texto: ' como um verdadeiro estrategista.' },
+        { texto: 'O portão do acampamento se abriu! Você não caiu na armadilha do ' },
+        { texto: '>', destaque: true },
+        { texto: ': 5 não é maior que 5, então quem decide é o ' },
+        { texto: 'else', destaque: true },
+        { texto: '.' },
       ],
       [
         { texto: 'Com as ' },
         { texto: 'Condicionais', destaque: true },
-        { texto: ', seu código agora sabe tomar decisões sozinho!' },
+        { texto: ', seu código agora sabe tomar decisões sozinho — e um único sinal muda o caminho inteiro!' },
       ],
     ],
     2: [
@@ -62,6 +66,62 @@ const falasPorMundo = {
         { texto: ' é um poder que poucos dominam.' },
       ],
       [{ texto: 'Quem entende o porquê das coisas nunca fica sem saída numa batalha.' }],
+    ],
+    3: [
+      [
+        { texto: 'A patrulha está salva! Você enxergou a diferença entre ' },
+        { texto: '<', destaque: true },
+        { texto: ' e ' },
+        { texto: '<=', destaque: true },
+        { texto: ' e sabe contar até para trás com o i--.' },
+      ],
+      [
+        { texto: 'E ainda farejou o ' },
+        { texto: 'laço infinito', destaque: true },
+        { texto: ' de longe: início, condição e passo — sem as três partes da ' },
+        { texto: 'Repetição', destaque: true },
+        { texto: ', o laço nunca para.' },
+      ],
+    ],
+    4: [
+      [
+        { texto: 'O inventário está em ordem! Você criou um ' },
+        { texto: 'array', destaque: true },
+        { texto: ', guardou a poção no fim com o push() e contou tudo com o length.' },
+      ],
+      [
+        { texto: 'Percorrer a lista da posição ' },
+        { texto: '0', destaque: true },
+        { texto: ' até antes do length é o jeito de nunca esquecer um item — nem pedir um que não existe.' },
+      ],
+    ],
+    5: [
+      [
+        { texto: 'A poção borbulhou perfeita! Você criou uma ' },
+        { texto: 'Função', destaque: true },
+        { texto: ': uma receita escrita uma vez e usada com qualquer ingrediente.' },
+      ],
+      [
+        { texto: 'O ' },
+        { texto: 'parâmetro', destaque: true },
+        { texto: ' recebe o ingrediente e o ' },
+        { texto: 'return', destaque: true },
+        { texto: ' entrega a poção pronta — é assim que os grandes magos organizam seus feitiços.' },
+      ],
+    ],
+    6: [
+      [
+        { texto: 'VITÓRIA! O ' },
+        { texto: 'General Goblin', destaque: true },
+        { texto: ' largou a espada e o Acampamento Goblin é seu!' },
+      ],
+      [
+        { texto: 'Condicionais, ' },
+        { texto: '&& e ||', destaque: true },
+        { texto: ', laços, arrays e funções: com esse arsenal, você está pronto para enfrentar a ' },
+        { texto: 'Arena do Dragão', destaque: true },
+        { texto: '!' },
+      ],
     ],
   },
   // Portal 3 — Arena do Dragão (desafios de 3 etapas, ver

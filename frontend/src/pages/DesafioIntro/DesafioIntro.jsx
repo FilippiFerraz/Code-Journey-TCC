@@ -75,19 +75,8 @@ const INTROS = {
     },
   },
   2: {
-    1: {
-      inimigo: { imagem: goblinJS, nome: "Goblin Sentinela" },
-      falas: [
-        "Bem-vindo ao Acampamento Goblin, viajante...",
-        "Um Goblin Sentinela vigia a entrada e só deixa passar quem sabe controlar o acesso.",
-        "Ele embaralhou o código do portão! As peças estão todas fora de ordem.",
-        "Sua missão: organizar os blocos para decidir quem pode entrar.",
-      ],
-      titulo: "Desafio JavaScript",
-      texto:
-        'Monte um programa que verifica se a idade é 18 ou mais e exibe "Acesso permitido" ou "Acesso negado".',
-      dica: "o bloco `if/else` só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
-    },
+    // Desafio 1 do portal 2: introdução em data/cenasPortal3.js
+    // (CENAS_PORTAL_2) — ele é jogado na tela genérica.
     2: {
       inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento" },
       falas: [

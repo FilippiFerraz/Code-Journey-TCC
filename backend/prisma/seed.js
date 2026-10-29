@@ -6,14 +6,15 @@
 // (ou automaticamente depois de `prisma migrate dev`, via a config
 // "prisma.seed" no package.json).
 //
-// Só semeia os desafios que já têm conteúdo real: 1 a 6 (trilha completa)
-// da trilha "iniciante" do mundo 1, e 1 e 2 da trilha "iniciante" do mundo 2
+// Só semeia os desafios que já têm conteúdo real: a trilha "iniciante"
+// completa (1 a 6) dos mundos 1, 2 e 3
 // (ver Home.jsx e SelecionarDificuldade.jsx pros ids reais). Os demais
 // ainda não têm enunciado definido em nenhum lugar do projeto — quando
 // existirem, adicione aqui em vez de inventar conteúdo placeholder no banco.
 
 const { PrismaClient } = require("@prisma/client");
 const desafioIA = require("./desafios/desafioIA");
+const desafiosPortal2 = require("./desafios/portal2");
 const desafiosPortal3 = require("./desafios/portal3");
 const itensGuardiaoCristal = require("./itensGuardiaoCristal");
 const itensArenaDragao = require("./itensArenaDragao");
@@ -615,32 +616,10 @@ async function main() {
         ],
       },
     },
-    {
-      // Primeiro desafio do mundo 2 (portal "Acampamento Goblin" — ver
-      // Home.jsx). Exercício de "ordenar blocos": o jogador monta o
-      // programa arrastando/organizando os blocos na ordem certa, em vez
-      // de escolher entre alternativas — daí o formato diferente aqui em
-      // "alternativas" (ver comentário em schema.prisma).
-      mundoId: 2,
-      dificuldade: DIFICULDADE,
-      numero: 1,
-      titulo: "Desafio JavaScript",
-      enunciado:
-        'Você está desenvolvendo um sistema que verifica se uma pessoa pode acessar uma área restrita.\n\nO programa deve receber a idade de uma pessoa e verificar se ela possui 18 anos ou mais. Caso tenha, deve exibir "Acesso permitido". Caso contrário, deve exibir "Acesso negado".\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.',
-      dica: "o bloco if/else só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
-      alternativas: {
-        tipo: "ordenar_blocos",
-        blocos: [
-          { id: "b1", codigo: "let idade = 20;" },
-          { id: "b2", codigo: "if (idade >= 18) {" },
-          { id: "b3", codigo: 'console.log("Acesso permitido");', indent: 1 },
-          { id: "b4", codigo: "} else {" },
-          { id: "b5", codigo: 'console.log("Acesso negado");', indent: 1 },
-          { id: "b6", codigo: "}" },
-        ],
-        ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
-      },
-    },
+    // Portal 2 — Acampamento Goblin: desafios 1, 3, 4, 5 e 6 (ver
+    // prisma/desafios/portal2.js). O 2 é o desafioIA, logo abaixo.
+    ...desafiosPortal2,
+
     // Segundo desafio do mundo 2: resposta dissertativa corrigida por IA.
     // Conteúdo em prisma/desafios/desafioIA.js (também usado por
     // scripts/criarDesafioIA.js, que cadastra só ele).

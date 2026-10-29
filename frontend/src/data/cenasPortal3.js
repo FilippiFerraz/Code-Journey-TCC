@@ -22,11 +22,9 @@ import inimigo5Portal3 from "../assets/images/inimigo_desafio5_p3.webp";
 import fundo5Portal3 from "../assets/images/fundo_desafio5_p3.webp";
 import fundo6Portal3 from "../assets/images/fundo_desafio6_p3.webp";
 // portal 2 (ver CENAS_PORTAL_2)
-import esqueletoInimigo from "../assets/images/esqueleto_inimigo.webp";
-import mercadorInimigo from "../assets/images/mercador_inimigo.webp";
 import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
-import slime from "../assets/images/Slime.png";
 import goblinJS from "../assets/images/GoblinJS.png";
+import reiGoblinInimigo from "../assets/images/rei_goblin_inimigo.webp";
 import fundoBatalha2 from "../assets/images/Fundo_batalha2.webp";
 
 // Por número do desafio (1 a 6). "chefe: true" usa a arena de chefe (sprite
@@ -108,46 +106,72 @@ const CENAS = {
 
 // ---- Portal 2 (Acampamento Goblin) ----
 //
-// Desafios 3 a 6 do portal 2 foram cadastrados pelo painel de admin e não
-// têm tela própria no frontend (só o 1 e o 2 têm, em ResolverDesafio.jsx):
-// eles são jogados na tela genérica (DesafioEtapas, conteúdo e correção
-// vindos da API), com estas cenas. Antes caíam no conteúdo do desafio 1 do
-// portal 1 e a vitória nunca era salva.
+// Desafios 1, 3, 4, 5 e 6 do portal 2 não têm tela própria no frontend (só
+// o 2, O Enigma da Bruxa, tem — em ResolverDesafio.jsx): são jogados na tela
+// genérica (DesafioEtapas), com conteúdo e correção vindos da API — ver
+// backend/prisma/desafios/portal2.js.
+//
+// ARTES PROVISÓRIAS: o portal 2 ainda não tem inimigos nem fundos próprios,
+// então tudo abaixo reaproveita artes existentes (marcado com "TODO arte").
+// Quando a arte nova chegar, é só trocar o import lá em cima e, se o sprite
+// tiver outra proporção, ajustar "largura" (batalha) e "larguraIntro".
+// Os nomes dos inimigos aparecem também nos enunciados do backend — se
+// mudar um nome aqui, mude lá também.
 const CENAS_PORTAL_2 = {
-  3: {
-    inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto do Laço", largura: 130, larguraIntro: 260 },
+  1: {
+    // TODO arte: Goblin Sentinela + fundo do portão do acampamento
+    inimigo: { imagem: goblinJS, nome: "Goblin Sentinela", largura: 110, larguraIntro: 220 },
     fundo: fundoBatalha2,
     falas: [
-      "Entre as tendas do acampamento, ossos começam a se mexer sozinhos...",
-      "O Esqueleto do Laço repete os mesmos passos, de novo e de novo, sem parar.",
-      "Entenda como o laço anda e quebre o ciclo dele!",
+      "Bem-vindo ao Acampamento Goblin, viajante...",
+      "Um Goblin Sentinela guarda o portão e só deixa entrar quem for forte o bastante.",
+      "Mas a regra dele está escrita em código — e um sinal pode mudar tudo.",
+      "Leia com atenção e descubra o que o portão vai dizer!",
+    ],
+  },
+  3: {
+    // TODO arte: Goblin Patrulheiro + fundo do pátio de treino
+    inimigo: { imagem: goblinJS, nome: "Goblin Patrulheiro", largura: 110, larguraIntro: 220 },
+    fundo: fundoBatalha2,
+    falas: [
+      "Passando o portão, você chega ao pátio de treino do acampamento...",
+      "O Goblin Patrulheiro marcha em círculos, gritando cada ronda da patrulha.",
+      "Ele escreveu laços pra contar as rondas por ele — mas alguns contam errado, e um nunca para!",
+      "Arraste pra direita os laços que funcionam e pra esquerda os que estão errados!",
     ],
   },
   4: {
-    inimigo: { imagem: mercadorInimigo, nome: "Mercador do Inventário", largura: 140, larguraIntro: 270 },
+    // TODO arte: Goblin Intendente + fundo do depósito
+    inimigo: { imagem: goblinJS, nome: "Goblin Intendente", largura: 110, larguraIntro: 220 },
     fundo: fundoBatalha2,
     falas: [
-      "Um mercador estende o tapete cheio de mercadorias... e de código suspeito.",
-      "\"Metade do meu inventário funciona, metade não. Sabe dizer qual é qual?\"",
-      "Avalie cada pedaço de código e não caia na lábia dele!",
+      "No depósito do acampamento, pilhas de armas e poções se espalham por todo lado...",
+      "O Goblin Intendente guarda tudo numa lista — mas o código do inventário virou uma bagunça.",
+      "As linhas estão todas fora de ordem, e ninguém sabe mais quantos itens existem.",
+      "Monte o programa na ordem certa: crie a lista, guarde a poção e mostre cada item!",
     ],
   },
   5: {
-    inimigo: { imagem: slime, nome: "Slime Feiticeiro", largura: 110, larguraIntro: 220 },
+    // A Bruxa já tem arte (a mesma do desafio 2). TODO arte: fundo do caldeirão
+    inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento", largura: 120, larguraIntro: 220 },
     fundo: fundoBatalha2,
     falas: [
-      "Uma gosma brilhante borbulha perto da fogueira — é o Slime Feiticeiro!",
-      "O feitiço dele só funciona com as linhas de código na ordem certa.",
-      "Monte o programa antes que ele termine de conjurar!",
+      "A Bruxa do Acampamento reaparece, mexendo um caldeirão enorme.",
+      "\"Você resolveu meu enigma... então talvez consiga me ajudar com outra coisa.\"",
+      "\"Cansei de escrever a receita inteira toda vez. Quero uma FUNÇÃO: escrevo uma vez e uso com qualquer ingrediente.\"",
+      "\"Jogue os ingredientes certos no caldeirão, na ordem certa. Cuidado com os falsos!\"",
     ],
   },
   6: {
+    // Chefe do portal. TODO arte: General Goblin (hoje usa o Rei GoblinJS do
+    // portal 1) + fundo da arena do acampamento
     chefe: true,
-    inimigo: { imagem: bruxaInimigo, nome: "Bruxa Suprema", largura: 200, larguraIntro: 330 },
+    inimigo: { imagem: reiGoblinInimigo, nome: "General Goblin", largura: 220, larguraIntro: 330 },
     fundo: fundoBatalha2,
     falas: [
-      "No centro do acampamento, o caldeirão ferve e as tochas ficam roxas...",
-      "A Bruxa Suprema governa os goblins com feitiços de código.",
+      "No centro do Acampamento Goblin, tambores de guerra começam a soar...",
+      "O General Goblin sai da maior tenda, cercado pelos goblins que você já derrotou.",
+      "\"Condições, laços, listas, funções... vamos ver se você aprendeu mesmo, ou só teve sorte.\"",
       "Vença a batalha final do Acampamento Goblin e abra o caminho para a Arena do Dragão!",
     ],
   },
@@ -160,8 +184,8 @@ export function cenaDoDesafio(numero, mundoId = 3) {
   if (Number(mundoId) === 2) {
     return (
       CENAS_PORTAL_2[numero] ?? {
-        ...CENAS_PORTAL_2[3],
-        inimigo: { ...CENAS_PORTAL_2[3].inimigo, nome: "Goblin do Acampamento", imagem: goblinJS },
+        ...CENAS_PORTAL_2[1],
+        inimigo: { ...CENAS_PORTAL_2[1].inimigo, nome: "Goblin do Acampamento" },
       }
     );
   }
