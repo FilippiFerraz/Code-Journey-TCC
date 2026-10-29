@@ -42,6 +42,9 @@ const CONFIG = {
   "fundo_desafio5_p3.jpg": { max: 1440, q: 82 },
   "fundo_desafio6_p3.png": { max: 1440, q: 82 },
   "fundo_ranking.jpg": { q: 80 },
+  // fundo das telas de Login/Cadastro: ocupa a janela inteira (cover), então
+  // fica na largura original (1824 px)
+  "Fundo_Login.png": { q: 82 },
   "fundo_tela_selcionardesafio.png": { q: 80 },
   // mapa da Home: é a maior imagem do site e o que define o tempo da Home.
   // Em 74 fica visualmente igual ao 84 (testado com zoom de 2x) e ~25% menor.

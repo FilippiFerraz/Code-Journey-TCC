@@ -1,3 +1,22 @@
+/* ============================================================
+   Login.css — base visual das telas de entrada (Login, Cadastro, Esqueci
+   a Senha e Verificar E-mail importam este arquivo). Painel medieval roxo
+   com brilho violeta sobre a arte do castelo (Fundo_Login.webp).
+   ============================================================ */
+
+/* A arte vai na moldura (.app-frame), que é quem rola: ela fica parada
+   enquanto o formulário rola por cima, e estas telas usam a largura toda
+   da janela em vez da faixa estreita de 720px do resto do app. O véu
+   escuro no meio deixa o painel legível sem apagar as bordas da arte. */
+.app-frame:has(.login-container) {
+  max-width: none;
+  background:
+    radial-gradient(ellipse 60% 70% at 50% 45%, rgba(11, 7, 25, 0.55), rgba(11, 7, 25, 0.15) 70%),
+    linear-gradient(180deg, rgba(11, 7, 25, 0) 70%, rgba(11, 7, 25, 0.6) 100%),
+    url("../../assets/images/Fundo_Login.webp") 60% center / cover no-repeat,
+    var(--cj-fundo-profundo);
+}
+
 .login-container {
   min-height: 100%; /* preenche a moldura (.app-frame) em vez da tela inteira, senão estoura no desktop */
   width: 100%;
@@ -5,54 +24,99 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 20px;
-  padding: 48px 20px 32px;
+  gap: 24px;
+  padding: clamp(36px, 6vh, 64px) 20px 32px;
   box-sizing: border-box;
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(120, 27, 176, 0.45), transparent 60%),
-    linear-gradient(180deg, var(--cj-painel) 0%, var(--cj-fundo) 55%, var(--cj-fundo-profundo) 100%);
   color-scheme: dark;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
 }
 
-/* Card principal (login) */
+/* Painel principal: fundo roxo translúcido, borda violeta brilhante e uma
+   joia magenta no topo (como o protótipo) */
 .login-card {
+  position: relative;
   width: 100%;
-  max-width: 360px;
-  background: linear-gradient(180deg, var(--cj-cartao), var(--cj-painel));
-  border: 1px solid var(--cj-borda-forte);
-  border-radius: 22px;
-  padding: 22px 22px 26px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(120, 27, 176, 0.25);
+  max-width: 440px;
+  padding: 32px 28px 30px;
+  background: linear-gradient(180deg, rgba(33, 22, 61, 0.93), rgba(16, 11, 37, 0.95));
+  border: 2px solid rgba(183, 106, 255, 0.7);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 4px rgba(16, 11, 37, 0.85),
+    0 0 0 5px rgba(183, 106, 255, 0.35),
+    0 0 30px rgba(170, 70, 255, 0.45),
+    0 24px 50px rgba(0, 0, 0, 0.6),
+    inset 0 0 26px rgba(120, 27, 176, 0.28);
+  backdrop-filter: blur(3px);
+}
+
+/* barra de luz atrás da joia */
+.login-card::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  width: 150px;
+  height: 6px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, var(--cj-roxo-claro) 30%, #ff9cf4 50%, var(--cj-roxo-claro) 70%, transparent);
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+/* joia magenta (losango) no topo da moldura */
+.login-card::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  transform: translateX(-50%) rotate(45deg);
+  background: linear-gradient(135deg, #ffb3f5 0%, #d63ae8 45%, #6b1a8f 100%);
+  border: 2px solid #2a1550;
+  box-shadow: 0 0 0 3px rgba(183, 106, 255, 0.55), 0 0 14px rgba(255, 79, 216, 0.85);
+  pointer-events: none;
 }
 
 .login-tabs {
   display: flex;
   background: var(--cj-fundo-profundo);
-  border: 1px solid var(--cj-borda);
+  border: 2px solid rgba(183, 106, 255, 0.35);
   border-radius: 999px;
-  padding: 4px;
-  margin-bottom: 20px;
+  padding: 5px;
+  margin-bottom: 24px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .login-tab {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 10px 0;
+  padding: 11px 0;
   border-radius: 999px;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.3px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.5px;
   color: var(--cj-texto-secundario);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-tab:not(.login-tab-active):hover {
+  color: var(--cj-texto);
+}
+
+.login-tab:focus-visible {
+  outline: 2px solid var(--cj-roxo-claro);
+  outline-offset: 2px;
 }
 
 .login-tab-active {
-  background: linear-gradient(90deg, #a23fd0, #c62aa8);
+  background: linear-gradient(90deg, #b62ee0, #e02aa8);
   color: #ffffff;
-  box-shadow: 0 4px 10px rgba(162, 63, 208, 0.35);
+  box-shadow: 0 0 14px rgba(224, 42, 168, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .login-form {
@@ -61,38 +125,42 @@
 }
 
 .login-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--cj-texto);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .login-input {
   width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  border: 1.5px solid rgba(183, 106, 255, 0.3);
-  background: var(--cj-fundo-profundo);
-  font-size: 14px;
+  padding: 14px 16px;
+  margin-bottom: 16px; /* o olho da senha (styles/campoSenha.css) conta com 16px */
+  border-radius: 10px;
+  border: 1.5px solid rgba(183, 106, 255, 0.45);
+  background: rgba(30, 24, 64, 0.92);
+  font-size: 15px;
   color: var(--cj-texto);
   box-sizing: border-box;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-input::placeholder {
+  color: var(--cj-texto-apagado);
 }
 
 .login-input:focus {
   border-color: var(--cj-roxo-claro);
-  box-shadow: 0 0 0 3px rgba(183, 106, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(183, 106, 255, 0.22), 0 0 12px rgba(183, 106, 255, 0.3);
 }
 
 .login-forgot {
   align-self: flex-end;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--cj-roxo-claro);
+  font-size: 13px;
+  font-weight: 700;
+  color: #d07bff;
   text-decoration: none;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   background: transparent;
   border: none;
   padding: 0;
@@ -101,32 +169,41 @@
 }
 
 .login-forgot:hover {
+  color: #e7b3ff;
   text-decoration: underline;
 }
 
 .login-erro {
   color: #ff8a8a;
-  font-size: 12.5px;
-  margin: -8px 0 12px;
+  font-size: 13px;
+  margin: -8px 0 14px;
 }
 
 /* Botão pixelado (ver src/components/BotaoPixel.jsx e
-   src/styles/botaoPixel.css) — moldura escura + miolo com o gradiente
-   roxo/magenta que já era usado na versão em pílula lisa. */
+   src/styles/botaoPixel.css) — moldura roxa + miolo magenta. O brilho
+   vem de drop-shadow porque o clip-path do botão cortaria um box-shadow. */
 .login-button {
   display: block;
   width: 100%;
-  background: #6b1a8f;
+  background: #7a1fb0;
+  filter: drop-shadow(0 0 10px rgba(224, 42, 168, 0.5));
+  transition: filter 0.2s ease;
+}
+
+.login-button:hover:not(:disabled) {
+  filter: drop-shadow(0 0 16px rgba(224, 42, 168, 0.75));
 }
 
 .login-button:disabled {
   background: #3a3350;
+  filter: none;
 }
 
 .login-button-miolo {
-  padding: 14px 0;
-  font-size: 14px;
-  background: linear-gradient(90deg, #a23fd0, #c62aa8);
+  padding: 16px 0;
+  font-size: 15px;
+  letter-spacing: 0.6px;
+  background: linear-gradient(90deg, #b62ee0, #e02aa8);
 }
 
 .login-button:disabled .login-button-miolo {
@@ -134,68 +211,23 @@
   color: var(--cj-texto-secundario);
 }
 
-/* Card social */
-.login-social-card {
-  width: 100%;
-  max-width: 360px;
-  background: linear-gradient(180deg, var(--cj-cartao), var(--cj-painel));
-  border: 1px solid var(--cj-borda);
-  border-radius: 18px;
-  padding: 16px 18px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.45);
-}
-
-.login-divider {
-  text-align: center;
-  font-size: 12px;
-  color: var(--cj-texto-secundario);
-  margin-bottom: 14px;
-}
-
-.login-social-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.login-social-btn {
-  flex: 1;
-  background: #6b1a8f;
-}
-
-.login-social-miolo {
-  gap: 8px;
-  padding: 10px 0;
-  font-size: 13px;
-  background: linear-gradient(90deg, #a23fd0, #c62aa8);
-}
-
-.login-social-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 900;
-}
-
-/* Logo do app */
+/* Logo do app — empurrado pro pé da tela, sobre o pedestal de pedra da
+   arte (em telas altas como o Cadastro ele só segue o painel) */
 .login-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: auto;
 }
 
 .login-logo-icon {
-  width: 96px;
-  height: 96px;
+  width: 108px;
+  height: 108px;
   border-radius: 22px;
   object-fit: cover;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(183, 106, 255, 0.6);
+  box-shadow: 0 0 22px rgba(170, 70, 255, 0.55), 0 12px 24px rgba(0, 0, 0, 0.5);
 }
 
 .login-logo-text {
@@ -206,9 +238,21 @@
 }
 
 /* Responsivo */
-@media (max-width: 380px) {
-  .login-card,
-  .login-social-card {
-    max-width: 100%;
+@media (max-width: 480px) {
+  .login-card {
+    padding: 28px 18px 24px;
+  }
+
+  .login-logo-icon {
+    width: 92px;
+    height: 92px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-tab,
+  .login-input,
+  .login-button {
+    transition: none;
   }
 }

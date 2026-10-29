@@ -160,24 +160,6 @@ function Login() {
         </form>
       </div>
 
-      {/* Divisor "Ou continue com" */}
-      <div className="login-social-card">
-        <div className="login-divider">
-          <span>Ou continue com:</span>
-        </div>
-
-        <div className="login-social-buttons">
-          <BotaoPixel className="login-social-btn" classeMiolo="login-social-miolo">
-            <span className="login-social-icon">G</span>
-            Google
-          </BotaoPixel>
-          <BotaoPixel className="login-social-btn" classeMiolo="login-social-miolo">
-            <span className="login-social-icon">f</span>
-            Facebook
-          </BotaoPixel>
-        </div>
-      </div>
-
       {/* Logo do app */}
       <div className="login-logo">
         <img src={logo} alt="Code Journey" className="login-logo-icon" />
