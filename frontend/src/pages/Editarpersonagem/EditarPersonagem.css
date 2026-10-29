@@ -14,10 +14,10 @@
   --madeira-borda: #5c3a1a;
   --madeira-fundo: #a9723f;
   --madeira-celula: #6e4523;
-  --texto: #22283a;
+  --texto: var(--cj-texto);
 
   position: relative;
-  background: #ffffff;
+  background: var(--cj-painel);
   min-height: 100%;
   padding-bottom: 24px;
 }
@@ -237,7 +237,7 @@
 }
 
 .editar-estado-erro {
-  color: #c0392b;
+  color: #ff8a8a;
 }
 
 .editar-inventario-erro {

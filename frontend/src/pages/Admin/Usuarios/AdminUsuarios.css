@@ -6,12 +6,12 @@
 .admin-usuarios {
   --roxo: #8a2fb8;
   --roxo-forte: #6a3fd9;
-  --texto: #22283a;
-  --texto-suave: #6b7280;
-  --divisor: #e5e7eb;
-  --verde: #2c7a3d;
-  --vermelho: #b93a3a;
-  --laranja: #b86a1a;
+  --texto: var(--cj-texto);
+  --texto-suave: var(--cj-texto-secundario);
+  --divisor: var(--cj-borda);
+  --verde: #6ee28a;
+  --vermelho: #ff8a8a;
+  --laranja: #f0a24a;
 }
 
 .admin-usuarios-voltar {
@@ -37,7 +37,8 @@
   min-width: 0;
   padding: 12px 14px;
   border-radius: 12px;
-  border: 1.5px solid #e2e2ea;
+  border: 1.5px solid rgba(183, 106, 255, 0.3);
+  background: var(--cj-fundo-profundo);
   font-size: 14px;
   font-family: inherit;
   color: var(--texto);
@@ -107,8 +108,8 @@
 }
 
 .admin-usuarios-tabela th {
-  background: #f7f5fb;
-  color: var(--roxo-forte);
+  background: var(--cj-painel);
+  color: var(--cj-roxo-claro);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
@@ -125,7 +126,7 @@
 }
 
 .admin-usuarios-linha--inativo {
-  background: #fafafa;
+  background: rgba(0, 0, 0, 0.18);
   color: var(--texto-suave);
 }
 
@@ -134,7 +135,7 @@
   display: inline-block;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #e9e7ec;
+  background: rgba(183, 106, 255, 0.14);
   color: var(--texto);
   font-size: 11px;
   font-weight: 700;
@@ -142,7 +143,7 @@
 
 .admin-usuarios-selo--admin {
   background: rgba(138, 47, 184, 0.15);
-  color: var(--roxo-forte);
+  color: var(--cj-roxo-claro);
 }
 
 .admin-usuarios-selo--ativo {
@@ -174,8 +175,8 @@
   padding: 6px 10px;
   border: 1px solid var(--roxo);
   border-radius: 8px;
-  background: #ffffff;
-  color: var(--roxo-forte);
+  background: var(--cj-cartao);
+  color: var(--cj-roxo-claro);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -201,8 +202,8 @@
 
 /* "Liberar tudo" (dá acesso ao jogo inteiro) */
 .admin-usuarios-acao--sucesso {
-  border-color: #15803d;
-  color: #15803d;
+  border-color: #4ade80;
+  color: #4ade80;
 }
 
 /* ---------- Paginação ---------- */
@@ -250,7 +251,7 @@
 
 .admin-usuarios-linha-acoes td {
   padding-top: 0;
-  background: #f7f5fb;
+  background: var(--cj-painel);
 }
 
 .admin-usuarios-linha-acoes .admin-usuarios-acoes-lista {

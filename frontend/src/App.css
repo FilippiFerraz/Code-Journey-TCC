@@ -41,8 +41,13 @@
 
 /* Preenche as laterais quando a tela é mais larga que a moldura (só
    aparece nesse caso — no celular a moldura já ocupa 100% da largura).
-   Mesmo degradê azul->roxo->magenta já usado em Login.css e nas telas de
-   desafio, pra ficar com a cara do app em vez de uma barra neutra. */
+   Roxo escuro do tema medieval, com um brilho violeta discreto no topo. */
 body {
-  background: linear-gradient(180deg, #2f6fed 0%, #6a3fd9 45%, #9b2fc9 75%, #b229c4 100%);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120, 27, 176, 0.35), transparent 60%),
+    var(--cj-fundo-profundo);
+}
+
+.app-frame:has(.layout-container) {
+  background: var(--cj-fundo);
 }

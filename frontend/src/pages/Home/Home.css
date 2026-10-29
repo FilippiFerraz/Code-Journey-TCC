@@ -1,3 +1,6 @@
+/* Home em tema escuro (MainLayout tema="escuro"): cores dos tokens --cj-*
+   de index.css. */
+
 /* ---------- Busca de jogadores ---------- */
 .home-busca {
   position: relative;
@@ -11,13 +14,20 @@
   gap: 8px;
   padding: 10px 14px;
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  background: rgba(16, 11, 37, 0.82);
+  border: 1px solid rgba(183, 106, 255, 0.45);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35), 0 4px 14px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.home-busca-campo:focus-within {
+  border-color: var(--cj-roxo-claro);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(183, 106, 255, 0.25);
 }
 
 .home-busca-icone {
   font-size: 15px;
-  opacity: 0.6;
+  color: var(--cj-texto-secundario);
 }
 
 .home-busca-input {
@@ -28,7 +38,12 @@
   background: none;
   font-size: 14px;
   font-family: inherit;
-  color: #22283a;
+  color: var(--cj-texto);
+}
+
+.home-busca-input::placeholder {
+  color: var(--cj-texto-apagado);
+  font-family: var(--cj-fonte-titulo);
 }
 
 .home-busca-limpar {
@@ -40,10 +55,14 @@
   justify-content: center;
   border: none;
   border-radius: 50%;
-  background: #efeff3;
-  color: #6b7280;
+  background: rgba(183, 106, 255, 0.2);
+  color: var(--cj-texto);
   font-size: 11px;
   cursor: pointer;
+}
+
+.home-busca-limpar:hover {
+  background: rgba(183, 106, 255, 0.35);
 }
 
 .home-busca-resultados {
@@ -53,9 +72,12 @@
   right: 0;
   max-height: 260px;
   overflow-y: auto;
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  background: var(--cj-painel);
+  border: 1px solid var(--cj-borda-forte);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  scrollbar-width: thin;
+  scrollbar-color: #4b2a7d transparent;
 }
 
 .home-busca-resultado {
@@ -65,11 +87,12 @@
   width: 100%;
   padding: 12px 16px;
   border: none;
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid var(--cj-borda);
   background: none;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .home-busca-resultado:last-child {
@@ -78,26 +101,97 @@
 
 .home-busca-resultado:hover,
 .home-busca-resultado:focus-visible {
-  background: #f7f5fb;
+  background: rgba(134, 40, 196, 0.22);
+  outline: none;
 }
 
 .home-busca-resultado-nome {
   font-size: 14px;
   font-weight: 700;
-  color: #22283a;
+  color: var(--cj-texto);
 }
 
 .home-busca-resultado-handle {
   font-size: 12px;
-  color: #8a8a95;
+  color: var(--cj-texto-secundario);
 }
 
 .home-busca-mensagem {
   margin: 0;
   padding: 14px 16px;
   font-size: 13px;
-  color: #8a8a95;
+  color: var(--cj-texto-secundario);
   text-align: center;
+}
+
+/* ---------- Card compacto do jogador (tablet/celular) ---------- */
+.home-jogador-compacto {
+  position: relative;
+  z-index: 4; /* as dicas do card ficam acima do mapa */
+  max-width: 1040px;
+  margin: 0 auto 16px;
+}
+
+/* No celular o mapa sobe 20px (cancela o padding do conteúdo); com algo
+   acima dele no fluxo, ele começa logo abaixo em vez de cobrir. */
+.home-busca ~ .home-moldura .home-mapa,
+.home-jogador-compacto ~ .home-moldura .home-mapa,
+.home-aviso-progresso ~ .home-moldura .home-mapa {
+  margin-top: 0;
+}
+
+/* ---------- Moldura do mapa ----------
+   No celular é só um invólucro (o mapa vai de ponta a ponta). No desktop
+   vira um quadro: borda violeta, fundo de painel e cantoneiras douradas. */
+.home-moldura {
+  position: relative;
+}
+
+.layout-corpo-desktop .home-moldura {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 6px;
+  background: linear-gradient(180deg, var(--cj-cartao), var(--cj-painel));
+  border: 2px solid var(--cj-borda-forte);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px var(--cj-fundo-profundo),
+    0 18px 40px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(120, 27, 176, 0.22);
+}
+
+/* cantoneiras douradas nos quatro cantos (um gradiente por traço) */
+.layout-corpo-desktop .home-moldura::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  z-index: 4;
+  pointer-events: none;
+  --c: var(--cj-ouro);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 22px 2px,
+    linear-gradient(var(--c), var(--c)) top left / 2px 22px,
+    linear-gradient(var(--c), var(--c)) top right / 22px 2px,
+    linear-gradient(var(--c), var(--c)) top right / 2px 22px,
+    linear-gradient(var(--c), var(--c)) bottom left / 22px 2px,
+    linear-gradient(var(--c), var(--c)) bottom left / 2px 22px,
+    linear-gradient(var(--c), var(--c)) bottom right / 22px 2px,
+    linear-gradient(var(--c), var(--c)) bottom right / 2px 22px;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 3px rgba(245, 196, 94, 0.45));
+}
+
+.layout-corpo-desktop .home-mapa {
+  width: 100%;
+  margin: 0;
+  border-radius: 7px 7px 0 0;
+  overflow: hidden;
+}
+
+.layout-corpo-desktop .home-fim-mapa {
+  width: 100%;
+  margin: -12% 0 0;
+  border-radius: 0 0 7px 7px;
 }
 
 .home-mapa {
@@ -141,21 +235,43 @@
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none; /* clique continua indo pro <button> pai */
-  filter: drop-shadow(0 0 12px rgba(155, 47, 201, 0.7));
+  filter: drop-shadow(0 0 10px rgba(33, 200, 255, 0.55));
   transition: filter 0.2s ease;
 }
 
+/* etiqueta do portal: placa roxo-escura, no mesmo padrão das demais */
 .home-portal-nome {
+  padding: 3px 9px;
   font-size: 11px;
   font-weight: 800;
-  color: #ffffff;
-  text-shadow: 0 0 4px #000000, 0 0 8px #000000;
+  color: var(--cj-texto);
   white-space: nowrap;
   text-align: center;
+  background: linear-gradient(180deg, #2a1a4f, #1a1033);
+  border: 2px solid rgba(33, 200, 255, 0.55);
+  border-radius: 4px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 0 8px rgba(33, 200, 255, 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .home-portal:hover .home-portal-gif {
-  filter: drop-shadow(0 0 18px rgba(155, 47, 201, 0.9));
+  filter: drop-shadow(0 0 16px rgba(33, 200, 255, 0.85));
+}
+
+.home-portal:hover .home-portal-nome {
+  border-color: var(--cj-magico);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 0 12px rgba(33, 200, 255, 0.55);
+}
+
+.home-portal:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.home-portal--bloqueado .home-portal-nome {
+  color: var(--cj-texto-secundario);
+  border-color: #4a3f63;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
 
 /* Portal ainda não liberado: arte apagada + cadeado por cima */
@@ -351,21 +467,23 @@
   padding: 3px 8px;
   font-size: 11px;
   font-weight: 900;
-  color: #2a1a0a;
+  color: var(--cj-texto);
   white-space: nowrap;
-  background: #f4c542;
-  border: 2px solid #8a5a12;
-  box-shadow: 0 0 10px rgba(244, 197, 66, 0.75);
+  background: linear-gradient(180deg, #2a1a4f, #1a1033);
+  border: 2px solid var(--cj-ouro);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(245, 196, 94, 0.6);
   animation: home-castelo-brilho 1.8s ease-in-out infinite;
 }
 
 .home-castelo-icone {
   font-size: 12px;
+  color: var(--cj-ouro);
 }
 
 .home-castelo:hover .home-castelo-placa,
 .home-castelo:focus-visible .home-castelo-placa {
-  background: #ffd96a;
+  background: linear-gradient(180deg, #3a2468, #241545);
 }
 
 .home-castelo:focus-visible {
@@ -374,20 +492,24 @@
 }
 
 .home-castelo--bloqueado .home-castelo-placa {
-  color: #e9e4f2;
-  background: #4a4458;
-  border-color: #2b2338;
+  color: var(--cj-texto-secundario);
+  background: #2a2240;
+  border-color: #4a3f63;
   box-shadow: none;
   animation: none;
+}
+
+.home-castelo--bloqueado .home-castelo-icone {
+  color: var(--cj-texto-secundario);
 }
 
 @keyframes home-castelo-brilho {
   0%,
   100% {
-    box-shadow: 0 0 6px rgba(244, 197, 66, 0.55);
+    box-shadow: 0 0 4px rgba(245, 196, 94, 0.4);
   }
   50% {
-    box-shadow: 0 0 16px rgba(244, 197, 66, 0.95);
+    box-shadow: 0 0 12px rgba(245, 196, 94, 0.75);
   }
 }
 
@@ -446,17 +568,18 @@
   padding: 3px 7px;
   font-size: 10px;
   font-weight: 900;
-  color: #f3e9d2;
+  color: var(--cj-texto);
   white-space: nowrap;
-  background: #2a1f5e;
-  border: 2px solid #f4c542;
-  box-shadow: 0 0 8px rgba(244, 197, 66, 0.6);
+  background: linear-gradient(180deg, #2a1a4f, #1a1033);
+  border: 2px solid var(--cj-ouro);
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(245, 196, 94, 0.5);
   animation: home-castelo-brilho 1.8s ease-in-out infinite;
 }
 
 .home-loja-icone {
   font-size: 12px;
-  color: #f4c542;
+  color: var(--cj-ouro);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -493,23 +616,24 @@
   cursor: pointer;
   font-size: 11px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--cj-texto);
   white-space: nowrap;
-  background: #6a3fd0;
-  border: 2px solid #2e1670;
-  box-shadow: 0 0 10px rgba(155, 108, 240, 0.8);
+  background: linear-gradient(180deg, #2a1a4f, #1a1033);
+  border: 2px solid var(--cj-roxo-claro);
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(183, 106, 255, 0.6);
   animation: home-cristais-brilho 1.8s ease-in-out infinite;
 }
 
 .home-cristais-icone {
   font-size: 12px;
-  color: #e3d6ff;
+  color: #d9b8ff;
 }
 
 .home-cristais-placa:hover,
 .home-cristais-placa:focus-visible,
 .home-cristais:hover ~ .home-cristais-placa {
-  background: #7d52e6;
+  background: linear-gradient(180deg, #3a2468, #241545);
 }
 
 .home-cristais:focus-visible,
@@ -519,8 +643,9 @@
 }
 
 .home-cristais-placa--bloqueada {
-  background: #4a4458;
-  border-color: #2b2338;
+  color: var(--cj-texto-secundario);
+  background: #2a2240;
+  border-color: #4a3f63;
   box-shadow: none;
   animation: none;
 }
@@ -528,10 +653,10 @@
 @keyframes home-cristais-brilho {
   0%,
   100% {
-    box-shadow: 0 0 6px rgba(155, 108, 240, 0.55);
+    box-shadow: 0 0 4px rgba(183, 106, 255, 0.4);
   }
   50% {
-    box-shadow: 0 0 16px rgba(155, 108, 240, 1);
+    box-shadow: 0 0 12px rgba(183, 106, 255, 0.8);
   }
 }
 
@@ -613,22 +738,23 @@
   padding: 3px 8px;
   font-size: 11px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--cj-texto);
   white-space: nowrap;
-  background: #9d174d;
-  border: 2px solid #4a0a24;
-  box-shadow: 0 0 10px rgba(255, 79, 216, 0.75);
+  background: linear-gradient(180deg, #3a1340, #1f0a24);
+  border: 2px solid #ff4fd8;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 79, 216, 0.6);
   animation: home-dragao-brilho 1.6s ease-in-out infinite;
 }
 
 .home-dragao-icone {
   font-size: 12px;
-  color: #ffd1f5;
+  color: #ffb3ef;
 }
 
 .home-dragao:hover .home-dragao-placa,
 .home-dragao:focus-visible .home-dragao-placa {
-  background: #be185d;
+  background: linear-gradient(180deg, #4d1a55, #2a0e31);
 }
 
 .home-dragao:focus-visible {
@@ -637,8 +763,9 @@
 }
 
 .home-dragao--bloqueado .home-dragao-placa {
-  background: #4a4458;
-  border-color: #2b2338;
+  color: var(--cj-texto-secundario);
+  background: #2a2240;
+  border-color: #4a3f63;
   box-shadow: none;
   animation: none;
 }
@@ -804,24 +931,25 @@
   font-size: 12px;
   font-weight: 900;
   line-height: 1.3;
-  color: #ffffff;
+  color: var(--cj-texto);
   text-align: left;
-  background: #4a3a7a;
-  border: 2px solid #1d1338;
-  box-shadow: 0 0 12px rgba(178, 160, 255, 0.55);
+  background: linear-gradient(180deg, var(--cj-cartao-claro), var(--cj-cartao));
+  border: 2px solid var(--cj-borda-forte);
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(183, 106, 255, 0.35);
   animation: home-fim-placa-flutuar 3.2s ease-in-out infinite;
 }
 
 .home-fim-placa .hn {
   font-size: 16px;
-  color: #ffd84d;
+  color: var(--cj-ouro);
 }
 
 .home-fim-placa small {
   display: block;
   font-size: 10px;
   font-weight: 700;
-  color: #cfc6ff;
+  color: var(--cj-texto-secundario);
 }
 
 @keyframes home-fim-placa-flutuar {

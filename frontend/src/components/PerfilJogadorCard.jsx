@@ -47,7 +47,9 @@ function formatarNumero(n) {
   return new Intl.NumberFormat("pt-BR").format(n ?? 0);
 }
 
-export default function PerfilJogadorCard() {
+// `compacto`: faixa única sem os equipamentos — usada no topo da Home em
+// tablet/celular, onde a coluna direita do layout não aparece.
+export default function PerfilJogadorCard({ compacto = false }) {
   const [perfil, setPerfil] = useState(null);
   const [falhou, setFalhou] = useState(false);
 
@@ -71,7 +73,11 @@ export default function PerfilJogadorCard() {
 
   if (!perfil) {
     return (
-      <section className="pjc pjc--carregando" aria-busy="true" aria-label="Carregando seu perfil">
+      <section
+        className={`pjc pjc--carregando ${compacto ? "pjc--compacto" : ""}`}
+        aria-busy="true"
+        aria-label="Carregando seu perfil"
+      >
         <div className="pjc-esqueleto pjc-esqueleto--topo" />
         <div className="pjc-esqueleto pjc-esqueleto--linha" />
         <div className="pjc-esqueleto pjc-esqueleto--linha" />
@@ -83,7 +89,7 @@ export default function PerfilJogadorCard() {
   const dias = perfil.diasOfensiva ?? 0;
 
   return (
-    <section className="pjc" aria-label="Seu perfil">
+    <section className={`pjc ${compacto ? "pjc--compacto" : ""}`} aria-label="Seu perfil">
       <div className="pjc-topo">
         <Link to="/perfil" className="pjc-moldura" aria-label="Abrir seu perfil">
           <AvatarPersonagem itensEquipados={equipados} className="pjc-avatar" alt={`Personagem de ${perfil.nome}`} />
@@ -120,47 +126,49 @@ export default function PerfilJogadorCard() {
         </div>
       </div>
 
-      <div className="pjc-equipamentos">
-        <div className="pjc-secao">
-          <span>Equipamentos</span>
-          <Link to="/editar-personagem" className="pjc-secao-link">
-            Trocar
-          </Link>
-        </div>
-        <ul className="pjc-slots">
-          {SLOTS.map((slot, i) => {
-            const item = equipados.find((it) => it.tipo === slot.tipo);
-            const lado = i === 0 ? "pjc-dica--esquerda" : i === SLOTS.length - 1 ? "pjc-dica--direita" : "";
-            return (
-              <li
-                key={slot.tipo}
-                className={`pjc-slot ${item ? `pjc-slot--${item.raridade ?? "comum"}` : "pjc-slot--vazio"}`}
-                tabIndex={0}
-                aria-label={item ? `${slot.nome}: ${item.nome}` : `${slot.nome}: vazio`}
-              >
-                {item ? (
-                  <IconeItem item={item} classeImagem="pjc-slot-imagem" classeEmoji="pjc-slot-emoji" />
-                ) : (
-                  <IconePixel icone={slot.icone} className="pjc-slot-vazio-icone" />
-                )}
-                <span className={`pjc-dica ${lado}`} role="tooltip">
-                  <span className="pjc-dica-slot">{slot.nome}</span>
+      {!compacto && (
+        <div className="pjc-equipamentos">
+          <div className="pjc-secao">
+            <span>Equipamentos</span>
+            <Link to="/editar-personagem" className="pjc-secao-link">
+              Trocar
+            </Link>
+          </div>
+          <ul className="pjc-slots">
+            {SLOTS.map((slot, i) => {
+              const item = equipados.find((it) => it.tipo === slot.tipo);
+              const lado = i === 0 ? "pjc-dica--esquerda" : i === SLOTS.length - 1 ? "pjc-dica--direita" : "";
+              return (
+                <li
+                  key={slot.tipo}
+                  className={`pjc-slot ${item ? `pjc-slot--${item.raridade ?? "comum"}` : "pjc-slot--vazio"}`}
+                  tabIndex={0}
+                  aria-label={item ? `${slot.nome}: ${item.nome}` : `${slot.nome}: vazio`}
+                >
                   {item ? (
-                    <>
-                      <strong className="pjc-dica-nome">{item.nome}</strong>
-                      {item.raridade && (
-                        <span className={`pjc-dica-raridade pjc-dica-raridade--${item.raridade}`}>{RARIDADES[item.raridade] ?? item.raridade}</span>
-                      )}
-                    </>
+                    <IconeItem item={item} classeImagem="pjc-slot-imagem" classeEmoji="pjc-slot-emoji" />
                   ) : (
-                    <strong className="pjc-dica-nome">Vazio — disponível</strong>
+                    <IconePixel icone={slot.icone} className="pjc-slot-vazio-icone" />
                   )}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+                  <span className={`pjc-dica ${lado}`} role="tooltip">
+                    <span className="pjc-dica-slot">{slot.nome}</span>
+                    {item ? (
+                      <>
+                        <strong className="pjc-dica-nome">{item.nome}</strong>
+                        {item.raridade && (
+                          <span className={`pjc-dica-raridade pjc-dica-raridade--${item.raridade}`}>{RARIDADES[item.raridade] ?? item.raridade}</span>
+                        )}
+                      </>
+                    ) : (
+                      <strong className="pjc-dica-nome">Vazio — disponível</strong>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

@@ -2,20 +2,20 @@
   text-align: center;
   font-size: 19px;
   font-weight: 800;
-  color: #1a1a22;
+  color: var(--cj-texto);
   margin: 6px 0 14px;
 }
 
 .verificar-subtitulo {
   text-align: center;
   font-size: 13px;
-  color: #6b6b75;
+  color: var(--cj-texto-secundario);
   line-height: 1.5;
   margin: 0 0 22px;
 }
 
 .verificar-aviso {
-  color: #1f9d55;
+  color: #6ee28a;
   font-size: 12.5px;
   margin: -8px 0 12px;
   text-align: center;
@@ -29,7 +29,7 @@
   margin-top: 16px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #a23fd0;
+  color: var(--cj-roxo-claro);
   text-align: center;
   cursor: pointer;
 }

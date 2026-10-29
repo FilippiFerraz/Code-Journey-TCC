@@ -7,14 +7,14 @@
 .editarperfil {
   --roxo: #8a2fb8;
   --roxo-forte: #6a3fd9;
-  --teal: #1b9ec9;
+  --teal: #2bb6e6;
   --teal-escuro: #147ea0;
-  --texto: #22283a;
-  --texto-suave: #6b7280;
-  --divisor: #e5e7eb;
+  --texto: var(--cj-texto);
+  --texto-suave: var(--cj-texto-secundario);
+  --divisor: var(--cj-borda);
 
   position: relative;
-  background: #ffffff;
+  background: var(--cj-painel);
   min-height: 100%;
   padding: 62px 20px 32px;
   box-sizing: border-box;
@@ -54,8 +54,8 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  border: 1px solid #eeeeee;
-  background: #ffffff;
+  border: 1px solid var(--cj-borda);
+  background: var(--cj-cartao);
 }
 
 .editarperfil-card-topo {
@@ -101,7 +101,8 @@
   padding: 12px 14px;
   margin-bottom: 16px;
   border-radius: 12px;
-  border: 1.5px solid #e2e2ea;
+  border: 1.5px solid rgba(183, 106, 255, 0.3);
+  background: var(--cj-fundo-profundo);
   font-size: 14px;
   font-family: inherit;
   color: var(--texto);
@@ -149,7 +150,7 @@
   padding: 3px;
   border: none;
   border-radius: 999px;
-  background: #d6d3db;
+  background: #4a3f63;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -217,7 +218,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--texto);
+  background: var(--cj-roxo-selecionado);
   color: #ffffff;
   font-size: 10px;
   font-weight: 900;
@@ -239,7 +240,7 @@
   padding: 12px 6px;
   border-radius: 12px;
   border: 2px solid var(--divisor);
-  background: #f7f7fa;
+  background: var(--cj-fundo-profundo);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
@@ -302,7 +303,7 @@
 }
 
 .editarperfil-salvar:disabled {
-  background: #b9c4c8;
+  background: #4a4458;
 }
 
 .editarperfil-salvar-miolo {
@@ -312,8 +313,8 @@
 }
 
 .editarperfil-salvar:disabled .editarperfil-salvar-miolo {
-  background: #cfd6d8;
-  color: #8a8a95;
+  background: #3a3350;
+  color: var(--cj-texto-secundario);
 }
 
 /* ---------- Erros / estados ---------- */
@@ -321,7 +322,7 @@
   margin: -6px 0 0;
   font-size: 13px;
   font-weight: 700;
-  color: #c0392b;
+  color: #ff8a8a;
   text-align: center;
 }
 
@@ -333,5 +334,5 @@
 }
 
 .editarperfil-estado--erro {
-  color: #c0392b;
+  color: #ff8a8a;
 }

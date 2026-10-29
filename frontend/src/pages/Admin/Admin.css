@@ -8,7 +8,7 @@
   --roxo: #8a2fb8;
   --roxo-forte: #6a3fd9;
   --roxo-suave: #c77fc4;
-  --texto-suave: #6b7280;
+  --texto-suave: var(--cj-texto-secundario);
 }
 
 .admin-intro {

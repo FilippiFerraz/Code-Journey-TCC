@@ -3,6 +3,7 @@
    Estrutura: mobile usa rodapé de ícones; desktop (>768px, ver
    hooks/useIsMobile.js) usa sidebar esquerda + coluna direita de widgets,
    no estilo Duolingo. .layout-conteudo é sempre a única área que rola.
+   Cores: tokens --cj-* de index.css (tema medieval roxo).
    ============================================================ */
 
 .layout-container {
@@ -10,9 +11,18 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--cj-fundo);
+  color: var(--cj-texto);
+  /* campos, selects e barras nativas também no escuro */
+  color-scheme: dark;
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   overflow: hidden; /* impede que o container inteiro role */
+}
+
+.layout-conteudo {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120, 27, 176, 0.16), transparent 60%),
+    var(--cj-fundo);
 }
 
 /* Cabeçalho — igual em mobile e desktop. Grid de 3 colunas (em vez de
@@ -25,18 +35,21 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
-  padding: 14px 18px;
-  background: #7a1fa8;
+  padding: 12px 20px;
+  background: linear-gradient(180deg, #8a27bf 0%, var(--cj-roxo-cabecalho) 45%, #651a8e 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   flex-shrink: 0; /* nunca encolhe nem some ao rolar */
 }
 
 .layout-header-titulo {
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  color: #fff6e3;
+  font-family: var(--cj-fonte-titulo);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 2px;
   margin: 0;
   white-space: nowrap;
+  text-shadow: 0 2px 0 rgba(30, 6, 48, 0.6), 0 0 12px rgba(245, 196, 94, 0.25);
 }
 
 /* Slot central de busca — só tem conteúdo em quem passa `buscaHeader`
@@ -51,12 +64,12 @@
    só que redimensionada aqui porque agora mora no cabeçalho. */
 .layout-header-busca .home-busca {
   width: 100%;
-  max-width: 480px;
+  max-width: 520px;
   margin-bottom: 0;
 }
 
 .layout-header-busca .home-busca-campo {
-  padding: 12px 20px;
+  padding: 10px 18px;
 }
 
 .layout-header-busca .home-busca-icone {
@@ -64,7 +77,7 @@
 }
 
 .layout-header-busca .home-busca-input {
-  font-size: 16px;
+  font-size: 15px;
 }
 
 /* coluna da direita: volume da música + logo */
@@ -77,17 +90,21 @@
 .layout-header-logo {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 8px;
   object-fit: cover;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--cj-borda-forte);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
 
-/* Linha gradiente (usada abaixo do header e acima do rodapé no mobile) */
+/* Linha fina sob o cabeçalho (e acima do rodapé no mobile): violeta com um
+   brilho dourado discreto no centro. */
 .layout-linha-gradiente {
-  height: 4px;
+  height: 2px;
   width: 100%;
   flex-shrink: 0;
-  background: linear-gradient(90deg, #2f6fed, #6a3fd9, #9b2fc9, #b229c4);
+  background:
+    linear-gradient(90deg, transparent 30%, rgba(245, 196, 94, 0.7) 50%, transparent 70%),
+    linear-gradient(90deg, #3a1563, var(--cj-roxo-claro) 50%, #3a1563);
 }
 
 /* Área de conteúdo — é a ÚNICA parte que rola, em mobile ou desktop */
@@ -102,6 +119,40 @@
   -webkit-overflow-scrolling: touch; /* rolagem suave no iOS/mobile */
 }
 
+/* Barras de rolagem roxas nas áreas escuras */
+.layout-conteudo,
+.layout-sidebar,
+.layout-coluna-direita {
+  scrollbar-width: thin;
+  scrollbar-color: #4b2a7d transparent;
+}
+
+.layout-conteudo::-webkit-scrollbar,
+.layout-sidebar::-webkit-scrollbar,
+.layout-coluna-direita::-webkit-scrollbar {
+  width: 10px;
+}
+
+.layout-conteudo::-webkit-scrollbar-track,
+.layout-sidebar::-webkit-scrollbar-track,
+.layout-coluna-direita::-webkit-scrollbar-track {
+  background: var(--cj-fundo-profundo);
+}
+
+.layout-conteudo::-webkit-scrollbar-thumb,
+.layout-sidebar::-webkit-scrollbar-thumb,
+.layout-coluna-direita::-webkit-scrollbar-thumb {
+  background: #4b2a7d;
+  border: 2px solid var(--cj-fundo-profundo);
+  border-radius: 6px;
+}
+
+.layout-conteudo::-webkit-scrollbar-thumb:hover,
+.layout-sidebar::-webkit-scrollbar-thumb:hover,
+.layout-coluna-direita::-webkit-scrollbar-thumb:hover {
+  background: var(--cj-roxo-selecionado);
+}
+
 /* ============================================================
    Mobile — rodapé fixo com ícones (comportamento original)
    ============================================================ */
@@ -110,8 +161,8 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 10px 0 16px;
-  background: #ffffff;
+  padding: 8px 0 14px;
+  background: linear-gradient(180deg, var(--cj-painel), var(--cj-fundo-profundo));
   flex-shrink: 0; /* nunca encolhe nem some ao rolar */
 }
 
@@ -136,41 +187,114 @@
   margin: 0 auto;
 }
 
+/* tema="escuro" (Home): o conteúdo ocupa toda a faixa central; quem limita
+   a largura é a própria página (a moldura do mapa). */
+.layout-container--escuro .layout-corpo-desktop .layout-conteudo {
+  max-width: none;
+  margin: 0;
+  padding: 20px 24px;
+}
+
 .layout-sidebar {
   flex-shrink: 0;
   width: 264px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 20px 12px;
-  background: #ffffff;
-  border-right: 1px solid #ece9f0;
+  gap: 6px;
+  padding: 20px 14px 18px;
+  background:
+    linear-gradient(180deg, rgba(120, 27, 176, 0.12), transparent 220px),
+    linear-gradient(180deg, var(--cj-painel), var(--cj-fundo));
+  border-right: 1px solid var(--cj-borda);
+  box-shadow: inset -12px 0 18px -14px rgba(0, 0, 0, 0.7);
   overflow-y: auto; /* se a lista de itens crescer além da altura da tela */
 }
 
-/* coluna direita escura (dark medieval), no tom do mapa e do Card de
-   Perfil do Jogador (components/PerfilJogadorCard.jsx) que fica no topo dela */
+/* Rodapé decorativo da sidebar: castelo + frase. Empurrado pro fim da
+   coluna; some em janelas baixas pra nunca disputar espaço com os itens. */
+.layout-sidebar-decoracao {
+  margin-top: auto;
+  padding-top: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.layout-decoracao-castelo {
+  width: 150px;
+  fill: rgba(183, 106, 255, 0.16);
+  margin-bottom: 6px;
+}
+
+/* mesma tipografia da frase da coluna direita (DecoracaoAventura.css) */
+.layout-sidebar-decoracao p {
+  margin: 0;
+  font-family: var(--cj-fonte-titulo);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--cj-texto-secundario);
+}
+
+@media (max-height: 640px) {
+  .layout-sidebar-decoracao {
+    display: none;
+  }
+}
+
+/* coluna direita: mesmo roxo profundo, com o Card de Perfil do Jogador
+   (components/PerfilJogadorCard.jsx) no topo e a frase decorativa
+   (components/DecoracaoAventura.jsx) ocupando o resto — na Home, com a arte
+   do dragão no castelo de fundo */
 .layout-coluna-direita {
   flex-shrink: 0;
-  width: 300px;
+  width: 320px;
   box-sizing: border-box;
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   background:
-    linear-gradient(180deg, rgba(76, 29, 149, 0.18), transparent 240px),
-    #0b1020;
-  border-left: 2px solid rgba(107, 33, 168, 0.6);
+    linear-gradient(180deg, rgba(120, 27, 176, 0.18), transparent 260px),
+    var(--cj-fundo);
+  border-left: 1px solid var(--cj-borda);
+  box-shadow: inset 12px 0 18px -14px rgba(0, 0, 0, 0.7);
   overflow-y: auto;
+}
+
+/* janela baixa: a decoração some pra coluna não precisar rolar */
+@media (max-height: 640px) {
+  .layout-coluna-direita .decoracao-aventura {
+    display: none;
+  }
 }
 
 /* Sidebar e conteúdo já cabem a partir de 768px, mas com a coluna direita
    junto o conteúdo ficaria espremido demais entre 768px e ~1100px — some
-   com ela nessa faixa e devolve o espaço pro conteúdo central. */
+   com ela nessa faixa e devolve o espaço pro conteúdo central (a Home
+   mostra um card compacto do jogador no lugar, ver Home.jsx). */
 @media (max-width: 1100px) {
   .layout-coluna-direita {
     display: none;
+  }
+
+  .layout-sidebar {
+    width: 216px;
+    padding: 16px 10px;
+  }
+
+  .layout-nav-item--sidebar {
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  .layout-decoracao-castelo {
+    width: 120px;
   }
 }
 
@@ -184,8 +308,14 @@
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #a23fd0;
-  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  color: var(--cj-texto-secundario);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.layout-nav-item:focus-visible {
+  outline: 2px solid var(--cj-roxo-claro);
+  outline-offset: 2px;
 }
 
 .layout-nav-icon {
@@ -194,40 +324,83 @@
   flex-shrink: 0;
 }
 
-/* ---------- variante "footer" (mobile) — só ícone, igual ao original ---------- */
+/* ---------- variante "footer" (mobile) — só ícone ---------- */
 .layout-nav-item--footer {
   flex-direction: column;
   justify-content: center;
   padding: 8px;
-  opacity: 0.55;
+  border-radius: 10px;
+  opacity: 0.7;
 }
 
 .layout-nav-item--footer:hover {
-  opacity: 0.85;
+  opacity: 1;
+  color: var(--cj-texto);
 }
 
 .layout-nav-item--footer.layout-nav-item-ativo {
   opacity: 1;
+  color: var(--cj-roxo-claro);
+  background: rgba(134, 40, 196, 0.22);
+  box-shadow: inset 0 0 0 1px var(--cj-borda-forte);
   transform: translateY(-2px);
 }
 
-/* ---------- variante "sidebar" (desktop) — ícone + texto, estilo Duolingo ---------- */
+.layout-nav-item--footer.layout-nav-item-ativo .layout-nav-icon {
+  filter: drop-shadow(0 0 6px rgba(183, 106, 255, 0.7));
+}
+
+/* ---------- variante "sidebar" (desktop) — ícone + texto ---------- */
 .layout-nav-item--sidebar {
+  position: relative;
   gap: 14px;
   padding: 12px 14px;
-  border-radius: 14px;
-  color: #5c5c66;
-  font-weight: 700;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 600;
   font-size: 15px;
 }
 
+/* divisória sutil entre os itens (não desenha embaixo do ativo) */
+.layout-nav-item--sidebar::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -4px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(183, 106, 255, 0.14), transparent);
+}
+
+.layout-nav-item--sidebar.layout-nav-item-ativo::after {
+  display: none;
+}
+
+.layout-nav-item--sidebar .layout-nav-icon {
+  color: #a98fd6;
+  transition: color 0.2s ease;
+}
+
 .layout-nav-item--sidebar:hover {
-  background: #f4eefa;
+  color: var(--cj-texto);
+  background: rgba(134, 40, 196, 0.16);
+  border-color: rgba(183, 106, 255, 0.2);
+}
+
+.layout-nav-item--sidebar:hover .layout-nav-icon {
+  color: var(--cj-roxo-claro);
 }
 
 .layout-nav-item--sidebar.layout-nav-item-ativo {
-  background: #f4eefa;
-  color: #7a1fa8;
+  color: #ffffff;
+  background: linear-gradient(90deg, var(--cj-roxo-selecionado), #5b1a8c);
+  border-color: var(--cj-roxo-claro);
+  box-shadow: 0 0 14px rgba(183, 106, 255, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.layout-nav-item--sidebar.layout-nav-item-ativo .layout-nav-icon {
+  color: #ffffff;
+  filter: drop-shadow(0 0 4px rgba(245, 196, 94, 0.45));
 }
 
 .layout-nav-item-texto {
@@ -241,7 +414,18 @@
    BREAKPOINT_MOBILE de MainLayout.jsx pra qualquer ajuste fino de CSS
    bater exatamente onde a estrutura muda. */
 @media (max-width: 768px) {
+  .layout-header {
+    padding: 10px 14px;
+  }
+
   .layout-header-titulo {
-    font-size: 18px; /* header um pouco mais compacto em telas bem estreitas */
+    font-size: 19px; /* header um pouco mais compacto em telas bem estreitas */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layout-nav-item,
+  .layout-nav-item--sidebar .layout-nav-icon {
+    transition: none;
   }
 }

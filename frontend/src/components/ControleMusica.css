@@ -38,14 +38,16 @@
   width: 40px;
   height: 40px;
   font-size: 22px;
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.14);
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-radius: 10px;
+  color: var(--cj-texto);
+  background: rgba(16, 11, 37, 0.45);
+  border: 2px solid rgba(183, 106, 255, 0.45);
+  border-radius: 8px;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .musica-controle--cabecalho .musica-botao:hover {
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(16, 11, 37, 0.7);
+  border-color: var(--cj-roxo-claro);
 }
 
 .musica-botao--mudo {

@@ -6,10 +6,10 @@
 .admin-logs {
   --roxo: #8a2fb8;
   --roxo-forte: #6a3fd9;
-  --texto: #22283a;
-  --texto-suave: #6b7280;
-  --divisor: #e5e7eb;
-  --vermelho: #b93a3a;
+  --texto: var(--cj-texto);
+  --texto-suave: var(--cj-texto-secundario);
+  --divisor: var(--cj-borda);
+  --vermelho: #ff8a8a;
 }
 
 .admin-logs-voltar {
@@ -29,7 +29,8 @@
   padding: 10px 12px;
   margin-bottom: 16px;
   border-radius: 10px;
-  border: 1.5px solid #e2e2ea;
+  border: 1.5px solid rgba(183, 106, 255, 0.3);
+  background: var(--cj-fundo-profundo);
   font-size: 13px;
   font-family: inherit;
   color: var(--texto);
@@ -63,7 +64,7 @@
   padding: 12px 14px;
   border: 1px solid var(--divisor);
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--cj-cartao);
 }
 
 .admin-logs-item-topo {
@@ -100,7 +101,7 @@
   padding: 0;
   border: none;
   background: none;
-  color: var(--roxo-forte);
+  color: var(--cj-roxo-claro);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -129,8 +130,8 @@
 }
 
 .admin-logs-diff th {
-  background: #f7f5fb;
-  color: var(--roxo-forte);
+  background: var(--cj-painel);
+  color: var(--cj-roxo-claro);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;

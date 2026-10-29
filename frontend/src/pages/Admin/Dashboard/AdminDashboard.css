@@ -12,13 +12,13 @@
 .admin-dashboard {
   --roxo: #8a2fb8;
   --roxo-forte: #6a3fd9;
-  --teal: #1b9ec9;
+  --teal: #2bb6e6;
   --teal-escuro: #147ea0;
-  --teal-trilha: rgba(27, 158, 201, 0.14);
-  --texto: #22283a;
-  --texto-suave: #6b7280;
-  --divisor: #e5e7eb;
-  --vermelho: #b93a3a;
+  --teal-trilha: rgba(43, 182, 230, 0.16);
+  --texto: var(--cj-texto);
+  --texto-suave: var(--cj-texto-secundario);
+  --divisor: var(--cj-borda);
+  --vermelho: #ff8a8a;
 }
 
 .admin-dashboard-voltar {
@@ -67,7 +67,7 @@
   padding: 14px 16px;
   border-radius: 14px;
   border: 1px solid var(--divisor);
-  background: #ffffff;
+  background: var(--cj-cartao);
 }
 
 .dash-stat-valor {
@@ -87,7 +87,7 @@
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--divisor);
-  background: #ffffff;
+  background: var(--cj-cartao);
 }
 
 .admin-dashboard-card-topo {
