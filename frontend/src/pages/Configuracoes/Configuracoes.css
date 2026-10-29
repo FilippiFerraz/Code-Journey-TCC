@@ -10,14 +10,14 @@
   --roxo-suave: #c77fc4;
   --teal: #1b9ec9;
   --teal-escuro: #147ea0;
-  --texto: #22283a;
-  --texto-suave: #6b7280;
+  --texto: var(--cj-texto);
+  --texto-suave: var(--cj-texto-secundario);
   --branco: #ffffff;
 
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--branco);
+  background: transparent;
 }
 
 /* ---------- Seção ---------- */
@@ -29,7 +29,7 @@
   margin-top: auto;
   margin-bottom: 16px;
   padding-top: 20px;
-  border-top: 2px solid #e5e7eb;
+  border-top: 2px solid var(--cj-borda);
 }
 
 .configuracoes-secao-titulo {
@@ -38,7 +38,7 @@
   font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: var(--roxo-forte);
+  color: var(--cj-roxo-claro);
   text-transform: uppercase;
 }
 

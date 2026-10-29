@@ -64,9 +64,9 @@
   position: relative;
   flex: 1;
   padding: 16px 18px 14px;
-  background: #ffffff;
+  background: var(--cj-cartao);
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--cj-borda-forte);
 }
 
 /* rabinho do balão apontando para o guia */
@@ -77,20 +77,20 @@
   bottom: 18px;
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-right: 10px solid #ffffff;
+  border-right: 10px solid var(--cj-cartao);
 }
 
 .tutorial-balao-titulo {
   display: block;
   margin: 0 0 4px;
-  color: #6a3fd9;
+  color: var(--cj-roxo-claro);
   font-size: 13px;
   font-weight: 800;
 }
 
 .tutorial-balao-fala {
   margin: 0 0 12px;
-  color: #22283a;
+  color: var(--cj-texto);
   font-size: 14px;
   line-height: 1.5;
   animation: tutorialFalaSurgir 0.25s ease-out;
@@ -123,12 +123,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #d3d3dd;
+  background: #5b4d7a;
   transition: background 0.2s ease;
 }
 
 .tutorial-ponto-ativo {
-  background: #8b3fd9;
+  background: var(--cj-roxo-claro);
 }
 
 /* botão pixelado (ver BotaoPixel) */
@@ -246,7 +246,7 @@
 .tutorial-balao--acima::after {
   top: 100%;
   left: calc(var(--seta) - 11px);
-  border-top-color: #ffffff;
+  border-top-color: var(--cj-cartao);
   border-bottom-width: 0;
   transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -254,7 +254,7 @@
 .tutorial-balao--abaixo::after {
   bottom: 100%;
   left: calc(var(--seta) - 11px);
-  border-bottom-color: #ffffff;
+  border-bottom-color: var(--cj-cartao);
   border-top-width: 0;
   transition: left 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -262,7 +262,7 @@
 .tutorial-balao--direita::after {
   right: 100%;
   top: calc(var(--seta) - 11px);
-  border-right-color: #ffffff;
+  border-right-color: var(--cj-cartao);
   border-left-width: 0;
   transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }

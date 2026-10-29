@@ -6,6 +6,7 @@ import { NavLink, useLocation } from "react-router-dom";
 const PerfilJogadorCard = lazy(() => import("../components/PerfilJogadorCard"));
 import logo from "../assets/images/logo.webp";
 import ControleMusica from "../components/ControleMusica";
+import DecoracaoAventura, { Ornamento } from "../components/DecoracaoAventura";
 import { useEhAdministrador } from "../hooks/useEhAdministrador";
 import { useIsMobile } from "../hooks/useIsMobile";
 import "./MainLayout.css";
@@ -175,7 +176,26 @@ function ordenarParaRodapeMobile(itens) {
   return [...outros.slice(0, meio), inicio, ...outros.slice(meio)];
 }
 
-function MainLayout({ titulo, children, buscaHeader }) {
+// Silhueta de castelo sobre montanhas — só decoração no pé da sidebar.
+function SilhuetaCastelo() {
+  return (
+    <svg viewBox="0 0 120 64" className="layout-decoracao-castelo" aria-hidden="true">
+      <polygon points="0,64 0,50 18,36 30,46 44,30 58,44 70,34 86,46 100,32 120,48 120,64" opacity="0.45" />
+      <rect x="30" y="40" width="60" height="24" />
+      <rect x="37" y="24" width="12" height="40" />
+      <rect x="71" y="24" width="12" height="40" />
+      <rect x="51" y="14" width="18" height="50" />
+      <polygon points="36,24 43,12 50,24" />
+      <polygon points="70,24 77,12 84,24" />
+      <polygon points="50,14 60,0 70,14" />
+    </svg>
+  );
+}
+
+// Toda tela já é roxo escuro; `tema="escuro"` só solta a largura do conteúdo
+// no desktop (hoje só a Home, cujo mapa tem moldura própria) — as demais
+// ficam na faixa central de 700px.
+function MainLayout({ titulo, children, buscaHeader, tema }) {
   const ehAdministrador = useEhAdministrador();
   const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
   const location = useLocation();
@@ -184,7 +204,7 @@ function MainLayout({ titulo, children, buscaHeader }) {
   const itensRodapeMobile = ordenarParaRodapeMobile(itens);
 
   return (
-    <div className="layout-container">
+    <div className={`layout-container ${tema === "escuro" ? "layout-container--escuro" : ""}`}>
       {/* Cabeçalho — igual em mobile e desktop, exceto pelo slot central de
           busca: só quem passa a prop `buscaHeader` usa ele (hoje só a Home,
           e só na versão desktop — no mobile ela mesma decide manter a
@@ -238,6 +258,13 @@ function MainLayout({ titulo, children, buscaHeader }) {
                 ativo={location.pathname === item.to}
               />
             ))}
+
+            <div className="layout-sidebar-decoracao" aria-hidden="true">
+              <SilhuetaCastelo />
+              <Ornamento />
+              <p>Sua jornada começa aqui!</p>
+              <Ornamento />
+            </div>
           </nav>
 
           <main className="layout-conteudo">{children}</main>
@@ -248,6 +275,9 @@ function MainLayout({ titulo, children, buscaHeader }) {
             <Suspense fallback={null}>
               <PerfilJogadorCard />
             </Suspense>
+
+            {/* Arte do dragão no castelo atrás da frase: só na Home */}
+            <DecoracaoAventura comFundo={tema === "escuro"} />
           </aside>
         </div>
       )}

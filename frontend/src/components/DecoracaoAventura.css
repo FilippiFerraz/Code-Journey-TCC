@@ -1,0 +1,83 @@
+/* Frase decorativa "Grandes aventuras..." (DecoracaoAventura.jsx).
+   Cores: tokens --cj-* de index.css. */
+
+.ornamento-aventura {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9px;
+  color: rgba(245, 196, 94, 0.55);
+}
+
+.ornamento-aventura span {
+  width: 42px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245, 196, 94, 0.45));
+}
+
+.ornamento-aventura span:last-child {
+  background: linear-gradient(90deg, rgba(245, 196, 94, 0.45), transparent);
+}
+
+.decoracao-aventura {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.decoracao-aventura p {
+  margin: 0;
+  max-width: 260px;
+  font-family: var(--cj-fonte-titulo);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--cj-texto-secundario);
+}
+
+/* empurrada pro pé da coluna direita */
+.decoracao-aventura {
+  margin-top: auto;
+  padding: 24px 12px 8px;
+}
+
+/* ---------- Com a arte do dragão no castelo ----------
+   O fundo fica só nesta área (abaixo do card do jogador): o topo funde com
+   o roxo da coluna e o pé escurece pra frase ficar legível. A arte é
+   retrato (1024x1536); cover + 70% 30% mantém dragão e castelo no quadro. */
+.decoracao-aventura--com-fundo {
+  justify-content: flex-end;
+  background:
+    linear-gradient(
+      180deg,
+      var(--cj-fundo) 0%,
+      rgba(16, 11, 37, 0) 22%,
+      rgba(16, 11, 37, 0) 50%,
+      rgba(11, 7, 25, 0.88) 100%
+    ),
+    url("../assets/images/fundo home direita.png") 70% 30% / cover no-repeat,
+    var(--cj-fundo);
+}
+
+.decoracao-aventura--com-fundo p {
+  color: var(--cj-texto);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.85);
+}
+
+.decoracao-aventura--com-fundo .ornamento-aventura {
+  color: rgba(245, 196, 94, 0.8);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+/* na coluna, a arte vai de borda a borda (cancela o padding da coluna) e
+   ocupa todo o espaço que sobra abaixo do card, sem gerar rolagem */
+.decoracao-aventura--com-fundo {
+  flex: 1 1 auto;
+  min-height: 240px;
+  margin: 0 -16px -20px;
+  padding: 24px 20px 32px;
+}

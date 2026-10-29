@@ -30,7 +30,7 @@
   border: none;
   background: transparent;
   padding: 0;
-  color: #6b7280;
+  color: var(--cj-texto-secundario);
   cursor: pointer;
   opacity: 0.75;
   transition: opacity 0.15s ease, color 0.15s ease;
@@ -39,5 +39,5 @@
 .campo-senha-toggle:hover,
 .campo-senha-toggle:focus-visible {
   opacity: 1;
-  color: #a23fd0;
+  color: var(--cj-roxo-claro);
 }

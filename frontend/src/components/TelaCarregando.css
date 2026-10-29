@@ -5,13 +5,15 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: linear-gradient(180deg, #2f6fed, #6a3fd9 45%, #9b2fc9 75%, #b229c4 100%);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(120, 27, 176, 0.35), transparent 60%),
+    var(--cj-fundo);
 }
 
 .tela-carregando-ponto {
   width: 12px;
   height: 12px;
-  background: #ffffff;
+  background: var(--cj-roxo-claro);
   border: 2px solid #3a1a5a;
   animation: tela-carregando-pulo 0.9s ease-in-out infinite;
 }

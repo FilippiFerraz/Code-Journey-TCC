@@ -18,8 +18,7 @@ import { mundoLiberado } from "../../data/progresso";
 import { tocarSom } from "../../utils/sons";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { usePersonagemAvatar, definirAparenciaPropria } from "../../hooks/usePersonagemAvatar";
-import EscolherAparencia from "../../components/EscolherAparencia";
-import TutorialHome from "./TutorialHome";
+import EscolherAparencia from "../../components/EscolherAparencia";import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
 import PersonagemNoMapa from "./PersonagemNoMapa";
 import { Gift } from "pixelarticons/react/Gift.js";
@@ -31,6 +30,9 @@ import "./Home.css";
 // Cutscene de introdução (só no primeiro acesso): arquivo à parte, baixado
 // só por quem vai assistir.
 const IntroCutscene = lazy(() => import("../../components/IntroCutscene/IntroCutscene"));
+// Card do jogador em versão compacta, só quando a coluna direita do layout
+// some (tablet/celular) — sob demanda pelo mesmo motivo do MainLayout.
+const PerfilJogadorCard = lazy(() => import("../../components/PerfilJogadorCard"));
 
 // Marca local de "já viu a intro" — reserva pra quando o backend não
 // responde (ou ainda não tem o campo introVista). O que vale é o banco.
@@ -48,6 +50,9 @@ function introVistaLocal(usuarioId) {
 // sidebar (desktop) — precisa bater com o de lá pra decidir corretamente
 // onde a barra de busca aparece (ver comentário mais abaixo).
 const BREAKPOINT_MOBILE = 768;
+// Abaixo disso a coluna direita do MainLayout (com o Card do Jogador) some —
+// mesmo valor da media query de MainLayout.css.
+const BREAKPOINT_SEM_COLUNA_DIREITA = 1100;
 
 // Posições em % relativas ao tamanho da imagem do mapa. Mudou alguma? Ajuste
 // também o ponto do portal em CAMINHO (caminhoMapa.js), por onde o
@@ -103,6 +108,7 @@ function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const ehMobile = useIsMobile(BREAKPOINT_MOBILE);
+  const semColunaDireita = useIsMobile(BREAKPOINT_SEM_COLUNA_DIREITA);
   // Cutscene de introdução: conta recém-criada (VerificarEmail manda
   // introPendente) já abre com ela, sem esperar o /perfil — que depois
   // confirma ou cancela (Usuario.introVista).
@@ -396,8 +402,16 @@ function Home() {
   );
 
   return (
-    <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined}>
+    <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined} tema="escuro">
       {ehMobile && barraBusca}
+
+      {semColunaDireita && (
+        <div className="home-jogador-compacto">
+          <Suspense fallback={null}>
+            <PerfilJogadorCard compacto />
+          </Suspense>
+        </div>
+      )}
 
       {erroProgresso && (
         <div className="home-aviso-progresso" role="alert">
@@ -408,181 +422,184 @@ function Home() {
         </div>
       )}
 
-      <div
-        className={`home-mapa ${abrindoDragao ? "home-mapa--tremendo" : ""}`}
-        style={{ backgroundImage: `url(${mapaPrevia})` }}
-      >
-        {/* width/height = tamanho real da arte: o navegador reserva o espaço
-            antes de baixar (sem o mapa "pular" a tela) e fetchPriority avisa
-            que é a imagem principal da tela */}
-        <img
-          src={mapa}
-          alt="Mapa da jornada"
-          className="home-mapa-imagem"
-          width={941}
-          height={1672}
-          fetchPriority="high"
-          decoding="async"
-        />
-
-        <button
-          type="button"
-          className="home-loja"
-          style={{ top: LOJA.top, left: LOJA.left, width: LOJA.largura }}
-          onClick={() => !destino && navigate("/loja")}
-          aria-label="Lojinha do Mago: compre itens com suas moedas"
+      {/* Moldura do mapa (borda violeta e cantoneiras douradas no desktop;
+          no celular o mapa continua de ponta a ponta) */}
+      <div className="home-moldura">
+        <div
+          className={`home-mapa ${abrindoDragao ? "home-mapa--tremendo" : ""}`}
+          style={{ backgroundImage: `url(${mapaPrevia})` }}
         >
-          <img src={lojinha} alt="" aria-hidden="true" className="home-loja-imagem" draggable={false} />
-          <span className="home-loja-placa">
-            <IconePixel icone={Coins} className="home-loja-icone" />
-            Lojinha do Mago
-          </span>
-        </button>
+          {/* width/height = tamanho real da arte: o navegador reserva o espaço
+              antes de baixar (sem o mapa "pular" a tela) e fetchPriority avisa
+              que é a imagem principal da tela */}
+          <img
+            src={mapa}
+            alt="Mapa da jornada"
+            className="home-mapa-imagem"
+            width={941}
+            height={1672}
+            fetchPriority="high"
+            decoding="async"
+          />
 
-        {PONTOS_CRISTAIS.map((ponto) => (
           <button
-            key={ponto.id}
             type="button"
-            className={`home-cristais ${cristaisLiberados ? "" : "home-cristais--bloqueado"}`}
-            style={{ top: ponto.top, left: ponto.left, width: ponto.largura, height: ponto.altura }}
+            className="home-loja"
+            style={{ top: LOJA.top, left: LOJA.left, width: LOJA.largura }}
+            onClick={() => !destino && navigate("/loja")}
+            aria-label="Lojinha do Mago: compre itens com suas moedas"
+          >
+            <img src={lojinha} alt="" aria-hidden="true" className="home-loja-imagem" draggable={false} />
+            <span className="home-loja-placa">
+              <IconePixel icone={Coins} className="home-loja-icone" />
+              Lojinha do Mago
+            </span>
+          </button>
+
+          {PONTOS_CRISTAIS.map((ponto) => (
+            <button
+              key={ponto.id}
+              type="button"
+              className={`home-cristais ${cristaisLiberados ? "" : "home-cristais--bloqueado"}`}
+              style={{ top: ponto.top, left: ponto.left, width: ponto.largura, height: ponto.altura }}
+              onClick={handleCristaisClick}
+              aria-label={`${ponto.nome}: Desafio da Cachoeira de Cristais${cristaisLiberados ? "" : " (bloqueado)"}`}
+            />
+          ))}
+          <button
+            type="button"
+            className={`home-cristais-placa ${cristaisLiberados ? "" : "home-cristais-placa--bloqueada"}`}
+            style={{ top: PLACA_CRISTAIS.top, left: PLACA_CRISTAIS.left }}
             onClick={handleCristaisClick}
-            aria-label={`${ponto.nome}: Desafio da Cachoeira de Cristais${cristaisLiberados ? "" : " (bloqueado)"}`}
-          />
-        ))}
-        <button
-          type="button"
-          className={`home-cristais-placa ${cristaisLiberados ? "" : "home-cristais-placa--bloqueada"}`}
-          style={{ top: PLACA_CRISTAIS.top, left: PLACA_CRISTAIS.left }}
-          onClick={handleCristaisClick}
-          aria-label={`Desafio da Cachoeira de Cristais${cristaisLiberados ? "" : " (bloqueado)"}`}
-        >
-          <i
-            className={`hn ${cristaisLiberados ? "hn-sparkles-solid" : "hn-lock"} home-cristais-icone`}
-            aria-hidden="true"
-          />
-          Cachoeira de Cristais
-        </button>
-
-        <button
-          type="button"
-          className={`home-dragao ${dragaoLiberado ? "" : "home-dragao--bloqueado"}`}
-          style={{ top: DRAGAO.top, left: DRAGAO.left, width: DRAGAO.largura, height: DRAGAO.altura }}
-          onClick={handleDragaoClick}
-          aria-label={`Batalha contra o Dragão do Código Fonte${dragaoLiberado ? "" : " (bloqueada)"}`}
-        >
-          <span className="home-dragao-placa">
-            <i className={`hn ${dragaoLiberado ? "hn-fire-solid" : "hn-lock"} home-dragao-icone`} aria-hidden="true" />
-            Dragão do Código Fonte
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className={`home-castelo ${casteloLiberado ? "" : "home-castelo--bloqueado"}`}
-          style={{ top: CASTELO.top, left: CASTELO.left, width: CASTELO.largura, height: CASTELO.altura }}
-          onClick={handleCasteloClick}
-          aria-label={casteloLiberado ? "Desafio do Rei" : "Desafio do Rei (bloqueado)"}
-        >
-          <span className="home-castelo-placa">
+            aria-label={`Desafio da Cachoeira de Cristais${cristaisLiberados ? "" : " (bloqueado)"}`}
+          >
             <i
-              className={`hn ${casteloLiberado ? "hn-crown-solid" : "hn-lock"} home-castelo-icone`}
+              className={`hn ${cristaisLiberados ? "hn-sparkles-solid" : "hn-lock"} home-cristais-icone`}
               aria-hidden="true"
             />
-            Desafio do Rei
-          </span>
-        </button>
+            Cachoeira de Cristais
+          </button>
 
-        {PORTAIS.map((portal) => {
-          const liberado = mundoLiberado(progresso, portal.id);
-          const bauDisponivel = baus.find(
-            (bau) => String(bau.mundoId) === portal.id && bau.disponivel
-          );
-          return (
-            <Fragment key={portal.id}>
-              <button
-                type="button"
-                className={`home-portal ${liberado ? "" : "home-portal--bloqueado"}`}
-                style={{ top: portal.top, left: portal.left }}
-                onClick={() => handlePortalClick(portal)}
-                data-tutorial-alvo={portal.id === "1" ? "portal-desafios" : undefined}
-              >
-                <img
-                  src={portalDesafios}
-                  alt=""
-                  aria-hidden="true"
-                  className="home-portal-gif"
-                  draggable={false}
-                />
-                {!liberado && (
-                  <img
-                    src={cadeadoPortal}
-                    alt="Bloqueado"
-                    className="home-portal-cadeado"
-                    draggable={false}
-                  />
-                )}
-                <span className="home-portal-nome">{portal.nome}</span>
-              </button>
+          <button
+            type="button"
+            className={`home-dragao ${dragaoLiberado ? "" : "home-dragao--bloqueado"}`}
+            style={{ top: DRAGAO.top, left: DRAGAO.left, width: DRAGAO.largura, height: DRAGAO.altura }}
+            onClick={handleDragaoClick}
+            aria-label={`Batalha contra o Dragão do Código Fonte${dragaoLiberado ? "" : " (bloqueada)"}`}
+          >
+            <span className="home-dragao-placa">
+              <i className={`hn ${dragaoLiberado ? "hn-fire-solid" : "hn-lock"} home-dragao-icone`} aria-hidden="true" />
+              Dragão do Código Fonte
+            </span>
+          </button>
 
-              {/* Baú de fim de mundo — irmão do portal (não dentro dele, pra
-                  não aninhar <button>), posicionado logo à direita. */}
-              {bauDisponivel && (
+          <button
+            type="button"
+            className={`home-castelo ${casteloLiberado ? "" : "home-castelo--bloqueado"}`}
+            style={{ top: CASTELO.top, left: CASTELO.left, width: CASTELO.largura, height: CASTELO.altura }}
+            onClick={handleCasteloClick}
+            aria-label={casteloLiberado ? "Desafio do Rei" : "Desafio do Rei (bloqueado)"}
+          >
+            <span className="home-castelo-placa">
+              <i
+                className={`hn ${casteloLiberado ? "hn-crown-solid" : "hn-lock"} home-castelo-icone`}
+                aria-hidden="true"
+              />
+              Desafio do Rei
+            </span>
+          </button>
+
+          {PORTAIS.map((portal) => {
+            const liberado = mundoLiberado(progresso, portal.id);
+            const bauDisponivel = baus.find(
+              (bau) => String(bau.mundoId) === portal.id && bau.disponivel
+            );
+            return (
+              <Fragment key={portal.id}>
                 <button
                   type="button"
-                  className="home-bau"
-                  style={{ top: portal.top, left: `calc(${portal.left} + 64px)` }}
-                  onClick={() =>
-                    navigate(`/bau/${portal.id}/${bauDisponivel.dificuldade}`)
-                  }
-                  aria-label={`Abrir o baú de ${portal.nome}`}
+                  className={`home-portal ${liberado ? "" : "home-portal--bloqueado"}`}
+                  style={{ top: portal.top, left: portal.left }}
+                  onClick={() => handlePortalClick(portal)}
+                  data-tutorial-alvo={portal.id === "1" ? "portal-desafios" : undefined}
                 >
-                  <span className="home-bau-icone" aria-hidden="true"><IconePixel icone={Gift} /></span>
-                  <span className="home-bau-texto">Abrir baú!</span>
+                  <img
+                    src={portalDesafios}
+                    alt=""
+                    aria-hidden="true"
+                    className="home-portal-gif"
+                    draggable={false}
+                  />
+                  {!liberado && (
+                    <img
+                      src={cadeadoPortal}
+                      alt="Bloqueado"
+                      className="home-portal-cadeado"
+                      draggable={false}
+                    />
+                  )}
+                  <span className="home-portal-nome">{portal.nome}</span>
                 </button>
-              )}
-            </Fragment>
-          );
-        })}
 
-        {destino && (
-          <PersonagemNoMapa
-            pontos={trechoViagem}
-            itensEquipados={itensEquipados}
-            onChegar={() => entrarNoPortal(destino)}
-          />
-        )}
+                {/* Baú de fim de mundo — irmão do portal (não dentro dele, pra
+                    não aninhar <button>), posicionado logo à direita. */}
+                {bauDisponivel && (
+                  <button
+                    type="button"
+                    className="home-bau"
+                    style={{ top: portal.top, left: `calc(${portal.left} + 64px)` }}
+                    onClick={() =>
+                      navigate(`/bau/${portal.id}/${bauDisponivel.dificuldade}`)
+                    }
+                    aria-label={`Abrir o baú de ${portal.nome}`}
+                  >
+                    <span className="home-bau-icone" aria-hidden="true"><IconePixel icone={Gift} /></span>
+                    <span className="home-bau-texto">Abrir baú!</span>
+                  </button>
+                )}
+              </Fragment>
+            );
+          })}
+
+          {destino && (
+            <PersonagemNoMapa
+              pontos={trechoViagem}
+              itensEquipados={itensEquipados}
+              onChegar={() => entrarNoPortal(destino)}
+            />
+          )}
+        </div>
+
+        {/* Fim do mapa: nuvens com o aviso de que há mais mundos depois deste */}
+        <div className="home-fim-mapa">
+          {NUVENS_FIM.map((nuvem, i) => (
+            <img
+              key={i}
+              src={nuvem.src}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              draggable={false}
+              className={`home-fim-nuvem ${nuvem.espelhada ? "home-fim-nuvem--espelhada" : ""}`}
+              style={{
+                left: `${nuvem.left}%`,
+                top: `${nuvem.top}%`,
+                width: `${nuvem.largura}%`,
+                "--duracao": `${nuvem.duracao}s`,
+                "--atraso": `${-i * 1.7}s`,
+              }}
+            />
+          ))}
+
+          <p className="home-fim-placa">
+            <i className="hn hn-lock" aria-hidden="true" />
+            <span>
+              Termine o Mundo 1 para continuar
+              <small>Novos mundos em breve...</small>
+            </span>
+          </p>
+        </div>
       </div>
-
-      {/* Fim do mapa: nuvens com o aviso de que há mais mundos depois deste */}
-      <div className="home-fim-mapa">
-        {NUVENS_FIM.map((nuvem, i) => (
-          <img
-            key={i}
-            src={nuvem.src}
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            draggable={false}
-            className={`home-fim-nuvem ${nuvem.espelhada ? "home-fim-nuvem--espelhada" : ""}`}
-            style={{
-              left: `${nuvem.left}%`,
-              top: `${nuvem.top}%`,
-              width: `${nuvem.largura}%`,
-              "--duracao": `${nuvem.duracao}s`,
-              "--atraso": `${-i * 1.7}s`,
-            }}
-          />
-        ))}
-
-        <p className="home-fim-placa">
-          <i className="hn hn-lock" aria-hidden="true" />
-          <span>
-            Termine o Mundo 1 para continuar
-            <small>Novos mundos em breve...</small>
-          </span>
-        </p>
-      </div>
-
       {mostrarIntro ? (
         // fundo preto (também em portal, pelo mesmo motivo da cutscene)
         // enquanto o arquivo da cutscene baixa

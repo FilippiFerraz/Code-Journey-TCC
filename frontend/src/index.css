@@ -2,6 +2,29 @@
   box-sizing: border-box;
 }
 
+/* Paleta medieval roxa (cabeçalho, navegação, Home e Card do Jogador). Toda
+   cor nova da casca do app sai daqui — ajuste o tom num lugar só. */
+:root {
+  --cj-roxo: #781bb0;
+  --cj-roxo-cabecalho: #791fa8;
+  --cj-roxo-selecionado: #8628c4;
+  --cj-roxo-claro: #b76aff;
+  --cj-fundo: #100b25;
+  --cj-fundo-profundo: #0b0719;
+  --cj-painel: #19112f;
+  --cj-cartao: #21163d;
+  --cj-cartao-claro: #2b1d4f;
+  --cj-borda: rgba(183, 106, 255, 0.22);
+  --cj-borda-forte: rgba(183, 106, 255, 0.5);
+  --cj-ouro: #f5c45e;
+  --cj-ouro-escuro: #8a5a12;
+  --cj-texto: #f5f0ff;
+  --cj-texto-secundario: #bdb1d4;
+  --cj-texto-apagado: #8a7fa6;
+  --cj-magico: #21c8ff;
+  --cj-fonte-titulo: Georgia, "Times New Roman", serif;
+}
+
 html,
 body,
 #root {
