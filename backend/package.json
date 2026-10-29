@@ -12,6 +12,7 @@
     "reset:baus": "node scripts/resetBaus.js",
     "reset:intro": "node scripts/resetIntro.js",
     "desafio:ia": "node scripts/criarDesafioIA.js",
+    "desafios:portal2": "node scripts/criarDesafiosPortal2.js",
     "recompensas:sincronizar": "node scripts/sincronizarRecompensas.js",
     "itens:guardiao-cristal": "node scripts/cadastrarItensGuardiaoCristal.js",
     "itens:arena-dragao": "node scripts/cadastrarItensArenaDragao.js",
