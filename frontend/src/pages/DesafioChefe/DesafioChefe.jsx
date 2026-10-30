@@ -219,7 +219,9 @@ function DesafioChefe() {
   }
 
   function confirmarSairDesafio() {
-    navigate("/home");
+    // volta pra lista de desafios do portal em que estava (replace: o
+    // "voltar" do navegador não reabre o desafio abandonado)
+    navigate(`/desafios/${mundoId}/${dificuldade}`, { replace: true });
   }
 
   // Acerto: herói golpeia, chefe leva o hit e perde uma vida. Na última

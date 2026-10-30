@@ -16,8 +16,9 @@ import MochilaItens from "../../components/MochilaItens";
 import ControleMusica from "../../components/ControleMusica";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
+import { falaDerrota, falaGolpeCerteiro, falasGolpe, tituloDerrotado } from "../../utils/textosInimigo";
 import IntroEtapas from "./IntroEtapas";
-import SpriteInimigo from "./SpriteInimigo";
+import { GrupoInimigos } from "./SpriteInimigo";
 import { EXERCICIOS, TITULO_PAINEL, precarregarExercicios } from "./exercicios";
 import "../ResolverDesafio/ResolverDesafio.css";
 import "../DesafioChefe/DesafioChefe.css";
@@ -37,22 +38,14 @@ import "./DesafioEtapas.css";
 // /api/progresso (que guarda o avanço) e, nos exercícios ação-por-ação
 // (cartões, poção, chefe), cada ação em POST .../verificar.
 //
-// Inimigos, fundos e falas: data/cenasPortal3.js (artes provisórias).
+// Inimigos, fundos e falas: data/cenasPortal3.js. Um desafio pode ter um
+// GRUPO de inimigos (portal 2): a tela continua tratando-o como um inimigo
+// só — uma barra de vida, um estado de ataque/dano/morte — e GrupoInimigos
+// aplica esse estado a todos os sprites ao mesmo tempo.
 
 const VIDA_MAXIMA = 3;
 // Duração do GIF de ataque do herói — mesmo valor de ResolverDesafio.jsx.
 const DURACAO_GIF_ATAQUE_MS = 600;
-
-function falasGolpe(nomeInimigo) {
-  return [
-    `${nomeInimigo} avança e te acerta! Sacuda a poeira e tente de novo.`,
-    "Mais um golpe! Respira, olha com calma — a resposta está aí.",
-  ];
-}
-
-function falaDerrota(nomeInimigo) {
-  return `${nomeInimigo} te derrubou desta vez... mas todo herói cai antes de aprender o golpe. Levante e tente novamente!`;
-}
 
 export default function DesafioEtapas() {
   const { mundoId, dificuldade, desafioId } = useParams();
@@ -62,7 +55,7 @@ export default function DesafioEtapas() {
   // investida (mesma animação CSS) com o próprio avatar em camadas.
   const usaGifAtaque = (useAparenciaPropria() ?? APARENCIA_PADRAO) === APARENCIA_PADRAO;
   const cena = cenaDoDesafio(Number(desafioId), Number(mundoId));
-  const nomeInimigo = cena.inimigo.nome;
+  const nomeInimigo = cena.nome;
 
   const [desafio, setDesafio] = useState(null);
   const [erroCarregar, setErroCarregar] = useState("");
@@ -283,7 +276,7 @@ export default function DesafioEtapas() {
   }
 
   const Exercicio = EXERCICIOS[etapa.tipo];
-  const golpes = falasGolpe(nomeInimigo);
+  const golpes = falasGolpe(nomeInimigo, cena.grupo);
   const falaGolpe = golpes[VIDA_MAXIMA - 1 - vida] || golpes.at(-1);
 
   // Segmentos de vida do inimigo (um por etapa)
@@ -331,9 +324,13 @@ export default function DesafioEtapas() {
             itensEquipados={itensEquipados}
             className={`chefe-sprite-heroi ${tomandoGolpe ? "etapas-heroi--atingido" : ""}`}
           />
-          <SpriteInimigo
-            inimigo={cena.inimigo}
-            className={`chefe-sprite-chefe ${inimigoFerido ? "chefe-sprite-chefe--atingido" : ""} ${
+          <GrupoInimigos
+            inimigos={cena.inimigos}
+            nome={nomeInimigo}
+            classeGrupo="grupo-inimigos--chefe"
+            className={`chefe-sprite-chefe ${tomandoGolpe ? "etapas-chefe--atacando" : ""} ${
+              inimigoFerido ? "chefe-sprite-chefe--atingido" : ""
+            } ${
               chefeEsquivando ? "chefe-sprite-chefe--esquivando" : ""
             } ${inimigoMorrendo ? "chefe-sprite-chefe--derrotado" : ""}`}
           />
@@ -389,12 +386,14 @@ export default function DesafioEtapas() {
             />
           )}
 
-          <SpriteInimigo
-            inimigo={cena.inimigo}
+          <GrupoInimigos
+            inimigos={cena.inimigos}
+            nome={nomeInimigo}
+            classeGrupo="grupo-inimigos--cena"
+            larguraPadrao={96}
             className={`cena-inimigo ${tomandoGolpe ? "cena-inimigo--atacando" : ""} ${
               inimigoFerido ? "etapas-inimigo--ferido" : ""
             } ${inimigoMorrendo ? "cena-inimigo--morrendo" : ""}`}
-            style={{ width: cena.inimigo.largura || 96 }}
           />
         </div>
 
@@ -424,7 +423,7 @@ export default function DesafioEtapas() {
       return (
         <div className="derrota">
           <h2 className="derrota-titulo">Você caiu!</h2>
-          <p className="derrota-fala">{falaDerrota(nomeInimigo)}</p>
+          <p className="derrota-fala">{falaDerrota(nomeInimigo, cena.grupo)}</p>
           {etapaAtual > 1 && (
             <p className="derrota-fala etapas-salvo">
               As etapas que você já venceu continuam salvas — você volta direto na etapa {etapaAtual}.
@@ -440,12 +439,12 @@ export default function DesafioEtapas() {
     if (resultado === "vitoria") {
       return (
         <div className="vitoria">
-          <h2 className="vitoria-titulo">{nomeInimigo} derrotado!</h2>
+          <h2 className="vitoria-titulo">{tituloDerrotado(nomeInimigo, cena.grupo)}</h2>
           <p className="vitoria-fala">
             {feedbackIA ||
               (total > 1
                 ? `Você venceu as ${total} etapas! O caminho à frente está livre.`
-                : `${nomeInimigo} foi derrotado! O caminho à frente está livre.`)}
+                : `${nomeInimigo} ${cena.grupo ? "foram derrotados" : "foi derrotado"}! O caminho à frente está livre.`)}
           </p>
           {resultadoApi?.xpConcedidoAgora > 0 && (
             <div className="vitoria-recompensa">
@@ -470,8 +469,10 @@ export default function DesafioEtapas() {
         <div className="vitoria">
           <h2 className="vitoria-titulo">Etapa {etapaAtual} vencida!</h2>
           <p className="vitoria-fala">
-            {feedbackIA || `${nomeInimigo} cambaleou com o golpe!`}{" "}
-            {faltam === 1 ? "Falta só mais uma etapa para derrubá-lo." : `Faltam ${faltam} etapas para derrubá-lo.`}
+            {feedbackIA || `${nomeInimigo} ${cena.grupo ? "cambalearam" : "cambaleou"} com o golpe!`}{" "}
+            {faltam === 1
+              ? `Falta só mais uma etapa para ${cena.grupo ? "derrubá-los" : "derrubá-lo"}.`
+              : `Faltam ${faltam} etapas para ${cena.grupo ? "derrubá-los" : "derrubá-lo"}.`}
           </p>
           <BotaoPixel className="botao-avante" classeMiolo="botao-avante-miolo" onClick={proximaEtapa}>
             PRÓXIMA ETAPA
@@ -484,7 +485,7 @@ export default function DesafioEtapas() {
       return (
         <div className="acerto-banner">
           <h2 className="acerto-titulo">Acertou!</h2>
-          <p className="acerto-fala">{feedbackIA || `Golpe certeiro no ${nomeInimigo}!`}</p>
+          <p className="acerto-fala">{feedbackIA || falaGolpeCerteiro(nomeInimigo, cena.grupo)}</p>
         </div>
       );
     }
@@ -570,7 +571,7 @@ export default function DesafioEtapas() {
       {mostrarConfirmarSair && (
         <ConfirmarSairDesafio
           onManterDesafio={() => setMostrarConfirmarSair(false)}
-          onSairDesafio={() => navigate("/home")}
+          onSairDesafio={() => navigate(`/desafios/${mundoId}/${dificuldade}`, { replace: true })}
         />
       )}
 

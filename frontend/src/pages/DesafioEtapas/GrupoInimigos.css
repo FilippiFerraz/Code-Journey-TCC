@@ -1,0 +1,61 @@
+/* ============================================================
+   GrupoInimigos.css — vários inimigos lado a lado (ver GrupoInimigos em
+   SpriteInimigo.jsx). O GRUPO ocupa o lugar que o inimigo único ocupava
+   na tela; cada membro mantém as classes de animação da tela (flutuar,
+   investida, dano, morte), mas deixa de se posicionar sozinho.
+   ============================================================ */
+
+.grupo-inimigos {
+  --escala-inimigos: 1;
+  display: flex;
+  align-items: flex-end; /* pés na mesma linha */
+  justify-content: center;
+  gap: 4px;
+}
+
+/* .cena-inimigo, .chefe-sprite-chefe etc. são position: absolute com
+   right/bottom próprios — dentro do grupo, quem tem posição é o grupo */
+.grupo-inimigos > .grupo-inimigos-membro {
+  position: relative;
+  inset: auto;
+  flex-shrink: 0;
+}
+
+/* Batalha comum (ResolverDesafio / DesafioEtapas): mesma linha do chão do
+   inimigo único (.cena-inimigo, bottom 18%), mais perto da borda direita
+   pra caber o trio */
+.grupo-inimigos--cena {
+  position: absolute;
+  right: 6%;
+  bottom: 18%;
+  z-index: 2;
+}
+
+/* Arena de chefe (DesafioChefe.css: .chefe-sprite-chefe, bottom 14%) */
+.grupo-inimigos--chefe {
+  position: absolute;
+  right: 5%;
+  bottom: 14%;
+}
+
+/* Introdução: só lado a lado, no centro da cena */
+.grupo-inimigos--intro {
+  gap: 10px;
+}
+
+/* celular: o trio precisa caber ao lado do herói */
+@media (max-width: 520px) {
+  .grupo-inimigos {
+    --escala-inimigos: 0.78;
+  }
+
+  .grupo-inimigos--intro {
+    --escala-inimigos: 0.85;
+  }
+}
+
+@media (max-width: 380px) {
+  .grupo-inimigos {
+    --escala-inimigos: 0.68;
+  }
+}

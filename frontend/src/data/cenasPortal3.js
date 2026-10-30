@@ -22,10 +22,24 @@ import inimigo5Portal3 from "../assets/images/inimigo_desafio5_p3.webp";
 import fundo5Portal3 from "../assets/images/fundo_desafio5_p3.webp";
 import fundo6Portal3 from "../assets/images/fundo_desafio6_p3.webp";
 // portal 2 (ver CENAS_PORTAL_2)
-import bruxaInimigo from "../assets/images/bruxa_inimigo.webp";
-import goblinJS from "../assets/images/GoblinJS.png";
-import reiGoblinInimigo from "../assets/images/rei_goblin_inimigo.webp";
-import fundoBatalha2 from "../assets/images/Fundo_batalha2.webp";
+import fundo1Portal2 from "../assets/images/fundo_desafio1_p2.webp";
+import fundo2Portal2 from "../assets/images/fundo_desafio2_p2.webp";
+import fundo3Portal2 from "../assets/images/fundo_desafio3_p2.webp";
+import fundo4Portal2 from "../assets/images/fundo_desafio4_p2.webp";
+import fundo5Portal2 from "../assets/images/fundo_desafio5_p2.webp";
+import fundo6Portal2 from "../assets/images/fundo_desafio6_p2.webp";
+import inimigo1Portal2 from "../assets/images/inimigo1_desafio1_p2.webp";
+import inimigo2Portal2 from "../assets/images/inimigo2_desafio2_p2.webp";
+import inimigo3Portal2 from "../assets/images/inimigo3_desafio2_p2.webp";
+import inimigo4Portal2 from "../assets/images/inimigo4_desafio3_p2.webp";
+import inimigo5Portal2 from "../assets/images/inimigo5_desafio3_p2.webp";
+import inimigo6Portal2 from "../assets/images/inimigo6_desafio3_p2.webp";
+import inimigo7Portal2 from "../assets/images/inimigo7_desafio4_p2.webp";
+import inimigo8Portal2 from "../assets/images/inimigo8_desafio4_p2.webp";
+import inimigo9Portal2 from "../assets/images/inimigo9_desafio4_p2.webp";
+import inimigo10Portal2 from "../assets/images/inimigo10_desafio5_p2.webp";
+import inimigo11Portal2 from "../assets/images/inimigo11_desafio6_p2.webp";
+import inimigo12Portal2 from "../assets/images/inimigo12_desafio6_p2.webp";
 
 // Por número do desafio (1 a 6). "chefe: true" usa a arena de chefe (sprite
 // grande, barra de vida no topo) — mesmo visual de DesafioChefe.jsx.
@@ -107,21 +121,27 @@ const CENAS = {
 // ---- Portal 2 (Acampamento Goblin) ----
 //
 // Desafios 1, 3, 4, 5 e 6 do portal 2 não têm tela própria no frontend (só
-// o 2, O Enigma da Bruxa, tem — em ResolverDesafio.jsx): são jogados na tela
-// genérica (DesafioEtapas), com conteúdo e correção vindos da API — ver
+// o 2, O Enigma da Bruxa, tem — em ResolverDesafio.jsx e DesafioIntro.jsx,
+// que leem daqui só os inimigos e o fundo): são jogados na tela genérica
+// (DesafioEtapas), com conteúdo e correção vindos da API — ver
 // backend/prisma/desafios/portal2.js.
 //
-// ARTES PROVISÓRIAS: o portal 2 ainda não tem inimigos nem fundos próprios,
-// então tudo abaixo reaproveita artes existentes (marcado com "TODO arte").
-// Quando a arte nova chegar, é só trocar o import lá em cima e, se o sprite
-// tiver outra proporção, ajustar "largura" (batalha) e "larguraIntro".
-// Os nomes dos inimigos aparecem também nos enunciados do backend — se
-// mudar um nome aqui, mude lá também.
+// Cada desafio tem um ou mais `inimigos`, desenhados lado a lado e
+// comandados juntos (atacam, sentem o golpe e morrem ao mesmo tempo, com
+// uma barra de vida só — ver GrupoInimigos em SpriteInimigo.jsx). `nome` é
+// o nome do grupo nas falas (no plural quando há mais de um, ver
+// utils/textosInimigo.js). Tamanho por `altura` (batalha) e `alturaIntro`:
+// os sprites têm proporções diferentes, e pela altura todos ficam com a
+// mesma presença. Grupos maiores usam alturas menores pra caber na cena.
+//
+// Artes em frontend/arte-original/ (WebP aparados e virados pro herói por
+// `npm run imagens:otimizar -- _p2`). Os nomes dos inimigos aparecem também
+// nos enunciados do backend — se mudar um nome aqui, mude lá também.
 const CENAS_PORTAL_2 = {
   1: {
-    // TODO arte: Goblin Sentinela + fundo do portão do acampamento
-    inimigo: { imagem: goblinJS, nome: "Goblin Sentinela", largura: 110, larguraIntro: 220 },
-    fundo: fundoBatalha2,
+    nome: "Goblin Sentinela",
+    inimigos: [{ imagem: inimigo1Portal2, nome: "Goblin Sentinela", altura: 130, alturaIntro: 230 }],
+    fundo: fundo1Portal2,
     falas: [
       "Bem-vindo ao Acampamento Goblin, viajante...",
       "Um Goblin Sentinela guarda o portão e só deixa entrar quem for forte o bastante.",
@@ -129,10 +149,24 @@ const CENAS_PORTAL_2 = {
       "Leia com atenção e descubra o que o portão vai dizer!",
     ],
   },
+  // O Enigma da Bruxa: tela própria (ResolverDesafio/DesafioIntro), que
+  // usa daqui só os inimigos, o nome do grupo e o fundo
+  2: {
+    nome: "Capangas da Bruxa",
+    inimigos: [
+      { imagem: inimigo2Portal2, nome: "Capanga Goblin", altura: 116, alturaIntro: 190 },
+      { imagem: inimigo3Portal2, nome: "Goblin Guarda-Portão", altura: 116, alturaIntro: 190 },
+    ],
+    fundo: fundo2Portal2,
+  },
   3: {
-    // TODO arte: Goblin Patrulheiro + fundo do pátio de treino
-    inimigo: { imagem: goblinJS, nome: "Goblin Patrulheiro", largura: 110, larguraIntro: 220 },
-    fundo: fundoBatalha2,
+    nome: "Goblins Patrulheiros",
+    inimigos: [
+      { imagem: inimigo4Portal2, nome: "Goblin Patrulheiro", altura: 104, alturaIntro: 160 },
+      { imagem: inimigo5Portal2, nome: "Goblin Batedor", altura: 104, alturaIntro: 160 },
+      { imagem: inimigo6Portal2, nome: "Goblin Recruta", altura: 104, alturaIntro: 160 },
+    ],
+    fundo: fundo3Portal2,
     falas: [
       "Passando o portão, você chega ao pátio de treino do acampamento...",
       "O Goblin Patrulheiro marcha em círculos, gritando cada ronda da patrulha.",
@@ -141,9 +175,13 @@ const CENAS_PORTAL_2 = {
     ],
   },
   4: {
-    // TODO arte: Goblin Intendente + fundo do depósito
-    inimigo: { imagem: goblinJS, nome: "Goblin Intendente", largura: 110, larguraIntro: 220 },
-    fundo: fundoBatalha2,
+    nome: "Guardas do Intendente",
+    inimigos: [
+      { imagem: inimigo7Portal2, nome: "Goblin Intendente", altura: 104, alturaIntro: 160 },
+      { imagem: inimigo8Portal2, nome: "Guarda do Depósito", altura: 104, alturaIntro: 160 },
+      { imagem: inimigo9Portal2, nome: "Carregador Goblin", altura: 104, alturaIntro: 160 },
+    ],
+    fundo: fundo4Portal2,
     falas: [
       "No depósito do acampamento, pilhas de armas e poções se espalham por todo lado...",
       "O Goblin Intendente guarda tudo numa lista — mas o código do inventário virou uma bagunça.",
@@ -152,9 +190,11 @@ const CENAS_PORTAL_2 = {
     ],
   },
   5: {
-    // A Bruxa já tem arte (a mesma do desafio 2). TODO arte: fundo do caldeirão
-    inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento", largura: 120, larguraIntro: 220 },
-    fundo: fundoBatalha2,
+    // A história (backend e falas) é da Bruxa, mas a arte nova deste
+    // desafio é um orc de armadura — ver nome com o time antes de mudar
+    nome: "Bruxa do Acampamento",
+    inimigos: [{ imagem: inimigo10Portal2, nome: "Bruxa do Acampamento", altura: 136, alturaIntro: 230 }],
+    fundo: fundo5Portal2,
     falas: [
       "A Bruxa do Acampamento reaparece, mexendo um caldeirão enorme.",
       "\"Você resolveu meu enigma... então talvez consiga me ajudar com outra coisa.\"",
@@ -163,11 +203,15 @@ const CENAS_PORTAL_2 = {
     ],
   },
   6: {
-    // Chefe do portal. TODO arte: General Goblin (hoje usa o Rei GoblinJS do
-    // portal 1) + fundo da arena do acampamento
+    // Chefe do portal: o General (chifres e machado duplo) na frente e o
+    // guarda-costas atrás — menor, pra o chefe continuar sendo o destaque
     chefe: true,
-    inimigo: { imagem: reiGoblinInimigo, nome: "General Goblin", largura: 220, larguraIntro: 330 },
-    fundo: fundoBatalha2,
+    nome: "General Goblin e seu guarda",
+    inimigos: [
+      { imagem: inimigo12Portal2, nome: "General Goblin", altura: 190, alturaIntro: 230 },
+      { imagem: inimigo11Portal2, nome: "Guarda-costas do General", altura: 150, alturaIntro: 180 },
+    ],
+    fundo: fundo6Portal2,
     falas: [
       "No centro do Acampamento Goblin, tambores de guerra começam a soar...",
       "O General Goblin sai da maior tenda, cercado pelos goblins que você já derrotou.",
@@ -177,17 +221,20 @@ const CENAS_PORTAL_2 = {
   },
 };
 
+// Toda cena sai no mesmo formato, com um inimigo ou vários: `inimigos`
+// (lista), `nome` (do inimigo ou do grupo) e `grupo` (mais de um). As do
+// portal 3 continuam escritas com um `inimigo` só.
+function normalizar(cena) {
+  const inimigos = cena.inimigos ?? [cena.inimigo];
+  return { ...cena, inimigos, nome: cena.nome ?? inimigos[0].nome, grupo: inimigos.length > 1 };
+}
+
 // Desafio sem cena própria (ex: um 7º desafio cadastrado no futuro) usa o
 // visual do desafio 1 com o nome genérico, em vez de quebrar a tela.
 // mundoId: 2 usa as cenas do portal 2; qualquer outro, as do portal 3.
 export function cenaDoDesafio(numero, mundoId = 3) {
   if (Number(mundoId) === 2) {
-    return (
-      CENAS_PORTAL_2[numero] ?? {
-        ...CENAS_PORTAL_2[1],
-        inimigo: { ...CENAS_PORTAL_2[1].inimigo, nome: "Goblin do Acampamento" },
-      }
-    );
+    return normalizar(CENAS_PORTAL_2[numero] ?? { ...CENAS_PORTAL_2[1], nome: "Goblin do Acampamento" });
   }
-  return CENAS[numero] ?? { ...CENAS[1], inimigo: { ...CENAS[1].inimigo, nome: "Guardião da Arena" } };
+  return normalizar(CENAS[numero] ?? { ...CENAS[1], inimigo: { ...CENAS[1].inimigo, nome: "Guardião da Arena" } });
 }

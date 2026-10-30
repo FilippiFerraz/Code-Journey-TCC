@@ -8,7 +8,12 @@ import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
 import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.webp";
 import mercadorInimigo from "../../assets/images/mercador_inimigo.webp";
-import bruxaInimigo from "../../assets/images/bruxa_inimigo.webp";
+import { cenaDoDesafio } from "../../data/cenasPortal3";
+import { GrupoInimigos } from "../DesafioEtapas/SpriteInimigo";
+
+// O Enigma da Bruxa (portal 2) usa os inimigos do portal 2, de
+// data/cenasPortal3.js — os mesmos da batalha em ResolverDesafio.jsx.
+const CENA_ENIGMA_BRUXA = cenaDoDesafio(2, 2);
 
 // Enquanto a rota de desafios não existe no backend, o conteúdo fica aqui,
 // espelhando os desafios definidos em ResolverDesafio.jsx (mesmo mundo,
@@ -78,9 +83,11 @@ const INTROS = {
     // Desafio 1 do portal 2: introdução em data/cenasPortal3.js
     // (CENAS_PORTAL_2) — ele é jogado na tela genérica.
     2: {
-      inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento" },
+      inimigo: { nome: CENA_ENIGMA_BRUXA.nome },
+      inimigos: CENA_ENIGMA_BRUXA.inimigos,
+      grupo: CENA_ENIGMA_BRUXA.grupo,
       falas: [
-        "No fundo do acampamento, uma Bruxa guarda o portão...",
+        "No fundo do acampamento, uma Bruxa guarda o portão — e mandou os capangas dela na frente...",
         "Ela não aceita respostas decoradas. Quer ouvir você explicar com as próprias palavras.",
         "Desta vez, quem vai julgar sua resposta é o Mago Corretor: ele lê o que você escrever e decide se você entendeu de verdade.",
         "Sua missão: ler um código com if, else if e else e explicar qual mensagem aparece no console e por quê.",
@@ -189,16 +196,19 @@ function DesafioIntro() {
       <div className="intro-cena">
         <div className="intro-inimigo-anuncio">
           <p className="intro-inimigo-aviso">
-            Um inimigo surgiu no seu caminho! Você vai precisar enfrentá-lo.
+            {intro.grupo
+              ? "Um grupo de inimigos surgiu no seu caminho! Você vai precisar enfrentar todos."
+              : "Um inimigo surgiu no seu caminho! Você vai precisar enfrentá-lo."}
           </p>
           <h2 className="intro-inimigo-nome">{intro.inimigo.nome}</h2>
         </div>
 
-        <img
-          src={intro.inimigo.imagem}
-          alt={intro.inimigo.nome}
+        <GrupoInimigos
+          inimigos={intro.inimigos ?? [intro.inimigo]}
+          nome={intro.inimigo.nome}
           className="intro-inimigo-destaque"
-          draggable={false}
+          classeGrupo="grupo-inimigos--intro"
+          contexto="intro"
         />
       </div>
 

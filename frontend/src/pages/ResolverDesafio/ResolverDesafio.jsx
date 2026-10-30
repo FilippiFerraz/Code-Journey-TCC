@@ -22,7 +22,9 @@ import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
 import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.webp";
 import mercadorInimigo from "../../assets/images/mercador_inimigo.webp";
-import bruxaInimigo from "../../assets/images/bruxa_inimigo.webp";
+import { cenaDoDesafio } from "../../data/cenasPortal3";
+import { falaDerrota, falaGolpeCerteiro, falasGolpe, tituloDerrotado } from "../../utils/textosInimigo";
+import { GrupoInimigos } from "../DesafioEtapas/SpriteInimigo";
 import fundoBatalha from "../../assets/images/Fundo_batalha.png";
 import fundoBatalha2 from "../../assets/images/Fundo_batalha2.webp";
 import fundoDesafio3P1 from "../../assets/images/Fundo_desafio_3_P1.webp";
@@ -57,6 +59,16 @@ const DURACAO_GIF_ATAQUE_MS = 600;
 //   esquerda se achar ERRADO. Precisa acertar a classificação dos cartoes
 //   na ordem em que aparecem (um errado não pula pro próximo — perde vida e
 //   tenta esse mesmo cartão de novo) pra derrotar o inimigo.
+//
+// Inimigo: `inimigo` ({ imagem, nome, largura }) ou, num grupo (O Enigma da
+// Bruxa), `inimigos` + `grupo: true` — todos atacam e caem juntos (ver
+// GrupoInimigos em DesafioEtapas/SpriteInimigo.jsx); aí `inimigo.nome` é o
+// nome do grupo.
+
+// O Enigma da Bruxa (portal 2) usa os inimigos e o fundo do portal 2, de
+// data/cenasPortal3.js — mesma fonte da tela genérica dos outros desafios.
+const CENA_ENIGMA_BRUXA = cenaDoDesafio(2, 2);
+
 const DESAFIOS = {
   1: {
     1: {
@@ -166,8 +178,10 @@ if (moedas >= 10) {
   console.log("Continue juntando moedas.");
 }`,
       dica: "o JavaScript testa as condições de cima para baixo e executa só o primeiro bloco cuja condição for verdadeira.",
-      inimigo: { imagem: bruxaInimigo, nome: "Bruxa do Acampamento" },
-      fundo: fundoBatalha2,
+      inimigo: { nome: CENA_ENIGMA_BRUXA.nome },
+      inimigos: CENA_ENIGMA_BRUXA.inimigos,
+      grupo: CENA_ENIGMA_BRUXA.grupo,
+      fundo: CENA_ENIGMA_BRUXA.fundo,
     },
   },
   3: {
@@ -215,17 +229,6 @@ const TAMANHO_MAXIMO_RESPOSTA = 2000;
 // Falas do golpe, em ordem de vida restante (2 -> 1 coração).
 // A intenção é dar o tom de "tomou dano" sem desanimar o jogador.
 // Recebem o nome do inimigo do desafio atual pra bater com a imagem exibida.
-function falasGolpe(nomeInimigo) {
-  return [
-    `${nomeInimigo} avança e te acerta! Sacuda a poeira e tente de novo.`,
-    "Mais um golpe! Respira, olha com calma — a resposta está aí.",
-  ];
-}
-
-function falaDerrota(nomeInimigo) {
-  return `${nomeInimigo} te derrubou desta vez... mas todo herói cai antes de aprender o golpe. Levante e tente novamente!`;
-}
-
 function ResolverDesafio() {
   const { mundoId, dificuldade, desafioId } = useParams();
   const navigate = useNavigate();
@@ -385,7 +388,9 @@ function ResolverDesafio() {
   }
 
   function confirmarSairDesafio() {
-    navigate("/home");
+    // volta pra lista de desafios do portal em que estava (replace: o
+    // "voltar" do navegador não reabre o desafio abandonado)
+    navigate(`/desafios/${mundoId}/${dificuldade}`, { replace: true });
   }
 
   function responderMultiplaEscolha() {
@@ -642,7 +647,7 @@ function ResolverDesafio() {
     return "selecionada";
   }
 
-  const golpesInimigo = falasGolpe(desafio.inimigo.nome);
+  const golpesInimigo = falasGolpe(desafio.inimigo.nome, desafio.grupo);
   const falaGolpe = golpesInimigo[VIDA_MAXIMA - 1 - vida] || golpesInimigo.at(-1);
   const mostrarDica = vida <= 1;
 
@@ -651,7 +656,7 @@ function ResolverDesafio() {
       return (
         <div className="derrota">
           <h2 className="derrota-titulo">Você caiu!</h2>
-          <p className="derrota-fala">{falaDerrota(desafio.inimigo.nome)}</p>
+          <p className="derrota-fala">{falaDerrota(desafio.inimigo.nome, desafio.grupo)}</p>
           <BotaoPixel
             className="botao-avante botao-avante--roxo"
             classeMiolo="botao-avante-miolo botao-avante-miolo--roxo"
@@ -666,7 +671,7 @@ function ResolverDesafio() {
     if (venceu) {
       return (
         <div className="vitoria">
-          <h2 className="vitoria-titulo">{desafio.inimigo.nome} derrotado!</h2>
+          <h2 className="vitoria-titulo">{tituloDerrotado(desafio.inimigo.nome, desafio.grupo)}</h2>
           <p className="vitoria-fala">
             Golpe certeiro! O caminho à frente está livre.
           </p>
@@ -707,7 +712,7 @@ function ResolverDesafio() {
               ? "Muito bem! Você organizou o código corretamente."
               : ehDissertativa
                 ? feedbackDissertativa
-                : `Golpe certeiro no ${desafio.inimigo.nome}!`}
+                : falaGolpeCerteiro(desafio.inimigo.nome, desafio.grupo)}
           </p>
         </div>
       );
@@ -1056,14 +1061,14 @@ function ResolverDesafio() {
             />
           )}
 
-          <img
-            src={desafio.inimigo.imagem}
-            alt={desafio.inimigo.nome}
+          <GrupoInimigos
+            inimigos={desafio.inimigos ?? [desafio.inimigo]}
+            nome={desafio.inimigo.nome}
+            classeGrupo="grupo-inimigos--cena"
+            larguraPadrao={96}
             className={`cena-inimigo ${
               tomandoGolpe ? "cena-inimigo--atacando" : ""
             } ${slimeMorrendo ? "cena-inimigo--morrendo" : ""}`}
-            style={{ width: desafio.inimigo.largura || 96, imageRendering: "pixelated" }}
-            draggable={false}
           />
         </div>
 

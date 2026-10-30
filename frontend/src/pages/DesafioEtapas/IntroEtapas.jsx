@@ -2,7 +2,7 @@ import { useState } from "react";
 import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
-import SpriteInimigo from "./SpriteInimigo";
+import { GrupoInimigos } from "./SpriteInimigo";
 import "../DesafioIntro/DesafioIntro.css";
 import "../DesafioChefe/DesafioChefe.css";
 
@@ -92,10 +92,20 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
 
           <div className="chefe-intro-cena">
             <div className="chefe-intro-anuncio">
-              <p className="chefe-intro-aviso">O chefe da trilha apareceu! Você vai precisar derrotá-lo.</p>
-              <h2 className="chefe-intro-nome">{cena.inimigo.nome}</h2>
+              <p className="chefe-intro-aviso">
+                {cena.grupo
+                  ? "O chefe da trilha apareceu — e não veio sozinho! Você vai precisar derrotar todos."
+                  : "O chefe da trilha apareceu! Você vai precisar derrotá-lo."}
+              </p>
+              <h2 className="chefe-intro-nome">{cena.nome}</h2>
             </div>
-            <SpriteInimigo inimigo={cena.inimigo} className="chefe-intro-sprite" />
+            <GrupoInimigos
+              inimigos={cena.inimigos}
+              nome={cena.nome}
+              className="chefe-intro-sprite"
+              classeGrupo="grupo-inimigos--intro"
+              contexto="intro"
+            />
           </div>
 
           {!mostrarEnunciado && (
@@ -131,13 +141,19 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
 
       <div className="intro-cena">
         <div className="intro-inimigo-anuncio">
-          <p className="intro-inimigo-aviso">Um inimigo surgiu no seu caminho! Você vai precisar enfrentá-lo.</p>
-          <h2 className="intro-inimigo-nome">{cena.inimigo.nome}</h2>
+          <p className="intro-inimigo-aviso">
+            {cena.grupo
+              ? "Um grupo de inimigos surgiu no seu caminho! Você vai precisar enfrentar todos."
+              : "Um inimigo surgiu no seu caminho! Você vai precisar enfrentá-lo."}
+          </p>
+          <h2 className="intro-inimigo-nome">{cena.nome}</h2>
         </div>
-        <SpriteInimigo
-          inimigo={cena.inimigo}
+        <GrupoInimigos
+          inimigos={cena.inimigos}
+          nome={cena.nome}
           className="intro-inimigo-destaque"
-          style={cena.inimigo.larguraIntro ? { width: cena.inimigo.larguraIntro } : undefined}
+          classeGrupo="grupo-inimigos--intro"
+          contexto="intro"
         />
       </div>
 

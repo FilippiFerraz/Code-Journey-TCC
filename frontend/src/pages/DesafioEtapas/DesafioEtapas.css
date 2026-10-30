@@ -64,10 +64,15 @@
 /* ---------- Vida do inimigo na cena comum (um segmento por etapa) ---------- */
 /* Embaixo do cronômetro, do lado do inimigo — no topo central ela encostava
    no cronômetro em telas de celular. */
+/* no centro do topo: à direita ficam o cronômetro e, embaixo dele, os
+   botões de música e mochila (que cobriam o HUD quando ele ficava lá) */
 .etapas-hud-inimigo {
   position: absolute;
-  top: 50px;
-  right: 10px;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 44%;
+  box-sizing: border-box;
   z-index: 5;
   display: flex;
   flex-direction: column;
@@ -78,6 +83,17 @@
   border: 2px solid #f4c542;
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
   max-width: 60%;
+}
+
+/* celular: o centro do topo encosta no cronômetro — vai pra esquerda,
+   abaixo do botão Voltar */
+@media (max-width: 520px) {
+  .etapas-hud-inimigo {
+    top: 96px;
+    left: 10px;
+    transform: none;
+    max-width: 55%;
+  }
 }
 
 .etapas-hud-nome {
@@ -134,6 +150,24 @@
 /* Herói levando dano na arena do chefe (a arena original não tinha dano) */
 .etapas-heroi--atingido {
   animation: etapas-ferido 0.6s ease-out;
+}
+
+/* ...e o chefe (ou o grupo inteiro do chefe) avançando no golpe: investida
+   curta em direção ao herói — o sprite é grande, então anda bem menos que
+   a investida da batalha comum */
+.chefe-sprite-chefe.etapas-chefe--atacando {
+  animation: etapas-chefe-investida 0.5s ease-in-out;
+}
+
+@keyframes etapas-chefe-investida {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  35%,
+  55% {
+    transform: translateX(-38%) translateY(6px) scale(1.06);
+  }
 }
 
 /* Corações dentro do card do jogador, na arena do chefe */
@@ -226,7 +260,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .inimigo-clone .avatar-personagem-camadas {
+  .inimigo-clone .avatar-personagem-camadas,
+  .chefe-sprite-chefe.etapas-chefe--atacando {
     animation: none;
   }
 }

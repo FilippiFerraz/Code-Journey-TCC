@@ -133,7 +133,9 @@ function ResolverDesafioPocao() {
   }
 
   function confirmarSairDesafio() {
-    navigate("/home");
+    // volta pra lista de desafios do portal em que estava (replace: o
+    // "voltar" do navegador não reabre o desafio abandonado)
+    navigate(`/desafios/${mundoId}/${dificuldade}`, { replace: true });
   }
 
   function iniciarArrasteIngrediente(e, id) {
