@@ -1,6 +1,7 @@
 // Ajuste este require ao mesmo estilo do seu auth.service.js.
 // Se lá for "const { prisma } = require(...)", use a mesma forma aqui.
 const prisma = require("../config/prisma.js");
+const { escaparLike } = require("../utils/busca.js");
 const { posicaoDoUsuario } = require("./ranking.service.js");
 const { resumoJogador } = require("./resumoJogador.service.js");
 
@@ -113,9 +114,11 @@ async function buscarUsuariosPorNome(usuarioIdAtual, termo) {
   const termoLimpo = (termo ?? "").trim();
   if (!termoLimpo) return [];
 
+  const termoEscapado = escaparLike(termoLimpo);
+
   const usuarios = await prisma.usuario.findMany({
     where: {
-      nome: { contains: termoLimpo, mode: "insensitive" },
+      nome: { contains: termoEscapado, mode: "insensitive" },
       id: { not: usuarioIdAtual },
     },
     select: { id: true, nome: true, email: true },

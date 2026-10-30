@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { escaparLike } = require("../utils/busca");
 const { esquecerConta } = require("../utils/sessaoCache");
 const { registrarLog } = require("./log.service");
 const { liberarTudo } = require("./liberacao.service");
@@ -32,7 +33,7 @@ async function buscarUsuarioOuFalhar(usuarioId) {
 // exportação em XLSX (exportarUsuariosXlsx) — os dois precisam concordar,
 // senão "exportar" traria gente que não apareceu na busca da tela.
 function construirFiltroBusca(busca) {
-  const termo = (busca ?? "").trim();
+  const termo = escaparLike((busca ?? "").trim());
   if (!termo) return undefined;
 
   return {

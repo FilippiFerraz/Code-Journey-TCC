@@ -31,6 +31,15 @@ function buscarPorEmail(email, cliente = prisma) {
   });
 }
 
+// Falha ao mandar um e-mail (Gmail fora do ar, cota estourada...) vira um
+// 503 com mensagem clara, em vez do 500 genérico "Erro interno".
+function erroDeEnvioDeEmail(causa) {
+  console.error("Falha ao enviar e-mail:", causa?.message ?? causa);
+  const erro = new Error("Não conseguimos enviar o e-mail agora. Tente novamente em alguns minutos.");
+  erro.status = 503;
+  return erro;
+}
+
 async function cadastrar({ nome, email, senha, idade }) {
   // semFiltro: o e-mail de uma conta excluída (soft delete) continua
   // ocupado no banco (Usuario.email é único) — sem isso, o create abaixo
@@ -58,7 +67,16 @@ async function cadastrar({ nome, email, senha, idade }) {
     },
   });
 
-  await enviarEmailVerificacao(usuario.email, usuario.nome, codigo);
+  // Sem o e-mail a conta nunca seria confirmada — e, criada, o e-mail ficava
+  // ocupado: tentar de novo dava "Este email já está cadastrado". Então, se
+  // o envio falhar, a conta recém-criada (ainda sem nada ligado a ela) é
+  // apagada de verdade (semFiltro: o delete normal só marcaria deletedAt).
+  try {
+    await enviarEmailVerificacao(usuario.email, usuario.nome, codigo);
+  } catch (erroEnvio) {
+    await prisma.semFiltro.usuario.delete({ where: { id: usuario.id } });
+    throw erroDeEnvioDeEmail(erroEnvio);
+  }
 
   // Sem token aqui de propósito — a conta só fica utilizável depois de
   // confirmar o e-mail em POST /auth/verificar-email.
@@ -240,7 +258,11 @@ async function reenviarVerificacaoEmail({ email }) {
     data: { codigoVerificacao: codigo, codigoVerificacaoExpiraEm: expiraEm },
   });
 
-  await enviarEmailVerificacao(usuario.email, usuario.nome, codigo);
+  try {
+    await enviarEmailVerificacao(usuario.email, usuario.nome, codigo);
+  } catch (erroEnvio) {
+    throw erroDeEnvioDeEmail(erroEnvio);
+  }
 
   return resposta;
 }
@@ -266,7 +288,11 @@ async function esqueciSenha({ email }) {
     data: { codigoRecuperacao: codigo, codigoExpiraEm: expiraEm },
   });
 
-  await enviarEmailRecuperacao(usuario.email, usuario.nome, codigo);
+  try {
+    await enviarEmailRecuperacao(usuario.email, usuario.nome, codigo);
+  } catch (erroEnvio) {
+    throw erroDeEnvioDeEmail(erroEnvio);
+  }
 
   return resposta;
 }

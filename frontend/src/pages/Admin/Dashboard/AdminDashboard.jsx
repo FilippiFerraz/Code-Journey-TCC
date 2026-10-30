@@ -36,8 +36,10 @@ function BarraHorizontal({ dados, chaveRotulo, chaveValor, sufixo = "" }) {
 
   return (
     <div className="dash-barras-h">
-      {dados.map((item) => (
-        <div className="dash-barra-h-linha" key={item[chaveRotulo]}>
+      {/* o rótulo pode repetir (ex: dois jogadores com o mesmo nome no top
+          de XP) — a posição entra na key pra nenhuma barra sumir */}
+      {dados.map((item, i) => (
+        <div className="dash-barra-h-linha" key={`${i}-${item[chaveRotulo]}`}>
           <span className="dash-barra-h-rotulo">{item[chaveRotulo]}</span>
           <div className="dash-barra-h-trilha">
             <div
@@ -60,8 +62,8 @@ function BarrasVerticais({ dados, chaveRotulo, chaveValor }) {
 
   return (
     <div className="dash-barras-v">
-      {dados.map((item) => (
-        <div className="dash-barra-v-coluna" key={item[chaveRotulo]}>
+      {dados.map((item, i) => (
+        <div className="dash-barra-v-coluna" key={`${i}-${item[chaveRotulo]}`}>
           <span className="dash-barra-v-valor">{item[chaveValor]}</span>
           <div className="dash-barra-v-trilha">
             <div

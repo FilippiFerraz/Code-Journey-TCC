@@ -1,4 +1,5 @@
 const prisma = require("../config/prisma");
+const { escaparLike } = require("../utils/busca");
 
 const LIMITE_PADRAO = 20;
 const LIMITE_MAXIMO = 100;
@@ -34,7 +35,7 @@ async function registrarTentativaLogin({
 // LogAdmin: continua pesquisável mesmo se a conta for renomeada, excluída,
 // ou nem existir — caso de e-mail errado).
 function construirFiltroBusca(busca) {
-  const termo = (busca ?? "").trim();
+  const termo = escaparLike((busca ?? "").trim());
   if (!termo) return undefined;
 
   return {

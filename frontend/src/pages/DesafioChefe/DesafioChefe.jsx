@@ -356,7 +356,10 @@ function DesafioChefe() {
         <div className="chefe-palco">
           {/* De costas, como nas batalhas Pokémon — TODO: sprite dedicado
               de costas; por ora espelha o sprite padrão do personagem. */}
-          <AvatarPersonagem itensEquipados={itensEquipados} className="chefe-sprite-heroi" />
+          <AvatarPersonagem
+            itensEquipados={itensEquipados}
+            className={`chefe-sprite-heroi ${heroiAtacando ? "chefe-sprite-heroi--atacando" : ""}`}
+          />
 
           <img
             src={chefe.imagem}

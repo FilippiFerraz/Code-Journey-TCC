@@ -184,6 +184,15 @@ function erroComStatus(mensagem, status) {
   return erro;
 }
 
+// Problema de configuração do servidor (chave ausente/inválida, modelo
+// inexistente): o detalhe técnico vai pro log, onde o time procura — o
+// jogador vê só que o corretor está indisponível (antes via "Confira
+// GEMINI_API_KEY no .env do backend", que não é nada que ele possa resolver).
+function erroDeConfiguracaoDaIA(detalhe) {
+  console.error(`Correção por IA indisponível — ${detalhe}`);
+  return erroComStatus("O mago corretor está indisponível no momento. Tente de novo mais tarde.", 503);
+}
+
 function provedorConfigurado() {
   const escolhido = (process.env.IA_PROVEDOR || "").trim().toLowerCase();
   if (escolhido) return escolhido;
@@ -213,10 +222,7 @@ let clienteGemini = null;
 
 async function corrigirComGemini(mensagem) {
   if (!process.env.GEMINI_API_KEY) {
-    throw erroComStatus(
-      "A correção por IA ainda não foi configurada no servidor (falta GEMINI_API_KEY no .env do backend).",
-      503
-    );
+    throw erroDeConfiguracaoDaIA("falta GEMINI_API_KEY no .env do backend.");
   }
   if (!clienteGemini) {
     clienteGemini = new (sdkGemini().GoogleGenAI)({
@@ -266,15 +272,14 @@ async function corrigirComGemini(mensagem) {
       if ((erro.status >= 500 || erro.status === 429) && temReserva) continue;
 
       if (erro.status === 400 && /api key/i.test(erro.message)) {
-        throw erroComStatus("A chave do Gemini é inválida. Confira GEMINI_API_KEY no .env do backend.", 503);
+        throw erroDeConfiguracaoDaIA("a chave do Gemini é inválida (confira GEMINI_API_KEY no .env do backend).");
       }
       if (erro.status === 401 || erro.status === 403) {
-        throw erroComStatus("A chave do Gemini é inválida. Confira GEMINI_API_KEY no .env do backend.", 503);
+        throw erroDeConfiguracaoDaIA("a chave do Gemini é inválida (confira GEMINI_API_KEY no .env do backend).");
       }
       if (erro.status === 404) {
-        throw erroComStatus(
-          `O modelo "${modelo}" do Gemini não está disponível. Confira GEMINI_MODELO no .env do backend.`,
-          503
+        throw erroDeConfiguracaoDaIA(
+          `o modelo "${modelo}" do Gemini não está disponível (confira GEMINI_MODELO no .env do backend).`
         );
       }
       if (erro.status === 429) {
@@ -308,10 +313,7 @@ let clienteClaude = null;
 
 async function corrigirComClaude(mensagem) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    throw erroComStatus(
-      "A correção por IA ainda não foi configurada no servidor (falta ANTHROPIC_API_KEY no .env do backend).",
-      503
-    );
+    throw erroDeConfiguracaoDaIA("falta ANTHROPIC_API_KEY no .env do backend.");
   }
   const ClienteAnthropic = sdkAnthropic();
   if (!clienteClaude) clienteClaude = new ClienteAnthropic();
@@ -336,7 +338,7 @@ async function corrigirComClaude(mensagem) {
     });
   } catch (erro) {
     if (erro instanceof ClienteAnthropic.AuthenticationError) {
-      throw erroComStatus("A chave da API do Claude é inválida. Confira ANTHROPIC_API_KEY no .env do backend.", 503);
+      throw erroDeConfiguracaoDaIA("a chave da API do Claude é inválida (confira ANTHROPIC_API_KEY no .env do backend).");
     }
     if (erro instanceof ClienteAnthropic.RateLimitError) {
       throw erroComStatus("O mago está sobrecarregado agora. Espere um pouco e tente de novo.", 503);

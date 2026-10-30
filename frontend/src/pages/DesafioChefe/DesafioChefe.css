@@ -289,6 +289,23 @@
   transform: scaleX(-1);
 }
 
+/* Golpe certeiro: o herói avança no chefe e volta. O scaleX(-1) fica em
+   todos os quadros — é ele que deixa o herói virado pro chefe. */
+.chefe-sprite-heroi--atacando {
+  animation: chefe-heroi-golpe 0.6s ease-in-out;
+}
+
+@keyframes chefe-heroi-golpe {
+  0%,
+  100% {
+    transform: translateX(0) scaleX(-1);
+  }
+  40%,
+  55% {
+    transform: translateX(46px) translateY(-6px) scaleX(-1);
+  }
+}
+
 /* Bem maior que o herói de propósito — precisa parecer o chefe de fase de
    um jogo de verdade, imponente ao lado do personagem. */
 .chefe-sprite-chefe {
@@ -358,6 +375,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .chefe-sprite-heroi--atacando,
   .chefe-sprite-chefe,
   .chefe-sprite-chefe--atingido,
   .chefe-sprite-chefe--esquivando,
