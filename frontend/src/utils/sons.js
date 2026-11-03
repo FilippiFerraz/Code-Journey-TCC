@@ -2,6 +2,7 @@ import somAcerto from "../assets/sounds/som_acerto_codejourney.mp3";
 import somErro from "../assets/sounds/som_erro_codejourney.mp3";
 import somRecompensa from "../assets/sounds/som_recompensa_codejourney.mp3";
 import somBoss from "../assets/sounds/som_Boss_codejourney.mp3";
+import { quandoRedeLivre } from "./redeLivre";
 
 // Efeitos sonoros do jogo — uma instância de Audio por som, criada sob
 // demanda e reaproveitada (evita baixar/decodificar o arquivo de novo a
@@ -50,12 +51,8 @@ let precarregado = false;
 export function precarregarSons() {
   if (precarregado) return;
   precarregado = true;
-  const rodar = () => SONS_PRECARREGADOS.forEach((nome) => obterAudio(nome).load());
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(rodar, { timeout: 5000 });
-  } else {
-    setTimeout(rodar, 2000);
-  }
+  // depois que a tela atual baixou as imagens dela (ver utils/redeLivre.js)
+  quandoRedeLivre(() => SONS_PRECARREGADOS.forEach((nome) => obterAudio(nome).load()));
 }
 
 export function pararSom(nome) {

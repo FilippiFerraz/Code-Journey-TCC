@@ -27,6 +27,7 @@ const DESTINO = path.join(RAIZ, "src/assets/images");
 
 // q = qualidade WebP (0-100), max = lado maior em px, animado = GIF -> WebP animado,
 // origem = gerar a partir de outro original (ex: a prévia pequena do mapa),
+// avif = qualidade de uma versão .avif extra (ao lado do .webp),
 // aparar = corta a margem transparente em volta do sprite,
 // espelhar = vira a arte na horizontal (sprite que olha pro lado errado),
 // recortarFundo = apaga o fundo claro (branco ou "xadrez" de transparência
@@ -52,10 +53,17 @@ const CONFIG = {
   // fundo das telas de Login/Cadastro: ocupa a janela inteira (cover), então
   // fica na largura original (1824 px)
   "Fundo_Login.png": { q: 82 },
+  // arte do dragão no castelo, no pé da coluna direita da Home (desktop):
+  // aparece com ~320 px de largura — 1024 px no lado maior cobre tela retina.
+  // O PNG original tinha 2,3 MB e disputava a rede com o mapa.
+  "fundo home direita.png": { max: 1024, q: 80 },
   "fundo_tela_selcionardesafio.png": { q: 80 },
   // mapa da Home: é a maior imagem do site e o que define o tempo da Home.
   // Em 74 fica visualmente igual ao 84 (testado com zoom de 2x) e ~25% menor.
-  "mapa.png": { q: 74 },
+  // avif: também gera mapa.avif (qualidade 55: igual ao WebP mesmo ampliado
+  // 3x, 26% menor — 45 já amaciava o brilho das bordas). A Home serve o AVIF
+  // a quem suporta, num <picture>, e o WebP aos demais.
+  "mapa.png": { q: 74, avif: 55 },
   // prévia minúscula do mapa: aparece na hora, ampliada em pixel art, até o
   // mapa de verdade chegar (ver .home-mapa em Home.css)
   "mapa-previa.png": { origem: "mapa.png", max: 240, q: 50 },
@@ -237,6 +245,11 @@ for (const [arquivo, opcoes] of Object.entries(CONFIG)) {
       : imagem.resize({ width: opcoes.max, height: opcoes.max, fit: "inside", withoutEnlargement: true });
   }
   const saida = path.join(DESTINO, arquivo.replace(/\.[^.]+$/, ".webp"));
+  if (opcoes.avif) {
+    const saidaAvif = saida.replace(/\.webp$/, ".avif");
+    await imagem.clone().avif({ quality: opcoes.avif, effort: 6 }).toFile(saidaAvif);
+    console.log(`  + ${path.basename(saidaAvif)}: ${Math.round(fs.statSync(saidaAvif).size / 1024)} KB`);
+  }
   await imagem.webp({ quality: opcoes.q, alphaQuality: opcoes.q, effort: 5 }).toFile(saida);
 
   const antes = fs.statSync(origem).size;

@@ -59,7 +59,7 @@
       rgba(16, 11, 37, 0) 50%,
       rgba(11, 7, 25, 0.88) 100%
     ),
-    url("../assets/images/fundo home direita.png") 70% 30% / cover no-repeat,
+    url("../assets/images/fundo home direita.webp") 70% 30% / cover no-repeat,
     var(--cj-fundo);
 }
 

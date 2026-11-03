@@ -2,7 +2,6 @@ require("dotenv").config();
 console.log("EMAIL_USER:", process.env.EMAIL_USER ? "ok" : "VAZIO");
 console.log("EMAIL_PASS:", process.env.EMAIL_PASS ? "ok" : "VAZIO");
 const path = require("path");
-const nodemailer = require("nodemailer");
 
 // Mesmos nomes de variável que funcionaram no seu teste.
 const EMAIL_USER = process.env.EMAIL_USER || process.env.GMAIL_USER;
@@ -12,10 +11,17 @@ const EMAIL_PASS = (
   ""
 ).replace(/\s+/g, "");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: { user: EMAIL_USER, pass: EMAIL_PASS },
-});
+// Criado (e o nodemailer carregado) só no primeiro e-mail enviado: só
+// cadastro, recuperação de senha e troca de e-mail mandam e-mail, e carregar
+// o nodemailer na partida da função da Vercel atrasava TODA partida a frio.
+let transporter;
+function obterTransporter() {
+  transporter ??= require("nodemailer").createTransport({
+    service: "gmail",
+    auth: { user: EMAIL_USER, pass: EMAIL_PASS },
+  });
+  return transporter;
+}
 
 // ---------- Modelo visual dos e-mails ----------
 //
@@ -149,7 +155,7 @@ function montarHtml({ titulo, nome, mensagem, codigo, aviso, preheader }) {
 // Monta e envia. Tem `await` interno — se o envio falhar, o erro é LANÇADO
 // (sem falso positivo pro auth.service/conta.service).
 async function enviarComCodigo({ email, assunto, texto, ...modelo }) {
-  await transporter.sendMail({
+  await obterTransporter().sendMail({
     from: `Code Journey <${EMAIL_USER}>`,
     to: email,
     subject: assunto,
@@ -218,7 +224,7 @@ async function enviarEmailTrocaEmail(email, nome, codigo) {
 }
 
 module.exports = {
-  transporter,
+  obterTransporter,
   montarHtml,
   enviarEmailRecuperacao,
   enviarEmailVerificacao,

@@ -70,7 +70,10 @@ async function tocar() {
   carregando = (async () => {
     try {
       if (ac.state === "suspended") await ac.resume().catch(() => {});
-      const resposta = await fetch(musicaUrl);
+      // prioridade baixa: a música (~720 KB) começa na primeira interação —
+      // no Login, ainda durante a pré-busca da Home — e não deve passar na
+      // frente do que a tela precisa mostrar (navegador sem suporte ignora)
+      const resposta = await fetch(musicaUrl, { priority: "low" });
       const buffer = await ac.decodeAudioData(await resposta.arrayBuffer());
       ganho = ac.createGain();
       ganho.gain.value = 0;

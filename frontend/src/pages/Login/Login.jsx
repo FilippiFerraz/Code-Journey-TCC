@@ -7,8 +7,10 @@ import CampoSenha from "../../components/CampoSenha";
 import { EMAIL_MAXIMO, SENHA_MAXIMO, validarEmail } from "../../utils/validacoes";
 import { prefetchTelas } from "../../telas";
 import { desbloquearAudio } from "../../utils/audioContexto";
-// só a URL (o arquivo em si é baixado no pré-carregamento abaixo)
+import { suportaAvif } from "../../utils/suporteAvif";
+// só as URLs (o arquivo em si é baixado no pré-carregamento abaixo)
 import mapa from "../../assets/images/mapa.webp";
+import mapaAvif from "../../assets/images/mapa.avif";
 
 // Enquanto o jogador digita e-mail e senha, a rede está parada: aproveita pra
 // baixar a tela e o mapa da Home, que é para onde ele vai depois de entrar.
@@ -17,10 +19,13 @@ import mapa from "../../assets/images/mapa.webp";
 function adiantarHome() {
   if (navigator.connection?.saveData) return;
   prefetchTelas(["Home"]);
-  const baixarMapa = () => {
-    const imagem = new Image();
-    imagem.src = mapa;
-  };
+  // o mesmo formato que o <picture> da Home vai escolher (AVIF ou WebP) —
+  // baixar o outro seria um mapa inteiro desperdiçado
+  const baixarMapa = () =>
+    suportaAvif().then((avif) => {
+      const imagem = new Image();
+      imagem.src = avif ? mapaAvif : mapa;
+    });
   if (typeof window.requestIdleCallback === "function") {
     window.requestIdleCallback(baixarMapa, { timeout: 3000 });
   } else {

@@ -205,6 +205,11 @@
   image-rendering: pixelated;
 }
 
+/* o <picture> (AVIF/WebP) não pode virar uma caixa a mais em volta do mapa */
+.home-mapa > picture {
+  display: contents;
+}
+
 .home-mapa-imagem {
   display: block;
   width: 100%;

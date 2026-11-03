@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import mapa from "../../assets/images/mapa.webp";
+import mapaAvif from "../../assets/images/mapa.avif";
 // prévia minúscula (7 KB) mostrada enquanto o mapa (o maior arquivo do site) carrega
 import mapaPrevia from "../../assets/images/mapa-previa.webp";
 import portalDesafios from "../../assets/images/Portal_Desafios.webp";
@@ -18,9 +19,9 @@ import { mundoLiberado } from "../../data/progresso";
 import { tocarSom } from "../../utils/sons";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import { usePersonagemAvatar, definirAparenciaPropria } from "../../hooks/usePersonagemAvatar";
-import EscolherAparencia from "../../components/EscolherAparencia";import TutorialHome from "./TutorialHome";
+import { quandoRedeLivre } from "../../utils/redeLivre";
+import TutorialHome from "./TutorialHome";
 import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
-import PersonagemNoMapa from "./PersonagemNoMapa";
 import { Gift } from "pixelarticons/react/Gift.js";
 import { Coins } from "pixelarticons/react/Coins.js";
 import IconePixel from "../../components/IconePixel";
@@ -33,6 +34,13 @@ const IntroCutscene = lazy(() => import("../../components/IntroCutscene/IntroCut
 // Card do jogador em versão compacta, só quando a coluna direita do layout
 // some (tablet/celular) — sob demanda pelo mesmo motivo do MainLayout.
 const PerfilJogadorCard = lazy(() => import("../../components/PerfilJogadorCard"));
+// Os dois puxam os sprites do personagem (~58 KB) e nenhum aparece quando a
+// Home abre: a escolha de aparência é só do primeiro acesso, e o herói só
+// anda no mapa depois do clique num portal. Importados direto, a Home
+// esperava esse arquivo pra desenhar o mapa (~0,7 s a mais em 4G lenta).
+const carregarPersonagemNoMapa = () => import("./PersonagemNoMapa");
+const PersonagemNoMapa = lazy(carregarPersonagemNoMapa);
+const EscolherAparencia = lazy(() => import("../../components/EscolherAparencia"));
 
 // Marca local de "já viu a intro" — reserva pra quando o backend não
 // responde (ou ainda não tem o campo introVista). O que vale é o banco.
@@ -153,6 +161,12 @@ function Home() {
   const [termoBusca, setTermoBusca] = useState("");
   const [resultadosBusca, setResultadosBusca] = useState([]);
   const [buscando, setBuscando] = useState(false);
+
+  // O herói que anda até o portal (PersonagemNoMapa) baixa assim que o mapa
+  // terminou de carregar — pronto antes do primeiro clique num portal.
+  useEffect(() => {
+    quandoRedeLivre(() => carregarPersonagemNoMapa().catch(() => {}));
+  }, []);
 
   // Só mostra o tutorial guiado se o perfil confirmar que o usuário ainda
   // não viu (Usuario.tutorialVisto). Se a chamada falhar (ex: offline), não
@@ -432,15 +446,19 @@ function Home() {
           {/* width/height = tamanho real da arte: o navegador reserva o espaço
               antes de baixar (sem o mapa "pular" a tela) e fetchPriority avisa
               que é a imagem principal da tela */}
-          <img
-            src={mapa}
-            alt="Mapa da jornada"
-            className="home-mapa-imagem"
-            width={941}
-            height={1672}
-            fetchPriority="high"
-            decoding="async"
-          />
+          {/* AVIF (251 KB) pra quem suporta, WebP (341 KB) pros demais */}
+          <picture>
+            <source srcSet={mapaAvif} type="image/avif" />
+            <img
+              src={mapa}
+              alt="Mapa da jornada"
+              className="home-mapa-imagem"
+              width={941}
+              height={1672}
+              fetchPriority="high"
+              decoding="async"
+            />
+          </picture>
 
           <button
             type="button"
@@ -562,11 +580,13 @@ function Home() {
           })}
 
           {destino && (
-            <PersonagemNoMapa
-              pontos={trechoViagem}
-              itensEquipados={itensEquipados}
-              onChegar={() => entrarNoPortal(destino)}
-            />
+            <Suspense fallback={null}>
+              <PersonagemNoMapa
+                pontos={trechoViagem}
+                itensEquipados={itensEquipados}
+                onChegar={() => entrarNoPortal(destino)}
+              />
+            </Suspense>
           )}
         </div>
 
@@ -607,7 +627,9 @@ function Home() {
           <IntroCutscene onConcluir={concluirIntro} />
         </Suspense>
       ) : escolherAparencia ? (
-        <EscolherAparencia onConcluir={() => setEscolherAparencia(false)} />
+        <Suspense fallback={null}>
+          <EscolherAparencia onConcluir={() => setEscolherAparencia(false)} />
+        </Suspense>
       ) : (
         mostrarTutorial && <TutorialHome onConcluir={concluirTutorial} />
       )}

@@ -10,6 +10,7 @@
 // Pra adicionar uma tela: coloque uma linha em `carregadores` e use
 // `telas.NomeDaTela` em App.jsx.
 import { lazy } from "react";
+import { quandoRedeLivre } from "./utils/redeLivre";
 
 const carregadores = {
   Cadastro: () => import("./pages/Cadastro/Cadastro"),
@@ -71,10 +72,6 @@ const TELAS_QUENTES = [
 // ocioso, sem atrapalhar o que o jogador está vendo. Chamar mais de uma vez
 // não baixa de novo (o import() é guardado em cache pelo navegador).
 export function prefetchTelas(nomes = TELAS_QUENTES) {
-  const rodar = () => nomes.forEach((nome) => carregadores[nome]?.().catch(() => {}));
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(rodar, { timeout: 4000 });
-  } else {
-    setTimeout(rodar, 1500);
-  }
+  // depois que a tela atual baixou as imagens dela (ver utils/redeLivre.js)
+  quandoRedeLivre(() => nomes.forEach((nome) => carregadores[nome]?.().catch(() => {})));
 }
