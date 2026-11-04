@@ -67,10 +67,11 @@ async function resumoJogador(usuarioId, xpTotal, moedas = 0) {
     prisma.bauMundo.findMany({ where: { usuarioId, mundoId: MUNDO_BAU_ESPECIAL }, select: { dificuldade: true } }),
   ]);
 
-  // portal concluído = baú de fim de módulo disponível ou já aberto (só a
-  // trilha "iniciante" tem conteúdo hoje)
+  // portal concluído = baú de fim de módulo disponível ou já aberto, em
+  // qualquer trilha (iniciante ou guerreiro) — o Set não conta o mesmo
+  // portal duas vezes
   const portais = new Set(
-    trilhas.filter((t) => t.dificuldade === "iniciante" && (t.disponivel || t.aberto)).map((t) => t.mundoId)
+    trilhas.filter((t) => t.disponivel || t.aberto).map((t) => t.mundoId)
   );
   const minijogos = new Set(especiais.map((b) => b.dificuldade));
   const bausDeModulo = trilhas.filter((t) => t.aberto).length;

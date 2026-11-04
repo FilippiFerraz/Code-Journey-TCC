@@ -3,6 +3,8 @@ import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
 import { GrupoInimigos } from "./SpriteInimigo";
+import AvisoModoGuerreiro from "../../components/AvisoModoGuerreiro";
+import { regrasDaDificuldade } from "../../data/dificuldades";
 import "../DesafioIntro/DesafioIntro.css";
 import "../DesafioChefe/DesafioChefe.css";
 
@@ -67,7 +69,8 @@ export default function IntroEtapas({ desafio, cena, etapaInicial, onIniciar, on
           </ol>
         )}
 
-        {desafio.dica && <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(desafio.dica)}</p>}
+        {!regrasDaDificuldade(desafio.dificuldade).dicas && <AvisoModoGuerreiro className="intro-enunciado-dica" />}
+        {regrasDaDificuldade(desafio.dificuldade).dicas && desafio.dica && <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(desafio.dica)}</p>}
         {continuando && (
           <p className="etapas-intro-aviso">Você já venceu {etapasConcluidas} etapa(s) — vai continuar de onde parou.</p>
         )}

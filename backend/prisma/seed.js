@@ -19,6 +19,7 @@ const desafiosPortal3 = require("./desafios/portal3");
 const itensGuardiaoCristal = require("./itensGuardiaoCristal");
 const itensArenaDragao = require("./itensArenaDragao");
 const { validarAlternativas } = require("../src/services/etapas.service");
+const { sincronizarTrilhaGuerreiro } = require("../src/services/trilhaGuerreiro.service");
 
 const prisma = new PrismaClient();
 
@@ -665,6 +666,12 @@ async function main() {
     });
     if (count > 0) console.log(`Recompensa do desafio ${chave}: ${nomeItem}.`);
   }
+
+  // Trilha guerreiro (difícil): cópia de cada desafio iniciante, sem dica
+  // (ver src/services/trilhaGuerreiro.service.js). Por último, pra já
+  // levar as recompensas aplicadas acima.
+  const espelhados = await sincronizarTrilhaGuerreiro();
+  console.log(`Trilha guerreiro: ${espelhados.length} desafio(s) espelhado(s).`);
 }
 
 main()
@@ -674,4 +681,6 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    // cliente do app, usado por sincronizarTrilhaGuerreiro
+    await require("../src/config/prisma").$disconnect();
   });

@@ -1,0 +1,15 @@
+/* Aviso do modo Guerreiro no card do enunciado (no lugar da dica) — herda
+   espaçamento e fundo da classe de dica de cada tela e ganha a borda
+   vermelha de "perigo". */
+.aviso-modo-guerreiro {
+  border: 2px solid rgba(214, 69, 65, 0.75);
+  background: rgba(120, 20, 20, 0.35);
+}
+
+.aviso-modo-guerreiro-icone {
+  color: #ff7b72;
+}
+
+.aviso-modo-guerreiro strong {
+  color: #ffd27a;
+}

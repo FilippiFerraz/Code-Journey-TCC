@@ -16,7 +16,7 @@ import "./SelecionarDificuldade.css";
 // Ícone aceita emoji ou caminho de imagem .png/.gif (ver IconeDificuldade).
 const DIFICULDADES = [
   { valor: "iniciante", rotulo: "INICIANTE", nome: "Iniciante", descricao: "Dificuldade fácil", icone: Sword },
-  { valor: "guerreiro", rotulo: "GUERREIRO", nome: "Guerreiro", descricao: "Dificuldade difícil", icone: Skull },
+  { valor: "guerreiro", rotulo: "GUERREIRO", nome: "Guerreiro", descricao: "Dificuldade difícil: os mesmos desafios, sem dicas e com menos corações — mas XP no ranking e ouro em dobro", icone: Skull },
   // { valor: "mestre", rotulo: "MESTRE", nome: "Mestre", descricao: "Dificuldade extrema", icone: Crown }, // TODO: reativar se um terceiro nível for criado
 ];
 

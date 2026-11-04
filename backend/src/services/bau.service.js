@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const { listarDesafiosResumo } = require("./desafiosCache");
 const { concederItemSeNaoTiver, buscarOuCriarPersonagem } = require("./personagem.service");
+const { REGRAS_DIFICULDADE } = require("../config/dificuldades");
 
 // Quantos itens vão em "slots" na resposta de abrirBau — pode repetir itens
 // do catálogo se o jogo ainda não tiver esse tanto de itens distintos. A
@@ -199,7 +200,7 @@ async function abrirBau(usuarioId, mundoId, dificuldade) {
 // Limitação conhecida: a vitória nos minijogos acontece no navegador — o
 // backend só confere se o desafio está liberado e se o baú já foi aberto.
 const MUNDO_BAU_ESPECIAL = 0;
-const DIFICULDADE_EXIGIDA = "iniciante";
+const TRILHAS = Object.keys(REGRAS_DIFICULDADE);
 
 const BAUS_ESPECIAIS = {
   rei: {
@@ -232,9 +233,17 @@ function configBauEspecial(chave) {
   return config;
 }
 
+// Cada mundo exigido vale concluído em QUALQUER trilha (iniciante ou
+// guerreiro) — mesma regra de mundoLiberado no frontend, que é o que abre
+// os minijogos no mapa.
 async function bauEspecialLiberado(usuarioId, config) {
   const concluidos = await Promise.all(
-    config.mundosExigidos.map((mundoId) => mundoConcluido(usuarioId, mundoId, DIFICULDADE_EXIGIDA))
+    config.mundosExigidos.map(async (mundoId) => {
+      const porTrilha = await Promise.all(
+        TRILHAS.map((dificuldade) => mundoConcluido(usuarioId, mundoId, dificuldade))
+      );
+      return porTrilha.some(Boolean);
+    })
   );
   return concluidos.every(Boolean);
 }

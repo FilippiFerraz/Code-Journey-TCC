@@ -8,6 +8,7 @@ import AvatarPersonagem from "../../components/AvatarPersonagem";
 import { useCronometro } from "../../hooks/useCronometro";
 import { useCongelarTempo } from "../../hooks/useCongelarTempo";
 import { textoMoedasElixir } from "../../utils/loja";
+import { regrasDaDificuldade } from "../../data/dificuldades";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
@@ -31,7 +32,6 @@ import fundoDesafio3P1 from "../../assets/images/Fundo_desafio_3_P1.webp";
 import fundoDesafio4P1 from "../../assets/images/Fundo_desafio_4_P1.webp";
 import "./ResolverDesafio.css";
 
-const VIDA_MAXIMA = 3;
 
 // Quanto tempo o GIF de ataque fica visível antes de voltar pro herói
 // parado. Ajuste esse valor pra bater com a duração real do
@@ -231,6 +231,9 @@ const TAMANHO_MAXIMO_RESPOSTA = 2000;
 // Recebem o nome do inimigo do desafio atual pra bater com a imagem exibida.
 function ResolverDesafio() {
   const { mundoId, dificuldade, desafioId } = useParams();
+  // Corações do herói e se a dica aparece: dependem da trilha (o modo
+  // Guerreiro tem menos corações e nenhuma dica — ver data/dificuldades.js).
+  const { vidaMaxima: VIDA_MAXIMA, dicas: mostraDicas } = regrasDaDificuldade(dificuldade);
   const navigate = useNavigate();
   const itensEquipados = usePersonagemAvatar();
   // O GIF de ataque é do guerreiro original: as outras aparências fazem a
@@ -649,7 +652,7 @@ function ResolverDesafio() {
 
   const golpesInimigo = falasGolpe(desafio.inimigo.nome, desafio.grupo);
   const falaGolpe = golpesInimigo[VIDA_MAXIMA - 1 - vida] || golpesInimigo.at(-1);
-  const mostrarDica = vida <= 1;
+  const mostrarDica = mostraDicas && vida <= 1;
 
   function renderPainel() {
     if (perdeu) {

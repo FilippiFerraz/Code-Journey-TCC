@@ -4,6 +4,7 @@ const { corrigirRespostaDissertativa } = require("./ia.service");
 const { temVariasEtapas } = require("./etapas.service");
 const { listarDesafiosResumo } = require("./desafiosCache");
 const { consumirElixir, moedasPorVitoria } = require("./loja.service");
+const { regrasDaDificuldade } = require("../config/dificuldades");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -38,6 +39,19 @@ function calcularBonusVelocidade(tempoSegundos) {
     (TEMPO_BONUS_MINIMO_SEGUNDOS - tempoSegundos) /
     (TEMPO_BONUS_MINIMO_SEGUNDOS - TEMPO_BONUS_MAXIMO_SEGUNDOS);
   return Math.round(BONUS_VELOCIDADE_MAXIMO * fracaoRestante);
+}
+
+// Modo Guerreiro (difícil): mesmos desafios, sem dicas e com menos corações
+// — em troca, o XP (que é a pontuação do ranking) e as moedas da vitória
+// são multiplicados (ver config/dificuldades.js). O multiplicador vale
+// sobre o XP já com os bônus de velocidade e de primeira tentativa.
+function bonusDaDificuldade(dificuldade, xpSemBonus) {
+  const { multiplicadorXp } = regrasDaDificuldade(dificuldade);
+  return Math.round(xpSemBonus * (multiplicadorXp - 1));
+}
+
+function moedasDaVitoria(dificuldade, semErros) {
+  return moedasPorVitoria(semErros) * regrasDaDificuldade(dificuldade).multiplicadorMoedas;
 }
 
 // Desafio.alternativas é Json livre e hoje guarda um de cinco formatos (ver
@@ -136,10 +150,6 @@ function avaliarResposta(alternativas, { opcaoId, ordem, classificacoes, ingredi
   return avaliarOrdenacaoDeBlocos(alternativas, ordem);
 }
 
-// Trilha usada pra checar o progresso entre mundos — mesma regra de
-// mundoLiberado em frontend/src/data/progresso.js.
-const DIFICULDADE_PADRAO = "iniciante";
-
 function erroDeDesafioTrancado(mensagem) {
   const erro = new Error(mensagem);
   erro.status = 403;
@@ -150,8 +160,9 @@ function erroDeDesafioTrancado(mensagem) {
 // aqui porque a tela de um desafio pode ser aberta digitando a URL direto
 // (ex: /codigo/1/iniciante/5) — sem isso dava pra pular desafios e ganhar o
 // XP e o item deles. Desafio N só aceita resposta com o N-1 concluído; um
-// mundo > 1 só com todos os desafios da trilha padrão do mundo anterior
-// concluídos.
+// mundo > 1 só com todos os desafios do mundo anterior concluídos em ALGUMA
+// trilha (iniciante ou guerreiro) — mesma regra de mundoLiberado em
+// frontend/src/data/progresso.js.
 async function verificarDesafioLiberado(usuarioId, desafio) {
   // A lista de desafios vem da memória (desafiosCache.js) e as duas consultas
   // de progresso saem juntas — antes eram 4 consultas, uma depois da outra.
@@ -166,12 +177,8 @@ async function verificarDesafioLiberado(usuarioId, desafio) {
             d.numero === desafio.numero - 1
         )
       : null;
-  const idsMundoAnterior =
-    desafio.mundoId > 1
-      ? resumo
-          .filter((d) => d.mundoId === desafio.mundoId - 1 && d.dificuldade === DIFICULDADE_PADRAO)
-          .map((d) => d.id)
-      : null;
+  const desafiosMundoAnterior =
+    desafio.mundoId > 1 ? resumo.filter((d) => d.mundoId === desafio.mundoId - 1) : null;
 
   const [progressoAnterior, concluidosMundoAnterior] = await Promise.all([
     anterior
@@ -180,22 +187,35 @@ async function verificarDesafioLiberado(usuarioId, desafio) {
           select: { concluido: true },
         })
       : null,
-    idsMundoAnterior && idsMundoAnterior.length > 0
-      ? prisma.progresso.count({
-          where: { usuarioId, concluido: true, desafioId: { in: idsMundoAnterior } },
+    desafiosMundoAnterior && desafiosMundoAnterior.length > 0
+      ? prisma.progresso.findMany({
+          where: {
+            usuarioId,
+            concluido: true,
+            desafioId: { in: desafiosMundoAnterior.map((d) => d.id) },
+          },
+          select: { desafioId: true },
         })
-      : 0,
+      : [],
   ]);
 
   if (desafio.numero > 1 && !progressoAnterior?.concluido) {
     throw erroDeDesafioTrancado("Conclua o desafio anterior antes de responder este.");
   }
 
-  if (
-    idsMundoAnterior &&
-    (idsMundoAnterior.length === 0 || concluidosMundoAnterior < idsMundoAnterior.length)
-  ) {
-    throw erroDeDesafioTrancado("Conclua o mundo anterior antes de responder este desafio.");
+  if (desafiosMundoAnterior) {
+    const concluidos = new Set(concluidosMundoAnterior.map((p) => p.desafioId));
+    const idsPorTrilha = new Map();
+    for (const d of desafiosMundoAnterior) {
+      if (!idsPorTrilha.has(d.dificuldade)) idsPorTrilha.set(d.dificuldade, []);
+      idsPorTrilha.get(d.dificuldade).push(d.id);
+    }
+    const algumaTrilhaConcluida = [...idsPorTrilha.values()].some((ids) =>
+      ids.every((id) => concluidos.has(id))
+    );
+    if (!algumaTrilhaConcluida) {
+      throw erroDeDesafioTrancado("Conclua o mundo anterior antes de responder este desafio.");
+    }
   }
 }
 
@@ -324,13 +344,15 @@ async function responderDesafio({
   let xpBase = 0;
   let bonusVelocidade = 0;
   let bonusPrimeiraTentativa = 0;
+  let bonusDificuldade = 0;
 
   if (primeiraVezConcluindo) {
     xpBase = desafio.xpConcedido;
     bonusVelocidade = calcularBonusVelocidade(Number(tempoSegundos));
     bonusPrimeiraTentativa = acertouDePrimeira ? BONUS_PRIMEIRA_TENTATIVA : 0;
+    bonusDificuldade = bonusDaDificuldade(desafio.dificuldade, xpBase + bonusVelocidade + bonusPrimeiraTentativa);
 
-    dados.xpGanho = xpBase + bonusVelocidade + bonusPrimeiraTentativa;
+    dados.xpGanho = xpBase + bonusVelocidade + bonusPrimeiraTentativa + bonusDificuldade;
     dados.dataConclusao = new Date();
     dados.tempoSegundos = Number.isFinite(Number(tempoSegundos))
       ? Math.max(0, Math.round(Number(tempoSegundos)))
@@ -342,7 +364,7 @@ async function responderDesafio({
   let moedasGanhas = 0;
   let elixirUsado = false;
   if (primeiraVezConcluindo) {
-    moedasGanhas = moedasPorVitoria(acertouDePrimeira);
+    moedasGanhas = moedasDaVitoria(desafio.dificuldade, acertouDePrimeira);
     elixirUsado = await consumirElixir(usuarioId);
     if (elixirUsado) dados.xpGanho *= 2;
   }
@@ -394,6 +416,10 @@ async function responderDesafio({
     xpBase,
     bonusVelocidade,
     bonusPrimeiraTentativa,
+    // Modo Guerreiro: XP extra pela dificuldade (0 na trilha iniciante) e o
+    // multiplicador aplicado — a tela de vitória mostra o "x2".
+    bonusDificuldade,
+    multiplicadorXp: regrasDaDificuldade(desafio.dificuldade).multiplicadorXp,
     acertouDePrimeira: primeiraVezConcluindo ? acertouDePrimeira : false,
     tempoSegundos: progresso.tempoSegundos,
     itemGanho,
@@ -489,14 +515,16 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
   let xpBase = 0;
   let bonusVelocidade = 0;
   let bonusPrimeiraTentativa = 0;
+  let bonusDificuldade = 0;
   if (concluiAgora) {
     xpBase = desafio.xpConcedido;
     // tempoSegundos é o tempo TOTAL do desafio; a régua de bônus é por etapa.
     bonusVelocidade = calcularBonusVelocidade(Number(tempoSegundos) / totalEtapas);
     bonusPrimeiraTentativa = semErros ? BONUS_PRIMEIRA_TENTATIVA : 0;
+    bonusDificuldade = bonusDaDificuldade(desafio.dificuldade, xpBase + bonusVelocidade + bonusPrimeiraTentativa);
 
     dados.concluido = true;
-    dados.xpGanho = xpBase + bonusVelocidade + bonusPrimeiraTentativa;
+    dados.xpGanho = xpBase + bonusVelocidade + bonusPrimeiraTentativa + bonusDificuldade;
     dados.dataConclusao = new Date();
     dados.tempoSegundos = Number.isFinite(Number(tempoSegundos))
       ? Math.max(0, Math.round(Number(tempoSegundos)))
@@ -507,7 +535,7 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
   let moedasGanhas = 0;
   let elixirUsado = false;
   if (concluiAgora) {
-    moedasGanhas = moedasPorVitoria(semErros);
+    moedasGanhas = moedasDaVitoria(desafio.dificuldade, semErros);
     elixirUsado = await consumirElixir(usuarioId);
     if (elixirUsado) dados.xpGanho *= 2;
   }
@@ -546,6 +574,8 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
     xpBase,
     bonusVelocidade,
     bonusPrimeiraTentativa,
+    bonusDificuldade,
+    multiplicadorXp: regrasDaDificuldade(desafio.dificuldade).multiplicadorXp,
     acertouDePrimeira: concluiAgora ? semErros : false,
     tempoSegundos: progresso.tempoSegundos,
     itemGanho,

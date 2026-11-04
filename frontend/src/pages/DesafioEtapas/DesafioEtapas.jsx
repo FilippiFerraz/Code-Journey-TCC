@@ -17,6 +17,7 @@ import ControleMusica from "../../components/ControleMusica";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
 import { falaDerrota, falaGolpeCerteiro, falasGolpe, tituloDerrotado } from "../../utils/textosInimigo";
+import { regrasDaDificuldade } from "../../data/dificuldades";
 import IntroEtapas from "./IntroEtapas";
 import { GrupoInimigos } from "./SpriteInimigo";
 import { EXERCICIOS, TITULO_PAINEL, precarregarExercicios } from "./exercicios";
@@ -43,12 +44,14 @@ import "./DesafioEtapas.css";
 // só — uma barra de vida, um estado de ataque/dano/morte — e GrupoInimigos
 // aplica esse estado a todos os sprites ao mesmo tempo.
 
-const VIDA_MAXIMA = 3;
 // Duração do GIF de ataque do herói — mesmo valor de ResolverDesafio.jsx.
 const DURACAO_GIF_ATAQUE_MS = 600;
 
 export default function DesafioEtapas() {
   const { mundoId, dificuldade, desafioId } = useParams();
+  // Corações do herói e se a dica aparece: dependem da trilha (o modo
+  // Guerreiro tem menos corações e nenhuma dica — ver data/dificuldades.js).
+  const { vidaMaxima: VIDA_MAXIMA, dicas: mostraDicas } = regrasDaDificuldade(dificuldade);
   const navigate = useNavigate();
   const itensEquipados = usePersonagemAvatar();
   // O GIF de ataque é do guerreiro original: as outras aparências fazem a
@@ -545,7 +548,7 @@ export default function DesafioEtapas() {
         {resultado === "erro" && (
           <div className="retorno retorno--erro">
             <p className="retorno-fala">{feedbackIA || falaGolpe}</p>
-            {vida <= 1 && etapa.dica && <p className="retorno-dica">Dica: {etapa.dica}</p>}
+            {mostraDicas && vida <= 1 && etapa.dica && <p className="retorno-dica">Dica: {etapa.dica}</p>}
           </div>
         )}
 

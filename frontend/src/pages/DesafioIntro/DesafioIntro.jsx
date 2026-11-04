@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
+import AvisoModoGuerreiro from "../../components/AvisoModoGuerreiro";
+import { regrasDaDificuldade } from "../../data/dificuldades";
 import "./DesafioIntro.css";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
@@ -241,7 +243,11 @@ function DesafioIntro() {
             <span className="intro-enunciado-tag">DESAFIO {desafioId}</span>
             <h2 className="intro-enunciado-titulo">{intro.titulo}</h2>
             <p className="intro-enunciado-texto">{intro.texto}</p>
-            <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(intro.dica)}</p>
+            {regrasDaDificuldade(dificuldade).dicas ? (
+              <p className="intro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(intro.dica)}</p>
+            ) : (
+              <AvisoModoGuerreiro className="intro-enunciado-dica" />
+            )}
 
             <BotaoPixel
               className="intro-botao-iniciar"

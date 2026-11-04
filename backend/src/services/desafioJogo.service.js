@@ -1,6 +1,7 @@
 const prisma = require("../config/prisma");
 const { verificarDesafioLiberado } = require("./progresso.service");
 const { etapasDoDesafio, etapaPublica, temVariasEtapas } = require("./etapas.service");
+const { regrasDaDificuldade } = require("../config/dificuldades");
 
 // Conteúdo de um desafio pra tela do jogo (GET /api/desafios/:mundoId/:dificuldade/:numero),
 // SEM gabarito, mais o avanço do jogador nele. Serve qualquer desafio, mas é
@@ -25,7 +26,11 @@ async function buscarDesafioParaJogar(usuarioId, { mundoId, dificuldade, numero 
     select: { concluido: true, etapasConcluidas: true, tentativas: true },
   });
 
-  const etapas = etapasDoDesafio(desafio).map(etapaPublica);
+  // Modo Guerreiro não tem dica nenhuma — nem a do desafio, nem a das etapas.
+  const { dicas } = regrasDaDificuldade(desafio.dificuldade);
+  const etapas = etapasDoDesafio(desafio)
+    .map(etapaPublica)
+    .map((etapa) => (dicas ? etapa : { ...etapa, dica: null }));
 
   return {
     mundoId: desafio.mundoId,
@@ -33,7 +38,7 @@ async function buscarDesafioParaJogar(usuarioId, { mundoId, dificuldade, numero 
     numero: desafio.numero,
     titulo: desafio.titulo,
     enunciado: desafio.enunciado,
-    dica: desafio.dica,
+    dica: dicas ? desafio.dica : null,
     xpConcedido: desafio.xpConcedido,
     variasEtapas: temVariasEtapas(desafio.alternativas),
     etapas,

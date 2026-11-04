@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
 import { useAvancoAutomatico } from "../../hooks/useAvancoAutomatico";
+import AvisoModoGuerreiro from "../../components/AvisoModoGuerreiro";
+import { regrasDaDificuldade } from "../../data/dificuldades";
 import bruxaInimigo from "../../assets/images/bruxa_inimigo.webp";
 import "./DesafioIntroPocao.css";
 
@@ -135,7 +137,11 @@ function DesafioIntroPocao() {
             <span className="pocaoIntro-enunciado-tag">DESAFIO {desafioId}</span>
             <h2 className="pocaoIntro-enunciado-titulo">{intro.titulo}</h2>
             <p className="pocaoIntro-enunciado-texto">{intro.texto}</p>
-            <p className="pocaoIntro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(intro.dica)}</p>
+            {regrasDaDificuldade(dificuldade).dicas ? (
+              <p className="pocaoIntro-enunciado-dica"><i className="hn hn-lightbulb-solid icone-dica" aria-hidden="true" /> Dica: {renderDica(intro.dica)}</p>
+            ) : (
+              <AvisoModoGuerreiro className="pocaoIntro-enunciado-dica" />
+            )}
 
             <BotaoPixel
               className="pocaoIntro-botao-iniciar"

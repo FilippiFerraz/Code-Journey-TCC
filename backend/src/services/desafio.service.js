@@ -3,6 +3,7 @@ const { registrarLog } = require("./log.service");
 const { calcularDiferencas } = require("../utils/diff");
 const { validarAlternativas, temVariasEtapas, tipoDoExercicio } = require("./etapas.service");
 const { limparCacheDesafios } = require("./desafiosCache");
+const { espelharDesafio } = require("./trilhaGuerreiro.service");
 
 function erroDeValidacao(mensagem) {
   const erro = new Error(mensagem);
@@ -134,6 +135,9 @@ async function atualizarDesafio(desafioId, dados, admin) {
   }
 
   const atualizado = await prisma.desafio.update({ where: { id: desafioId }, data: atualizacoes });
+  // Desafio iniciante editado: a cópia dele na trilha guerreiro (mesmo
+  // desafio, sem dica) acompanha a mudança — ver trilhaGuerreiro.service.js.
+  await espelharDesafio(atualizado, { limparCache: false });
   limparCacheDesafios();
 
   if (admin && Object.keys(atualizacoes).length > 0) {
