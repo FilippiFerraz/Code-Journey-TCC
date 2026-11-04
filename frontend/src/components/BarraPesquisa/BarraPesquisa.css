@@ -1,0 +1,328 @@
+/* Barra de pesquisa da Home com dois modos (Usuários / Dúvidas) e a
+   resposta do Mago — ver BarraPesquisa.jsx e RespostaMago.jsx.
+   A base da barra (campo, input, lista de jogadores) continua em Home.css
+   (.home-busca-*); aqui só o que é novo. Gradiente da identidade do app:
+   #2f6fed -> #6a3fd9 -> #9b2fc9 -> #b229c4. */
+.busca-barra {
+  --busca-gradiente: linear-gradient(90deg, #2f6fed 0%, #6a3fd9 35%, #9b2fc9 70%, #b229c4 100%);
+}
+
+/* o campo ganha o seletor no lugar da lupa: um pouco menos de respiro à esquerda */
+.busca-campo {
+  padding-left: 6px;
+}
+
+.layout-header-busca .busca-campo {
+  padding-left: 8px;
+}
+
+/* ---------- Seletor de modo ---------- */
+.busca-modos {
+  flex-shrink: 0;
+  display: flex;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(183, 106, 255, 0.25);
+}
+
+.busca-modo {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: var(--cj-texto-secundario);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.busca-modo:hover {
+  color: var(--cj-texto);
+}
+
+.busca-modo:focus-visible {
+  outline: 2px solid var(--cj-roxo-claro);
+  outline-offset: 1px;
+}
+
+.busca-modo--ativo {
+  background: var(--busca-gradiente);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(106, 63, 217, 0.45);
+}
+
+/* ---------- Botão "Perguntar" (modo Dúvidas) ---------- */
+.busca-perguntar {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: -4px;
+  border: none;
+  border-radius: 50%;
+  background: var(--busca-gradiente);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+}
+
+.busca-perguntar:hover:not(:disabled) {
+  transform: scale(1.06);
+}
+
+.busca-perguntar:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- Resposta do Mago ---------- */
+.busca-resposta {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  max-height: min(70dvh, 560px);
+  overflow-y: auto;
+  padding: 16px;
+  border-radius: 16px;
+  /* borda em gradiente: fundo do cartão por cima, gradiente na borda */
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--cj-painel), var(--cj-painel)) padding-box,
+    linear-gradient(135deg, #2f6fed, #6a3fd9, #9b2fc9, #b229c4) border-box;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  scrollbar-width: thin;
+  scrollbar-color: #4b2a7d transparent;
+  animation: buscaRespostaSurgir 0.2s ease-out;
+}
+
+/* no cabeçalho do desktop a barra tem 520px: o painel pode passar dela */
+.layout-header-busca .busca-resposta {
+  left: 50%;
+  right: auto;
+  width: min(620px, calc(100vw - 32px));
+  transform: translateX(-50%);
+}
+
+@keyframes buscaRespostaSurgir {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.busca-resposta-cena {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.busca-resposta-mago {
+  flex-shrink: 0;
+  width: 64px;
+  height: auto;
+  margin-top: 6px;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* balão de fala, no mesmo estilo do balão do Mago do tutorial */
+.busca-resposta-balao {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--cj-cartao);
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--cj-borda-forte);
+}
+
+.busca-resposta-balao::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 22px;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-right: 9px solid var(--cj-cartao);
+}
+
+.busca-resposta-titulo {
+  margin: 0 0 6px;
+  color: var(--cj-ouro);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.busca-resposta-fala {
+  margin: 0 0 10px;
+  color: var(--cj-texto);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.busca-resposta-codigo {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: var(--cj-fundo-profundo);
+  border: 1px solid var(--cj-borda);
+  color: #ffe08a;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre; /* quebras de linha do exemplo preservadas */
+  tab-size: 2;
+}
+
+.busca-resposta-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.busca-resposta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(106, 63, 217, 0.22);
+  border: 1px solid var(--cj-borda-forte);
+  color: var(--cj-texto);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.busca-resposta-link:hover,
+.busca-resposta-link:focus-visible {
+  background: rgba(155, 47, 201, 0.38);
+  outline: none;
+}
+
+/* ---------- "Você também pode querer saber" ---------- */
+.busca-resposta-relacionadas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.busca-resposta-relacionadas-titulo {
+  margin: 0;
+  color: var(--cj-texto-secundario);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.busca-resposta-relacionada {
+  padding: 9px 12px;
+  border: 1px solid var(--cj-borda);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--cj-texto);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.busca-resposta-relacionada:hover,
+.busca-resposta-relacionada:focus-visible {
+  border-color: var(--cj-roxo-claro);
+  background: rgba(134, 40, 196, 0.22);
+  outline: none;
+}
+
+.busca-resposta-rodape {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.busca-resposta-fechar {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2f6fed 0%, #6a3fd9 35%, #9b2fc9 70%, #b229c4 100%);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.busca-resposta-fechar:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* celular estreito: seletor e textos mais compactos, mago menor */
+@media (max-width: 420px) {
+  .busca-modo {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .busca-resposta {
+    padding: 12px;
+  }
+
+  .busca-resposta-mago {
+    width: 44px;
+  }
+
+  .busca-resposta-codigo {
+    font-size: 12px;
+  }
+}
+
+/* celular bem estreito: mago em cima do balão, pra o texto ganhar a largura toda */
+@media (max-width: 360px) {
+  .busca-resposta-cena {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .busca-resposta-mago {
+    width: 40px;
+    margin: 0 0 0 6px;
+  }
+
+  .busca-resposta-balao::before {
+    left: 18px;
+    top: -9px;
+    border-top: none;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 9px solid var(--cj-cartao);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .busca-resposta {
+    animation: none;
+  }
+}

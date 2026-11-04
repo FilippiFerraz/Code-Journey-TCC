@@ -9,7 +9,7 @@ export const DATA_VIGENCIA = "4 de novembro de 2026";
 // LGPD art. 5º, VI) e o contato do encarregado (art. 41). Num TCC, costuma
 // ser a equipe do projeto e um e-mail do grupo monitorado de verdade.
 export const CONTROLADOR = "Equipe do projeto Code Journey (Trabalho de Conclusão de Curso)";
-export const CONTATO_PRIVACIDADE = "[DEFINIR E-MAIL DE CONTATO]";
+export const CONTATO_PRIVACIDADE = "codejourneytcc@gmail.com";
 
 export const IDADE_MINIMA = 13;
 export const RETENCAO_HISTORICO_LOGIN_DIAS = 180;

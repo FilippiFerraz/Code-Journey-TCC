@@ -25,6 +25,7 @@ import AvisoPortalBloqueado from "./AvisoPortalBloqueado";
 import { Gift } from "pixelarticons/react/Gift.js";
 import { Coins } from "pixelarticons/react/Coins.js";
 import IconePixel from "../../components/IconePixel";
+import BarraPesquisa from "../../components/BarraPesquisa/BarraPesquisa";
 import { lerUltimoPortal, salvarUltimoPortal, trechoEntre } from "./caminhoMapa";
 import "./Home.css";
 
@@ -157,10 +158,6 @@ function Home() {
   // quando todos os desafios dela foram concluídos e o baú ainda não foi
   // aberto — é isso que faz o ícone do baú aparecer ao lado do portal.
   const [baus, setBaus] = useState([]);
-  // Barra de pesquisa de jogadores (GET /api/perfil/buscar?nome=).
-  const [termoBusca, setTermoBusca] = useState("");
-  const [resultadosBusca, setResultadosBusca] = useState([]);
-  const [buscando, setBuscando] = useState(false);
 
   // O herói que anda até o portal (PersonagemNoMapa) baixa assim que o mapa
   // terminou de carregar — pronto antes do primeiro clique num portal.
@@ -235,39 +232,6 @@ function Home() {
       ativo = false;
     };
   }, [versaoProgresso]);
-
-  // Busca jogadores pelo nome com um pequeno debounce, pra não disparar uma
-  // requisição a cada tecla digitada.
-  useEffect(() => {
-    const termo = termoBusca.trim();
-    if (!termo) {
-      setResultadosBusca([]);
-      setBuscando(false);
-      return;
-    }
-
-    let ativo = true;
-    setBuscando(true);
-
-    const timer = setTimeout(() => {
-      api
-        .get("/perfil/buscar", { params: { nome: termo } })
-        .then((res) => ativo && setResultadosBusca(res.data))
-        .catch(() => ativo && setResultadosBusca([]))
-        .finally(() => ativo && setBuscando(false));
-    }, 350);
-
-    return () => {
-      ativo = false;
-      clearTimeout(timer);
-    };
-  }, [termoBusca]);
-
-  function abrirPerfilBuscado(usuario) {
-    setTermoBusca("");
-    setResultadosBusca([]);
-    navigate(`/perfil/${usuario.id}`);
-  }
 
   function handlePortalClick(portal) {
     if (destino) return; // já está caminhando pra um portal
@@ -359,61 +323,12 @@ function Home() {
     api.post("/perfil/tutorial-visto").catch(() => {});
   }
 
-  // Barra de busca de jogadores — mesma JSX em mobile e desktop, só muda
-  // ONDE ela aparece (ver uso logo abaixo): no mobile continua dentro do
-  // corpo da página, como sempre foi; no desktop vai pro slot central do
-  // cabeçalho (MainLayout.jsx), centralizada e maior. Extraída pra
-  // variável em vez de duplicada porque é o MESMO estado (termoBusca,
-  // resultadosBusca) controlando as duas — nunca as duas ao mesmo tempo.
-  const barraBusca = (
-    <div className="home-busca">
-      <div className="home-busca-campo">
-        <span className="home-busca-icone" aria-hidden="true">
-          <i className="hn hn-search"></i>
-        </span>
-        <input
-          type="text"
-          className="home-busca-input"
-          placeholder="Buscar jogador pelo nome…"
-          value={termoBusca}
-          onChange={(e) => setTermoBusca(e.target.value)}
-          aria-label="Buscar jogador pelo nome"
-        />
-        {termoBusca && (
-          <button
-            type="button"
-            className="home-busca-limpar"
-            aria-label="Limpar busca"
-            onClick={() => setTermoBusca("")}
-          >
-            <i className="hn hn-times" aria-hidden="true"></i>
-          </button>
-        )}
-      </div>
-
-      {termoBusca.trim() && (
-        <div className="home-busca-resultados">
-          {buscando ? (
-            <p className="home-busca-mensagem">Buscando…</p>
-          ) : resultadosBusca.length > 0 ? (
-            resultadosBusca.map((usuario) => (
-              <button
-                key={usuario.id}
-                type="button"
-                className="home-busca-resultado"
-                onClick={() => abrirPerfilBuscado(usuario)}
-              >
-                <span className="home-busca-resultado-nome">{usuario.nome}</span>
-                <span className="home-busca-resultado-handle">@{usuario.nomeUsuario}</span>
-              </button>
-            ))
-          ) : (
-            <p className="home-busca-mensagem">Nenhum jogador encontrado.</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  // Barra de pesquisa (jogadores e dúvidas de JavaScript — ver
+  // components/BarraPesquisa): mesma barra em mobile e desktop, só muda ONDE
+  // ela aparece (ver uso logo abaixo): no mobile fica no corpo da página; no
+  // desktop vai pro slot central do cabeçalho (MainLayout.jsx). Nunca as duas
+  // ao mesmo tempo.
+  const barraBusca = <BarraPesquisa />;
 
   return (
     <MainLayout titulo="HOME" buscaHeader={!ehMobile ? barraBusca : undefined} tema="escuro">
