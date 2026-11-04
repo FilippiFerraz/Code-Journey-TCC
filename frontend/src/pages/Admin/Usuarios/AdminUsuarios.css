@@ -1,0 +1,259 @@
+/* ============================================================
+   AdminUsuarios.css — tabela de usuários cadastrados (painel admin)
+   Renderiza dentro do MainLayout (área rolável .layout-conteudo).
+   ============================================================ */
+
+.admin-usuarios {
+  --roxo: #8a2fb8;
+  --roxo-forte: #6a3fd9;
+  --texto: var(--cj-texto);
+  --texto-suave: var(--cj-texto-secundario);
+  --divisor: var(--cj-borda);
+  --verde: #6ee28a;
+  --vermelho: #ff8a8a;
+  --laranja: #f0a24a;
+}
+
+.admin-usuarios-voltar {
+  display: inline-block;
+  margin-bottom: 14px;
+  background: #1e2642;
+}
+
+.admin-usuarios-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: #2b345a;
+}
+
+.admin-usuarios-toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-usuarios-busca {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(183, 106, 255, 0.3);
+  background: var(--cj-fundo-profundo);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--texto);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.admin-usuarios-busca:focus {
+  border-color: var(--roxo);
+}
+
+.admin-usuarios-exportar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--roxo);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-usuarios-exportar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-usuarios-mensagem {
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--texto-suave);
+}
+
+.admin-usuarios-mensagem--erro {
+  color: var(--vermelho);
+}
+
+/* ---------- Tabela ---------- */
+.admin-usuarios-tabela-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--divisor);
+}
+
+.admin-usuarios-tabela {
+  width: 100%;
+  /* abaixo disso (celular) a tabela rola na horizontal */
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-usuarios-tabela th,
+.admin-usuarios-tabela td {
+  /* 8px nas laterais: com 12px a tabela passava da largura do desktop */
+  padding: 10px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-usuarios-tabela th {
+  background: var(--cj-painel);
+  color: var(--cj-roxo-claro);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--divisor);
+}
+
+.admin-usuarios-tabela tbody tr {
+  border-bottom: 1px solid var(--divisor);
+}
+
+.admin-usuarios-tabela tbody tr:last-child {
+  border-bottom: none;
+}
+
+.admin-usuarios-linha--inativo {
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--texto-suave);
+}
+
+/* ---------- Selos (papel / status) ---------- */
+.admin-usuarios-selo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(183, 106, 255, 0.14);
+  color: var(--texto);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.admin-usuarios-selo--admin {
+  background: rgba(138, 47, 184, 0.15);
+  color: var(--cj-roxo-claro);
+}
+
+.admin-usuarios-selo--ativo {
+  background: rgba(44, 122, 61, 0.15);
+  color: var(--verde);
+}
+
+.admin-usuarios-selo--inativo {
+  background: rgba(185, 58, 58, 0.15);
+  color: var(--vermelho);
+}
+
+/* ---------- Ações ---------- */
+/* botões de ação da conta, na faixa aberta pelo "Gerenciar" */
+.admin-usuarios-acoes-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* e-mail longo quebra em vez de alargar a tabela */
+.admin-usuarios-tabela td.admin-usuarios-email {
+  white-space: normal;
+  word-break: break-all;
+  min-width: 140px;
+}
+
+.admin-usuarios-acao {
+  padding: 6px 10px;
+  border: 1px solid var(--roxo);
+  border-radius: 8px;
+  background: var(--cj-cartao);
+  color: var(--cj-roxo-claro);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-usuarios-acao:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-usuarios-acao--perigo {
+  border-color: var(--vermelho);
+  color: var(--vermelho);
+}
+
+/* ação bem mais destrutiva (reiniciar progresso) — cor própria pra não se
+   confundir visualmente com "Desativar" (perigo, vermelho) */
+.admin-usuarios-acao--aviso {
+  border-color: var(--laranja);
+  color: var(--laranja);
+}
+
+/* "Liberar tudo" (dá acesso ao jogo inteiro) */
+.admin-usuarios-acao--sucesso {
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+/* ---------- Paginação ---------- */
+.admin-usuarios-paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-usuarios-pagina-botao {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--roxo);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-usuarios-pagina-botao:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-usuarios-pagina-texto {
+  font-size: 12px;
+  color: var(--texto-suave);
+  text-align: center;
+  flex: 1;
+}
+
+/* ---------- Faixa de ações (botão "Gerenciar") ---------- */
+.admin-usuarios-gerenciar--aberto {
+  color: #ffffff;
+  background: var(--roxo-forte);
+  border-color: var(--roxo-forte);
+}
+
+.admin-usuarios-linha--expandida td {
+  border-bottom-color: transparent;
+}
+
+.admin-usuarios-linha-acoes td {
+  padding-top: 0;
+  background: var(--cj-painel);
+}
+
+.admin-usuarios-linha-acoes .admin-usuarios-acoes-lista {
+  padding: 10px 0 4px;
+}

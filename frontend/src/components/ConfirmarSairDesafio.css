@@ -1,0 +1,85 @@
+/* ============================================================
+   ConfirmarSairDesafio.css — popup de confirmação ao sair de um desafio
+   em andamento. Mesmo padrão visual do overlay de enunciado usado em
+   DesafioIntro.css (fundo escurecido + card roxo centralizado).
+   ============================================================ */
+
+.confirmar-sair-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 8, 20, 0.72);
+  animation: confirmar-sair-surgir 0.2s ease-out;
+}
+
+.confirmar-sair-card {
+  width: 100%;
+  max-width: 340px;
+  padding: 22px 20px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #6a3fd9 0%, #9b2fc9 55%, #b229c4 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  text-align: center;
+}
+
+.confirmar-sair-titulo {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.confirmar-sair-texto {
+  margin: 0 0 18px;
+  color: #f0d9ff;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.confirmar-sair-botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.confirmar-sair-botao {
+  width: 100%;
+}
+
+.confirmar-sair-botao--manter {
+  background: #3f7a24;
+}
+
+.confirmar-sair-botao--manter .confirmar-sair-botao-miolo {
+  background: #7ed957;
+}
+
+.confirmar-sair-botao--sair {
+  background: #7a2020;
+}
+
+.confirmar-sair-botao--sair .confirmar-sair-botao-miolo {
+  background: #ff5a5a;
+}
+
+.confirmar-sair-botao-miolo {
+  padding: 10px 0;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+}
+
+@keyframes confirmar-sair-surgir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirmar-sair-overlay {
+    animation: none;
+  }
+}

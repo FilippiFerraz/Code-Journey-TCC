@@ -1,8 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import BotaoPixel from "../../components/BotaoPixel";
+import CampoSenha from "../../components/CampoSenha";
+import {
+  DICA_SENHA,
+  EMAIL_MAXIMO,
+  SENHA_MAXIMO,
+  validarCodigo,
+  validarEmail,
+  validarSenhaNova,
+} from "../../utils/validacoes";
 import "../Login/Login.css";
 import "./EsqueciSenha.css";
 
@@ -41,10 +50,15 @@ function EsqueciSenha() {
       setErro("Informe seu email.");
       return;
     }
+    const erroEmail = validarEmail(email);
+    if (erroEmail) {
+      setErro(erroEmail);
+      return;
+    }
 
     try {
       setCarregando(true);
-      await api.post("/auth/esqueci-senha", { email });
+      await api.post("/auth/esqueci-senha", { email: email.trim().toLowerCase() });
       // Avança para o passo 2 (a resposta é neutra de propósito).
       setPasso(2);
     } catch (err) {
@@ -66,8 +80,9 @@ function EsqueciSenha() {
       setErro("Informe o código que você recebeu por email.");
       return;
     }
-    if (novaSenha.length < 6) {
-      setErro("A nova senha precisa ter pelo menos 6 caracteres.");
+    const erroCampo = validarCodigo(codigo) || validarSenhaNova(novaSenha);
+    if (erroCampo) {
+      setErro(erroCampo);
       return;
     }
     if (novaSenha !== confirmarSenha) {
@@ -78,7 +93,7 @@ function EsqueciSenha() {
     try {
       setCarregando(true);
       await api.post("/auth/redefinir-senha", {
-        email,
+        email: email.trim().toLowerCase(),
         codigo: codigo.trim(),
         novaSenha,
       });
@@ -118,6 +133,8 @@ function EsqueciSenha() {
               type="email"
               className="login-input"
               placeholder="Digite o email"
+              maxLength={EMAIL_MAXIMO}
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -154,23 +171,26 @@ function EsqueciSenha() {
             <label className="login-label" htmlFor="novaSenha">
               Nova senha:
             </label>
-            <input
+            <CampoSenha
               id="novaSenha"
-              type="password"
               className="login-input"
-              placeholder="Mínimo de 6 caracteres"
+              placeholder="Mínimo de 8 caracteres"
+              maxLength={SENHA_MAXIMO}
+              autoComplete="new-password"
               value={novaSenha}
               onChange={(e) => setNovaSenha(e.target.value)}
             />
+            <p className="cadastro-dica-senha">{DICA_SENHA}</p>
 
             <label className="login-label" htmlFor="confirmarSenha">
               Confirmar nova senha:
             </label>
-            <input
+            <CampoSenha
               id="confirmarSenha"
-              type="password"
               className="login-input"
               placeholder="Repita a nova senha"
+              maxLength={SENHA_MAXIMO}
+              autoComplete="new-password"
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
             />

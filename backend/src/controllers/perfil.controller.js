@@ -1,4 +1,10 @@
-const { buscarPerfil, marcarTutorialVisto } = require("../services/perfil.service.js");
+const {
+  buscarPerfil,
+  marcarTutorialVisto,
+  marcarIntroVista,
+  buscarUsuariosPorNome,
+  buscarPerfilPublico,
+} = require("../services/perfil.service.js");
 
 async function getPerfil(req, res, next) {
   try {
@@ -23,4 +29,45 @@ async function postTutorialVisto(req, res, next) {
   }
 }
 
-module.exports = { getPerfil, postTutorialVisto };
+async function postIntroVista(req, res, next) {
+  try {
+    const usuarioId = req.usuario?.id ?? req.usuarioId;
+    await marcarIntroVista(usuarioId);
+    res.status(200).json({ introVista: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getBuscarUsuarios(req, res, next) {
+  try {
+    const usuarioId = req.usuario?.id ?? req.usuarioId;
+    const resultados = await buscarUsuariosPorNome(usuarioId, req.query.nome);
+    res.status(200).json(resultados);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getPerfilPublico(req, res, next) {
+  try {
+    const usuarioIdAlvo = Number(req.params.usuarioId);
+    if (!Number.isInteger(usuarioIdAlvo)) {
+      const erro = new Error("Usuário inválido.");
+      erro.status = 400;
+      throw erro;
+    }
+    const perfil = await buscarPerfilPublico(usuarioIdAlvo);
+    res.status(200).json(perfil);
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  getPerfil,
+  postTutorialVisto,
+  postIntroVista,
+  getBuscarUsuarios,
+  getPerfilPublico,
+};

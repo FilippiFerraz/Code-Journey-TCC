@@ -1,0 +1,424 @@
+/* Desafio do Rei (DesafioRei.jsx): tela cheia, sem MainLayout. Paleta nos
+   mesmos tons do Baú da Sorte (roxo, ouro e creme). */
+.rei-tela {
+  --rei-ouro: #f4c542;
+  --rei-ouro-sombra: #8a5a12;
+  --rei-roxo: #4b2a9e;
+  --rei-roxo-medio: #3a1f7a;
+  --rei-roxo-escuro: #1e1040;
+  --rei-creme: #fff4dc;
+
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 84px 16px 24px;
+  overflow: hidden;
+  color: var(--rei-creme);
+  /* o próprio castelo do mapa, ampliado, como cenário */
+  background:
+    linear-gradient(180deg, rgba(14, 6, 34, 0.55), rgba(14, 6, 34, 0.85)),
+    url("../../assets/images/mapa.webp") 84% 17% / 330% auto no-repeat,
+    #120c26;
+  image-rendering: pixelated;
+  user-select: none;
+}
+
+.rei-tela--jogo {
+  justify-content: center;
+  padding: 0;
+  background: #120c26;
+}
+
+/* ---------- Voltar / pular ---------- */
+
+.rei-voltar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: var(--rei-ouro-sombra);
+}
+
+.rei-voltar--fixo {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 3;
+}
+
+.rei-voltar-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+  color: var(--rei-creme);
+  font-size: 18px;
+}
+
+.rei-pular {
+  top: 16px;
+  right: 16px;
+}
+
+.rei-voltar:focus-visible,
+.rei-botao:focus-visible {
+  outline: none;
+}
+
+.rei-voltar:focus-visible .botao-pixel-miolo,
+.rei-botao:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+/* ---------- Faixa do título ---------- */
+
+.rei-faixa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.rei-faixa-coroa {
+  font-size: 34px;
+  color: var(--rei-ouro);
+  filter: drop-shadow(0 0 10px rgba(244, 197, 66, 0.7));
+  animation: rei-flutuar 2.4s ease-in-out infinite;
+}
+
+.rei-faixa-titulo {
+  margin: 0;
+  padding: 8px 18px;
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--rei-creme);
+  text-shadow: 0 3px 0 #000000;
+  background: linear-gradient(180deg, var(--rei-roxo), var(--rei-roxo-medio));
+  border: 3px solid var(--rei-ouro);
+  box-shadow: 0 0 0 3px var(--rei-ouro-sombra), 0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+.rei-mensagem {
+  margin-top: 30px;
+  font-weight: 700;
+  text-shadow: 0 2px 0 #000000;
+}
+
+.rei-centro {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- História (Mago da Corte) ---------- */
+
+.rei-historia {
+  margin-top: auto;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+/* quem está falando aparece em cima do balão: o Mago à esquerda, o Rei
+   Tiribyte (maior) à direita */
+.rei-falante {
+  height: auto;
+  margin-bottom: -8px;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+  animation:
+    rei-surgir 0.35s ease-out,
+    rei-flutuar 3s ease-in-out 0.35s infinite;
+}
+
+.rei-falante--mago {
+  width: 132px;
+  margin-left: 6px;
+}
+
+.rei-falante--rei {
+  align-self: flex-end;
+  width: min(78%, 330px);
+  margin-right: -6px;
+}
+
+.rei-balao {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px 18px;
+  background: rgba(30, 16, 64, 0.94);
+  border: 3px solid var(--rei-ouro);
+  box-shadow: 0 0 0 3px var(--rei-ouro-sombra), 0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+.rei-balao-nome {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--rei-ouro);
+  letter-spacing: 1px;
+}
+
+.rei-balao-fala {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  line-height: 1.45;
+  animation: rei-surgir 0.35s ease-out;
+}
+
+.rei-balao-continuar {
+  display: block;
+  font-size: 0.75rem;
+  text-align: right;
+  opacity: 0.75;
+  animation: rei-piscar 1.2s ease-in-out infinite;
+}
+
+/* ---------- Caixas (regras, queda, vitória...) ---------- */
+
+.rei-caixa {
+  width: min(92%, 380px);
+  box-sizing: border-box;
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  background: rgba(30, 16, 64, 0.95);
+  border: 3px solid var(--rei-ouro);
+  box-shadow: 0 0 0 3px var(--rei-ouro-sombra), 0 14px 30px rgba(0, 0, 0, 0.6);
+  animation: rei-surgir 0.3s ease-out;
+}
+
+.rei-caixa-titulo {
+  font-size: 1.15rem;
+  color: var(--rei-ouro);
+  text-shadow: 0 2px 0 #000000;
+}
+
+.rei-caixa-texto {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.rei-caixa-botoes {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.rei-regras {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.rei-regras li {
+  display: flex;
+  gap: 10px;
+}
+
+.rei-regras i {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--rei-ouro);
+}
+
+.rei-botao {
+  width: min(86%, 260px);
+  background: var(--rei-ouro-sombra);
+}
+
+.rei-botao-miolo {
+  padding: 12px 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0 22%, transparent 22%),
+    linear-gradient(180deg, var(--rei-roxo) 0%, var(--rei-roxo-medio) 100%);
+  color: var(--rei-creme);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.rei-botao--secundario .rei-botao-miolo {
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+}
+
+/* ---------- Jogo ---------- */
+
+.rei-palco {
+  position: relative;
+  width: min(100%, calc(100dvh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  touch-action: none; /* toque bate as asas, não rola nem dá zoom */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rei-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.rei-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  pointer-events: none;
+}
+
+.rei-hud > * {
+  pointer-events: auto;
+}
+
+.rei-placar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--rei-creme);
+  text-shadow: 0 2px 0 #000000;
+  background: rgba(14, 6, 34, 0.65);
+  border: 2px solid var(--rei-ouro);
+}
+
+.rei-placar-icone {
+  color: var(--rei-ouro);
+}
+
+.rei-coracoes {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  background: rgba(14, 6, 34, 0.65);
+  border: 2px solid var(--rei-ouro);
+}
+
+.rei-coracao {
+  font-size: 18px;
+  color: #ff4d6d;
+  filter: drop-shadow(0 2px 0 #000000);
+}
+
+.rei-coracao--perdido {
+  color: #4a4458;
+}
+
+.rei-dica-toque {
+  position: absolute;
+  left: 50%;
+  bottom: 22%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-weight: 900;
+  white-space: nowrap;
+  color: var(--rei-creme);
+  text-shadow: 0 2px 0 #000000;
+  background: rgba(14, 6, 34, 0.7);
+  border: 2px solid var(--rei-ouro);
+  pointer-events: none;
+  animation: rei-piscar 1.2s ease-in-out infinite;
+}
+
+.rei-dica-mao {
+  color: var(--rei-ouro);
+}
+
+.rei-palco > .rei-caixa {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: default;
+  animation: none;
+}
+
+/* Rei Tiribyte no alto da caixa (regras e vitória) */
+.rei-caixa--com-rei {
+  padding-top: 8px;
+}
+
+.rei-caixa-rei {
+  width: min(70%, 230px);
+  height: auto;
+  margin-top: -64px;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes rei-flutuar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes rei-surgir {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rei-piscar {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rei-faixa-coroa,
+  .rei-falante,
+  .rei-balao-fala,
+  .rei-balao-continuar,
+  .rei-caixa,
+  .rei-dica-toque {
+    animation: none;
+  }
+}

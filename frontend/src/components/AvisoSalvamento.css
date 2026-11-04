@@ -1,0 +1,39 @@
+/* Aviso de salvamento da vitória (ver AvisoSalvamento.jsx) — aparece dentro
+   dos painéis de vitória, acima do botão "VER RECOMPENSA". */
+.aviso-salvamento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0 10px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  color: #f3e9d2;
+  background: rgba(20, 16, 41, 0.55);
+  border: 2px dashed #f4c542;
+}
+
+.aviso-salvamento p {
+  margin: 0;
+}
+
+.aviso-salvamento--erro {
+  border-color: #ff6b4a;
+}
+
+.aviso-salvamento-botao {
+  height: 38px;
+  background: #8a5a12;
+}
+
+.aviso-salvamento-botao-miolo {
+  height: 100%;
+  padding: 0 14px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: #2a1a0a;
+  background: linear-gradient(180deg, #ffd96a, #f4c542 55%, #d99a1e);
+}

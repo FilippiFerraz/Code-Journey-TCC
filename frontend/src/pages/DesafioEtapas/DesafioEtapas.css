@@ -1,0 +1,267 @@
+/* Desafios com várias etapas (Portal 3). Quase todo o visual vem dos
+   desafios prontos — ResolverDesafio.css (cena, painel, opções, blocos,
+   cartões), DesafioChefe.css (arena e menu de ataques), DesafioIntro.css
+   (introdução) e ResolverDesafioPocao.css (caldeirão). Aqui fica só o que
+   é próprio das etapas. */
+
+.etapas-carregando {
+  padding: 60px 16px;
+  text-align: center;
+  color: #d8d2ea;
+}
+
+.etapas-erro-carregar {
+  margin: 80px 16px 0;
+}
+
+/* ---------- Introdução: lista das etapas no card do enunciado ---------- */
+.etapas-intro-lista {
+  list-style: none;
+  margin: 4px 0 10px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.etapas-intro-lista li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.etapas-intro-lista li span {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  font-size: 0.72rem;
+}
+
+.etapas-intro-lista--feita {
+  opacity: 0.6;
+}
+
+.etapas-intro-lista--feita span {
+  background: #4caf6e;
+  border-color: #4caf6e;
+  color: #ffffff;
+}
+
+.etapas-intro-aviso {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffe08a;
+}
+
+/* ---------- Vida do inimigo na cena comum (um segmento por etapa) ---------- */
+/* Embaixo do cronômetro, do lado do inimigo — no topo central ela encostava
+   no cronômetro em telas de celular. */
+/* no centro do topo: à direita ficam o cronômetro e, embaixo dele, os
+   botões de música e mochila (que cobriam o HUD quando ele ficava lá) */
+.etapas-hud-inimigo {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 44%;
+  box-sizing: border-box;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 6px;
+  background: rgba(20, 14, 32, 0.72);
+  border: 2px solid #f4c542;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+  max-width: 60%;
+}
+
+/* celular: o centro do topo encosta no cronômetro — vai pra esquerda,
+   abaixo do botão Voltar */
+@media (max-width: 520px) {
+  .etapas-hud-inimigo {
+    top: 96px;
+    left: 10px;
+    transform: none;
+    max-width: 55%;
+  }
+}
+
+.etapas-hud-nome {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f3e9d2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.etapas-hud-barra {
+  display: flex;
+  gap: 3px;
+}
+
+.etapas-hud-segmento {
+  width: 26px;
+  height: 7px;
+  background: #e04848;
+  border: 1px solid #000000;
+}
+
+.etapas-hud-segmento--vazio {
+  background: #3a2a3a;
+}
+
+/* Inimigo sentindo o golpe de uma etapa vencida (sem morrer) */
+.etapas-inimigo--ferido {
+  animation: etapas-ferido 0.6s ease-out;
+}
+
+@keyframes etapas-ferido {
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: none;
+  }
+  20% {
+    transform: translateX(8px);
+    filter: brightness(2.2) saturate(0.4);
+  }
+  40% {
+    transform: translateX(-6px);
+  }
+  60% {
+    transform: translateX(4px);
+    filter: brightness(1.6);
+  }
+}
+
+/* Herói levando dano na arena do chefe (a arena original não tinha dano) */
+.etapas-heroi--atingido {
+  animation: etapas-ferido 0.6s ease-out;
+}
+
+/* ...e o chefe (ou o grupo inteiro do chefe) avançando no golpe: investida
+   curta em direção ao herói — o sprite é grande, então anda bem menos que
+   a investida da batalha comum */
+.chefe-sprite-chefe.etapas-chefe--atacando {
+  animation: etapas-chefe-investida 0.5s ease-in-out;
+}
+
+@keyframes etapas-chefe-investida {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  35%,
+  55% {
+    transform: translateX(-38%) translateY(6px) scale(1.06);
+  }
+}
+
+/* Corações dentro do card do jogador, na arena do chefe */
+.chefe-card-jogador .cena-vida {
+  position: static;
+}
+
+/* ---------- Painel ---------- */
+.etapas-tag {
+  display: inline-block;
+  align-self: flex-start;
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #2a1a0a;
+  background: #f4c542;
+  border: 2px solid #8a5a12;
+}
+
+.etapas-salvo {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* ---------- Poção dentro do painel ---------- */
+/* position: relative — o fantasma do arraste é absolute relativo a isto */
+.etapas-pocao {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.etapas-pocao-receita {
+  margin: 0;
+}
+
+/* Código dentro do diálogo do chefe: a caixa é estreita (grid do
+   DesafioChefe.css), então o código quebra a linha em vez de cortar. */
+.chefe-caixa-dialogo .dissertativa-codigo {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.78rem;
+}
+
+/* ---------- Inimigo clone (chefe do Portal 3) ----------
+   Cópia sombria do herói do jogador (SpriteInimigo.jsx): o avatar em
+   camadas, virado pro herói, escurecido, com aura roxa e uma "falha"
+   digital de tempos em tempos. A raiz é quadrada (as camadas são 64x64). */
+.inimigo-clone {
+  aspect-ratio: 1;
+  height: auto;
+}
+
+/* maior que o herói (96px): é a "versão mais forte" dele */
+.chefe-sprite-chefe.inimigo-clone {
+  width: 150px;
+}
+
+.chefe-intro-sprite.inimigo-clone {
+  width: 200px;
+}
+
+.inimigo-clone .avatar-personagem-camadas {
+  transform: scaleX(-1);
+  filter: brightness(0.55) contrast(1.3) saturate(1.5) drop-shadow(0 0 3px #c04dff)
+    drop-shadow(0 0 10px rgba(155, 31, 224, 0.75));
+  animation: inimigo-clone-falha 2.8s steps(1, end) infinite;
+}
+
+@keyframes inimigo-clone-falha {
+  0%, 88%, 100% {
+    transform: scaleX(-1);
+  }
+  90% {
+    transform: scaleX(-1) translateX(4px);
+    filter: brightness(0.55) contrast(1.3) saturate(1.5) hue-rotate(70deg) drop-shadow(0 0 3px #ff2a5a)
+      drop-shadow(0 0 10px rgba(155, 31, 224, 0.75));
+  }
+  92% {
+    transform: scaleX(-1) translateX(-3px) skewX(6deg);
+  }
+  94% {
+    transform: scaleX(-1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inimigo-clone .avatar-personagem-camadas,
+  .chefe-sprite-chefe.etapas-chefe--atacando {
+    animation: none;
+  }
+}

@@ -1,0 +1,14 @@
+/* Ícones da pixelarticons (IconePixel.jsx): alinhados ao texto como os .hn
+   e sem antisserrilhado, pra manter os pixels nítidos. */
+.icone-pixel {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: -0.125em;
+  shape-rendering: crispEdges;
+}
+
+/* Ícones que substituíram emojis coloridos: a cor que o emoji já trazia */
+.icone-dica,
+.icone-aviso {
+  color: #e0a526;
+}

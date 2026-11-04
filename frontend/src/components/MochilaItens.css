@@ -1,0 +1,353 @@
+/* ============================================================
+   MochilaItens.css — mochila dos itens de ajuda nas telas de desafio
+   (ver MochilaItens.jsx). O botão fica logo abaixo do cronômetro; o painel
+   abre por cima de tudo (portal no body), com a paleta da Lojinha do Mago.
+   ============================================================ */
+
+/* ---------- Botão (a mochila) ---------- */
+
+.mochila-botao {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 3px;
+  background: rgba(20, 16, 41, 0.78);
+  border: 2px solid #8a5a12;
+  box-shadow: 2px 2px 0 #0d0c18;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 0;
+}
+
+.mochila-botao-imagem {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition: transform 0.15s ease-out;
+}
+
+.mochila-botao:hover .mochila-botao-imagem,
+.mochila-botao:focus-visible .mochila-botao-imagem {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.mochila-botao:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* com itens dentro, a mochila brilha de leve pra chamar a atenção */
+.mochila-botao--cheia {
+  border-color: #f4c542;
+  animation: mochila-brilho 1.8s ease-in-out infinite;
+}
+
+.mochila-botao-contador {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  color: #2a1a0a;
+  background: #f4c542;
+  border: 2px solid #8a5a12;
+}
+
+@keyframes mochila-brilho {
+  0%,
+  100% {
+    box-shadow: 2px 2px 0 #0d0c18, 0 0 4px rgba(244, 197, 66, 0.4);
+  }
+  50% {
+    box-shadow: 2px 2px 0 #0d0c18, 0 0 12px rgba(244, 197, 66, 0.9);
+  }
+}
+
+/* ---------- Painel ---------- */
+
+.mochila-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(8, 4, 24, 0.72);
+  animation: mochila-aparecer 0.18s ease-out both;
+}
+
+.mochila-painel {
+  width: min(100%, 380px);
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  color: #f3e9d2;
+  background: linear-gradient(180deg, #5a3822, #3b2416);
+  border: 3px solid #24150c;
+  box-shadow: inset 0 0 0 2px rgba(244, 167, 66, 0.25), 4px 4px 0 #000;
+  animation: mochila-subir 0.22s ease-out both;
+}
+
+.mochila-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mochila-cabecalho-imagem {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+}
+
+.mochila-titulo {
+  flex: 1;
+  margin: 0;
+  font-family: "Silkscreen", "Courier New", monospace;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #f4c542;
+  text-shadow: 2px 2px 0 #24150c;
+}
+
+.mochila-fechar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 16px;
+  color: #f3e9d2;
+  background: #2b2338;
+  border: 2px solid #24150c;
+  cursor: pointer;
+}
+
+.mochila-fechar:focus-visible,
+.mochila-usar:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.mochila-efeito {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #0f2a0c;
+  background: #8fe07a;
+  border: 2px solid #3d7a2f;
+}
+
+.mochila-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mochila-item {
+  --mochila-cor: #f4c542;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(20, 16, 41, 0.55);
+  border: 2px solid #24150c;
+}
+
+.mochila-item--gelo {
+  --mochila-cor: #9fd8ff;
+}
+.mochila-item--verde {
+  --mochila-cor: #8fe07a;
+}
+.mochila-item--roxo {
+  --mochila-cor: #c9a2ff;
+}
+
+.mochila-item-icone {
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  color: var(--mochila-cor);
+  background: #141029;
+  border: 2px solid var(--mochila-cor);
+}
+
+.mochila-item-quantidade {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  min-width: 16px;
+  padding: 1px 3px;
+  box-sizing: border-box;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  color: #141029;
+  background: var(--mochila-cor);
+}
+
+.mochila-item-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mochila-item-nome {
+  font-size: 0.85rem;
+  color: var(--mochila-cor);
+}
+
+.mochila-item-efeito {
+  font-size: 0.74rem;
+  line-height: 1.3;
+  color: #e6d2a6;
+}
+
+.mochila-usar {
+  flex-shrink: 0;
+  max-width: 96px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #2a1a0a;
+  background: linear-gradient(180deg, #ffd96a, #f4c542 55%, #d99a1e);
+  border: 2px solid #8a5a12;
+  box-shadow: 2px 2px 0 #24150c;
+  cursor: pointer;
+}
+
+.mochila-usar:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.mochila-usar:disabled {
+  cursor: default;
+  color: #e6d2a6;
+  background: #3a3048;
+  border-color: #24150c;
+}
+
+.mochila-usar--cancelar {
+  color: #f3e9d2;
+  background: #4a4458;
+}
+
+.mochila-confirmar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(20, 16, 41, 0.55);
+  border: 2px solid #c9a2ff;
+}
+
+.mochila-confirmar p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.mochila-confirmar-botoes {
+  display: flex;
+  gap: 8px;
+}
+
+.mochila-confirmar-botoes .mochila-usar {
+  flex: 1;
+  max-width: none;
+}
+
+.mochila-mensagem {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f4c542;
+}
+
+.mochila-mensagem:empty {
+  display: none;
+}
+
+.mochila-vazia {
+  margin: 0;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #e6d2a6;
+}
+
+.mochila-voltar {
+  height: 40px;
+  background: #24150c;
+}
+
+.mochila-voltar-miolo {
+  height: 100%;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #f3e9d2;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+}
+
+@keyframes mochila-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mochila-subir {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mochila-botao--cheia,
+  .mochila-fundo,
+  .mochila-painel {
+    animation: none;
+  }
+}

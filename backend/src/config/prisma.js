@@ -77,4 +77,11 @@ const prisma = prismaSemFiltro.$extends({
   },
 });
 
+// Escape hatch só pro painel de administração (ver admin.service.js): listar
+// TODOS os usuários (inclusive desativados, pra poder reativar) e alternar
+// role/deletedAt sem a query forçar "deletedAt: null" no meio do caminho.
+// Continua sendo o mesmo cliente de sempre pra todo o resto do código —
+// só ganhou essa propriedade extra.
+prisma.semFiltro = prismaSemFiltro;
+
 module.exports = prisma;

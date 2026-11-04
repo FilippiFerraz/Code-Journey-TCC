@@ -1,5 +1,9 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" = a máquina de quem roda (Windows em dev); "rhel-openssl-3.0.x" =
+  // o Linux das funções da Vercel. Sem o segundo, o Prisma não acha o motor
+  // de consulta em produção.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -32,9 +36,21 @@ model Usuario {
   // começa com 0.
   xpTotal Int @default(0)
 
+  // Moedas (o "Ouro" do card de perfil) guardadas pra gastar na Lojinha do
+  // Mago. Ganhas ao vencer um desafio pela primeira vez (ver
+  // MOEDAS_POR_DESAFIO em loja.service.js). A migração começou cada conta
+  // com o xpTotal, que era o que o "Ouro" mostrava antes da loja existir.
+  moedas Int @default(0)
+
   // Marca se o jogador já viu o tutorial guiado da Home (portais, perfil,
   // ranking, configurações). Ver TutorialHome.jsx / POST /api/perfil/tutorial-visto.
   tutorialVisto Boolean @default(false)
+
+  // Marca se o jogador já assistiu a cutscene de introdução (livro mágico,
+  // 15s) que abre na Home no primeiro acesso, antes da escolha de aparência.
+  // Ver frontend/src/components/IntroCutscene / POST /api/perfil/intro-vista.
+  // A migração marcou true pras contas que já existiam — só conta nova vê.
+  introVista Boolean @default(false)
 
   // "jogador" | "administrador". Administradores acessam rotas protegidas
   // por verificarAdmin (ver middlewares/admin.middleware.js) — dashboard de
@@ -43,6 +59,30 @@ model Usuario {
   // UPDATE usuarios SET role = 'administrador' WHERE email = '...';
   role String @default("jogador")
 
+  // Controla se a posição do jogador aparece na lista pública do ranking
+  // (Ranking.jsx / GET /api/ranking). true = aparece pra todo mundo. Ele
+  // sempre vê a própria posição real no Perfil, independente disso — só
+  // afeta a visibilidade pros outros.
+  rankingVisivel Boolean @default(true)
+
+  // Id do gradiente de fundo escolhido pra tela de Perfil (ver
+  // FUNDOS_PERFIL em frontend/src/data/fundosPerfil.js). "padrao" = fundo
+  // branco padrão.
+  fundoPerfil String @default("padrao")
+
+  // Tela "Minha Conta" (Configurações): data da última troca de nome e de
+  // e-mail — cada um só pode mudar 1 vez a cada 30 dias (ver conta.service.js).
+  // Null = nunca alterou (pode alterar já).
+  nomeAlteradoEm  DateTime?
+  emailAlteradoEm DateTime?
+
+  // Troca de e-mail em andamento: o e-mail novo só passa a valer depois que
+  // o jogador confirma o código enviado PRA ELE (evita perder a conta por um
+  // e-mail digitado errado). Campos separados dos de cadastro/recuperação.
+  emailPendente            String?
+  codigoTrocaEmail         String?
+  codigoTrocaEmailExpiraEm DateTime?
+
   // Soft delete: quando preenchido, o usuário está "excluído". A linha
   // continua no banco (preserva Progresso/Personagem/Ranking já vinculados
   // a ele em vez de quebrar essas relações), mas some das leituras normais
@@ -50,10 +90,101 @@ model Usuario {
   // automaticamente em toda query de Usuario. Null = usuário ativo.
   deletedAt DateTime?
 
-  progresso  Progresso[]
-  personagem Personagem?
+  progresso      Progresso[]
+  personagem     Personagem?
+  bausMundo      BauMundo[]
+  logsAdmin      LogAdmin[]
+  loginHistorico LoginHistorico[]
+  itensLoja      ItemLojaUsuario[]
 
   @@map("usuarios")
+}
+
+// Itens consumíveis comprados na Lojinha do Mago e ainda não usados
+// (ver ITENS_LOJA em loja.service.js): "congelar" (Ampulheta Congelada),
+// "pular" (Pergaminho do Atalho) e "elixir" (Elixir do Sábio), usados pela
+// mochila nas telas de desafio. "elixirAtivo" (quantidade 1) marca um elixir
+// já bebido, gasto na próxima vitória inédita. O Baú Misterioso abre na
+// hora da compra e não fica guardado aqui.
+model ItemLojaUsuario {
+  id Int @id @default(autoincrement())
+
+  usuarioId  Int
+  chave      String
+  quantidade Int    @default(0)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@unique([usuarioId, chave])
+  @@map("itens_loja_usuario")
+}
+
+// Histórico de tentativas de login (sucesso e falha), pra auditoria de
+// segurança no painel administrativo — ver auth.service.js::login (grava
+// uma linha a cada tentativa, sucesso ou não) e
+// loginHistorico.service.js::listarLoginHistorico (listagem com busca e
+// paginação).
+model LoginHistorico {
+  id Int @id @default(autoincrement())
+
+  // Nulo quando a tentativa falha com um e-mail que não corresponde a
+  // nenhuma conta — não há usuário pra vincular, mas emailTentado guarda o
+  // texto digitado mesmo assim, pra dar pra pesquisar.
+  usuarioId    Int?
+  // "Retrato" do momento da tentativa (não um join) — mesmo motivo do
+  // LogAdmin: se o usuário for renomeado depois, o histórico continua
+  // mostrando o nome de então. Fica null quando o e-mail não bate com
+  // nenhuma conta.
+  nomeUsuario  String?
+  emailTentado String
+
+  sucesso     Boolean
+  // Motivo da falha (ex: "Senha incorreta", "E-mail não cadastrado",
+  // "Conta desativada", "E-mail não verificado") — null quando sucesso = true.
+  motivoFalha String?
+  ip          String?
+  userAgent   String?
+
+  criadoEm DateTime @default(now())
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([emailTentado])
+  @@map("login_historico")
+}
+
+// Auditoria de toda alteração feita pelo painel de administração (editar
+// desafio/recompensa, promover/remover admin, ativar/desativar conta) —
+// ver log.service.js::registrarLog, chamado no fim de cada operação de
+// escrita dos services de admin. Nunca é escrito nem lido pelo fluxo normal
+// do jogo, só pelo painel.
+model LogAdmin {
+  id Int @id @default(autoincrement())
+
+  // Quem fez a alteração. Nome e papel são um "retrato" do momento da ação
+  // (não um join) — se o admin for renomeado ou rebaixado depois, o log
+  // antigo continua contando a história como ela realmente aconteceu.
+  usuarioId   Int
+  nomeUsuario String
+  role        String
+
+  // Categoria da ação (ex: "desafio.atualizar", "usuario.role",
+  // "usuario.ativo") e o registro afetado, pra poder filtrar o histórico.
+  acao       String
+  entidade   String
+  entidadeId Int?
+
+  // Texto pronto pra exibir na tela de logs, e o diff campo a campo (json
+  // { campo: { de, para } }) pra quem quiser o detalhe exato.
+  descricao  String?
+  alteracoes Json?
+
+  criadoEm DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@map("logs_admin")
 }
 
 model Desafio {
@@ -70,10 +201,14 @@ model Desafio {
   enunciado String
   dica      String?
 
-  // Json livre, no mesmo formato já usado em ResolverDesafio.jsx — hoje
-  // guarda um de dois formatos, conforme o tipo do exercício:
+  // Json livre, no mesmo formato já usado nos componentes de desafio do
+  // frontend — hoje guarda um de cinco formatos, conforme o tipo do
+  // exercício:
   // - múltipla escolha: [{ id: "a", texto: "...", correta: true }, ...]
   // - ordenar blocos: { tipo: "ordenar_blocos", blocos: [{id, codigo}], ordemCorreta: [id, ...] }
+  // - avaliar código: { tipo: "avaliar_codigo", cartas: [{id, codigo, correta}, ...] }
+  // - montar poção: { tipo: "montar_pocao", ingredientesCorretos: [{id, codigo}, ...], distratores: [{id, codigo}, ...] }
+  // - batalha de chefe: { tipo: "batalha_chefe", vidasNecessarias, perguntas: [{id, opcoes: [{id, texto, correta}]}, ...] }
   alternativas Json
 
   xpConcedido Int @default(10)
@@ -107,10 +242,20 @@ model Progresso {
   usuarioId Int
   desafioId Int
 
-  concluido     Boolean   @default(false)
-  tentativas    Int       @default(0)
-  xpGanho       Int       @default(0)
-  dataConclusao DateTime?
+  concluido        Boolean   @default(false)
+  tentativas       Int       @default(0)
+  xpGanho          Int       @default(0)
+  dataConclusao    DateTime?
+  // Tempo (em segundos) que o jogador levou até acertar, gravado só na
+  // conclusão (igual dataConclusao) — usado pro bônus de velocidade em
+  // xpGanho (ver progresso.service.js::responderDesafio). Null em desafios
+  // concluídos antes desse campo existir.
+  tempoSegundos    Int?
+  // Desafios com várias etapas (alternativas.tipo = "etapas", ver
+  // services/etapas.service.js): quantas etapas o jogador já venceu. O
+  // servidor só aceita a etapa seguinte, e o desafio só fica "concluido"
+  // quando todas forem vencidas. Desafios de etapa única não usam (fica 0).
+  etapasConcluidas Int       @default(0)
 
   criadoEm     DateTime @default(now())
   atualizadoEm DateTime @updatedAt
@@ -135,6 +280,11 @@ model Personagem {
   vidaAtual Int     @default(100)
   vidaMax   Int     @default(100)
   imagemUrl String?
+  // Aparência do herói escolhida no primeiro acesso ("guerreiro" |
+  // "guerreiro-afro" | "guerreira" | "guerreira-afro" — ver APARENCIAS em
+  // src/services/personagem.service.js). null = ainda não escolheu: a Home
+  // abre a escolha antes do tutorial.
+  aparencia String?
 
   criadoEm DateTime @default(now())
 
@@ -149,7 +299,8 @@ model Item {
 
   nome        String
   // slot de equipamento — bate com os ids dos slots em EditarPersonagem.jsx:
-  // "capacete" | "peitoral" | "sapato" | "arma" | "costas" | "acessorios"
+  // "capacete" | "peitoral" | "arma" | "costas" | "botas" | "escudo" (só esses podem ser equipados —
+  // ver TIPOS_EQUIPAVEIS em src/services/personagem.service.js)
   tipo        String
   raridade    String  @default("comum") // "comum" | "raro" | "epico" | "lendario"
   descricao   String?
@@ -159,11 +310,50 @@ model Item {
   imagemUrl   String?
   bonusAtaque Int     @default(0)
   bonusDefesa Int     @default(0)
+  // Item exclusivo do Baú da Sorte: só sai na roleta do baú de fim de
+  // módulo (ver bau.service.js) — não aparece no seletor de recompensa de
+  // desafio do painel de admin nem pode ser dado por desafio.
+  exclusivoBau Boolean @default(false)
+  // Item exclusivo do Baú Real: só sai no baú ganho ao vencer o Desafio do
+  // Rei (minijogo do castelo — ver abrirBauRei em bau.service.js). Mesmas
+  // restrições do exclusivoBau, mas com uma roleta própria.
+  exclusivoRei Boolean @default(false)
+  // Item exclusivo do Baú de Cristal: só sai no baú ganho ao vencer o
+  // Desafio da Cachoeira de Cristais (minijogo de programação em blocos do
+  // cristal gigante / cachoeira do mapa).
+  exclusivoCristal Boolean @default(false)
+  // Item exclusivo do Baú do Dragão: só sai no baú ganho ao derrotar o
+  // Dragão do Código Fonte (batalha da arena do mapa).
+  exclusivoDragao Boolean @default(false)
 
   personagens ItemPersonagem[]
   desafios    Desafio[] // desafios que dão este item como recompensa ao concluir
+  baus        BauMundo[] // baús de fim de mundo que já sortearam este item
 
   @@map("itens")
+}
+
+// Baú de fim de mundo, liberado no mapa da Home quando o jogador conclui
+// TODOS os desafios cadastrados de uma trilha. A existência da linha aqui
+// É o "já abri esse baú" — trava um segundo sorteio pra mesma trilha.
+model BauMundo {
+  id Int @id @default(autoincrement())
+
+  usuarioId   Int
+  mundoId     Int
+  dificuldade String
+
+  // item sorteado na roleta e já creditado no inventário (ItemPersonagem)
+  // no momento da abertura.
+  itemGanhoId Int
+  abertoEm    DateTime @default(now())
+
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+  itemGanho Item    @relation(fields: [itemGanhoId], references: [id])
+
+  // um usuário só abre o baú de cada trilha uma vez
+  @@unique([usuarioId, mundoId, dificuldade])
+  @@map("baus_mundo")
 }
 
 model ItemPersonagem {
@@ -174,6 +364,9 @@ model ItemPersonagem {
 
   quantidade Int      @default(1)
   equipado   Boolean  @default(false)
+  // Selecionado pelo jogador pra aparecer na seção "Itens em destaque" do
+  // Perfil, independente de estar equipado ou não.
+  destaque   Boolean  @default(false)
   obtidoEm   DateTime @default(now())
 
   personagem Personagem @relation(fields: [personagemId], references: [id])

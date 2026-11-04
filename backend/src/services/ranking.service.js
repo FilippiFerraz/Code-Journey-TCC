@@ -17,22 +17,23 @@ async function posicaoDoUsuario(xpTotal) {
 // Ranking global: os top N por XP, mais a posição de quem está pedindo
 // (mesmo que ele não apareça na lista principal).
 async function listarRanking(usuarioId) {
-  const usuarioAtual = await prisma.usuario.findUnique({
-    where: { id: usuarioId },
-    select: { id: true, nome: true, xpTotal: true },
-  });
+  const [usuarioAtual, topUsuarios] = await Promise.all([
+    prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      select: { id: true, nome: true, xpTotal: true },
+    }),
+    prisma.usuario.findMany({
+      orderBy: { xpTotal: "desc" },
+      select: { id: true, nome: true, xpTotal: true },
+      take: LIMITE_RANKING,
+    }),
+  ]);
 
   if (!usuarioAtual) {
     const erro = new Error("Usuário não encontrado.");
     erro.status = 404;
     throw erro;
   }
-
-  const topUsuarios = await prisma.usuario.findMany({
-    orderBy: { xpTotal: "desc" },
-    select: { id: true, nome: true, xpTotal: true },
-    take: LIMITE_RANKING,
-  });
 
   return {
     eu: {

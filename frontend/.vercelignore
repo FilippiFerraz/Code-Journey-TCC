@@ -1,0 +1,4 @@
+# As artes originais (alta resolução) ficam no repositório mas NÃO vão pro site:
+# o que o site carrega são as versões leves em src/assets/images (ver
+# scripts/otimizarImagens.mjs). Sem isto, cada deploy enviaria ~28 MB à toa.
+arte-original

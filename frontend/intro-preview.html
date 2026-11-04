@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intro — prévia</title>
+    <!-- Prévia isolada da cutscene de introdução (só em dev: npm run dev ->
+         http://localhost:5173/intro-preview.html). Não entra no build do
+         site. Com ?export=1 é a página que scripts/exportarIntro.mjs grava
+         em vídeo. -->
+    <style>
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="/src/components/IntroCutscene/preview.js"></script>
+  </body>
+</html>

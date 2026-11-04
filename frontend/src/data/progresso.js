@@ -28,6 +28,18 @@ export function desafioLiberado(progresso, mundoId, dificuldade, desafioId) {
   );
 }
 
+// Desafio já vencido pelo jogador nesta trilha (mesma lista de progresso
+// vinda da API) — usado pra marcar o card com o selo de concluído.
+export function desafioConcluido(progresso, mundoId, dificuldade, desafioId) {
+  return progresso.some(
+    (p) =>
+      Number(p.mundoId) === Number(mundoId) &&
+      p.dificuldade === dificuldade &&
+      p.numero === Number(desafioId) &&
+      p.concluido
+  );
+}
+
 // Portal do mundo 1 sempre liberado (ponto de partida); os demais só abrem
 // depois que TODOS os desafios cadastrados do mundo anterior (trilha
 // padrão) estiverem concluídos — é a "chave" que o personagem menciona

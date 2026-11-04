@@ -1,11 +1,44 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
+import CampoSenha from "../../components/CampoSenha";
+import { EMAIL_MAXIMO, SENHA_MAXIMO, validarEmail } from "../../utils/validacoes";
+import { prefetchTelas } from "../../telas";
+import { desbloquearAudio } from "../../utils/audioContexto";
+import { suportaAvif } from "../../utils/suporteAvif";
+// só as URLs (o arquivo em si é baixado no pré-carregamento abaixo)
+import mapa from "../../assets/images/mapa.webp";
+import mapaAvif from "../../assets/images/mapa.avif";
+
+// Enquanto o jogador digita e-mail e senha, a rede está parada: aproveita pra
+// baixar a tela e o mapa da Home, que é para onde ele vai depois de entrar.
+// Fica no cache do navegador — a Home abre com o mapa já pronto.
+// Respeita o modo "economia de dados" do celular.
+function adiantarHome() {
+  if (navigator.connection?.saveData) return;
+  prefetchTelas(["Home"]);
+  // o mesmo formato que o <picture> da Home vai escolher (AVIF ou WebP) —
+  // baixar o outro seria um mapa inteiro desperdiçado
+  const baixarMapa = () =>
+    suportaAvif().then((avif) => {
+      const imagem = new Image();
+      imagem.src = avif ? mapaAvif : mapa;
+    });
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(baixarMapa, { timeout: 3000 });
+  } else {
+    setTimeout(baixarMapa, 1500);
+  }
+}
 import "./Login.css";
 
 function Login() {
+  useEffect(() => {
+    adiantarHome();
+  }, []);
+
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -18,6 +51,9 @@ function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    // libera o som dentro do clique — se for o 1º acesso da conta, a
+    // cutscene de introdução toca na Home logo em seguida
+    desbloquearAudio();
     setErro("");
     setEmailNaoVerificado(false);
 
@@ -25,11 +61,18 @@ function Login() {
       setErro("Preencha e-mail e senha.");
       return;
     }
+    // Só o formato do e-mail — a força da senha não é checada no login
+    // (contas antigas foram criadas com regras diferentes).
+    const erroEmail = validarEmail(email);
+    if (erroEmail) {
+      setErro(erroEmail);
+      return;
+    }
 
     try {
       setCarregando(true);
 
-      const resposta = await api.post("/auth/login", { email, senha });
+      const resposta = await api.post("/auth/login", { email: email.trim().toLowerCase(), senha });
 
       localStorage.setItem("token", resposta.data.token);
       navigate("/home");
@@ -72,6 +115,8 @@ function Login() {
             type="email"
             className="login-input"
             placeholder="seuemail@gmail.com"
+            maxLength={EMAIL_MAXIMO}
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -79,11 +124,12 @@ function Login() {
           <label className="login-label" htmlFor="senha">
             Senha:
           </label>
-          <input
+          <CampoSenha
             id="senha"
-            type="password"
             className="login-input"
             placeholder="••••••••••••"
+            maxLength={SENHA_MAXIMO}
+            autoComplete="current-password"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />
@@ -117,24 +163,6 @@ function Login() {
             {carregando ? "Entrando..." : "ENTRAR E COMEÇAR"}
           </BotaoPixel>
         </form>
-      </div>
-
-      {/* Divisor "Ou continue com" */}
-      <div className="login-social-card">
-        <div className="login-divider">
-          <span>Ou continue com:</span>
-        </div>
-
-        <div className="login-social-buttons">
-          <BotaoPixel className="login-social-btn" classeMiolo="login-social-miolo">
-            <span className="login-social-icon">G</span>
-            Google
-          </BotaoPixel>
-          <BotaoPixel className="login-social-btn" classeMiolo="login-social-miolo">
-            <span className="login-social-icon">f</span>
-            Facebook
-          </BotaoPixel>
-        </div>
       </div>
 
       {/* Logo do app */}

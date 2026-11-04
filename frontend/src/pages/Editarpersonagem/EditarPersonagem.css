@@ -14,10 +14,10 @@
   --madeira-borda: #5c3a1a;
   --madeira-fundo: #a9723f;
   --madeira-celula: #6e4523;
-  --texto: #22283a;
+  --texto: var(--cj-texto);
 
   position: relative;
-  background: #ffffff;
+  background: var(--cj-painel);
   min-height: 100%;
   padding-bottom: 24px;
 }
@@ -43,7 +43,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 22px 14px;
+  /* topo maior: deixa os slots abaixo do botão "← Voltar" (absoluto, top 14px) */
+  padding: 64px 14px 22px;
   background: radial-gradient(
       circle at 50% 30%,
       rgba(138, 47, 184, 0.25),
@@ -99,6 +100,8 @@
 
 .editar-slot-icone {
   font-size: 24px;
+  color: #ffffff; /* a cena tem fundo escuro — sem isso o ícone herdaria o
+                     texto escuro padrão da página e ficaria invisível */
   opacity: 0.55; /* vazio: mais apagado, indicando slot livre */
 }
 
@@ -121,8 +124,9 @@
 }
 
 .editar-avatar {
+  /* quadrado: o guerreiro é montado em camadas de 64x64 (AvatarPersonagem) */
   height: 150px;
-  width: auto;
+  width: 150px;
   image-rendering: pixelated;
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.5));
 }
@@ -233,7 +237,7 @@
 }
 
 .editar-estado-erro {
-  color: #c0392b;
+  color: #ff8a8a;
 }
 
 .editar-inventario-erro {
@@ -318,6 +322,14 @@
   line-height: 1.45;
 }
 
+/* item de um tipo sem slot (ver TIPOS_EQUIPAVEIS em EditarPersonagem.jsx) */
+.editar-item-detalhe-aviso {
+  margin: 10px 0 0;
+  color: #ffd84d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 /* botão "Equipar"/"Desequipar" pixelado (ver BotaoPixel) */
 .editar-item-detalhe-botao {
   align-self: flex-start;
@@ -343,42 +355,20 @@
   background: linear-gradient(180deg, #e05c5c, #b93a3a);
 }
 
-/* ---------- Conquistas ---------- */
-.editar-conquistas {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 0 20px;
+/* ---------- Alterar aparência (abaixo do inventário) ---------- */
+.editar-aparencia-botao {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 16px 20px 0;
+  background: #4a2a8a;
 }
 
-.editar-conquista {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: linear-gradient(180deg, var(--azul), var(--azul-escuro));
+.editar-aparencia-botao-miolo {
+  padding: 11px 18px;
+  background: linear-gradient(180deg, var(--roxo), var(--roxo-forte));
   color: #ffffff;
-  box-shadow: 0 6px 14px rgba(31, 102, 168, 0.35);
-}
-
-.editar-conquista-icone {
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.editar-conquista-texto {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 /* respeita quem prefere menos animação (nada anima aqui, mas fica pronto) */

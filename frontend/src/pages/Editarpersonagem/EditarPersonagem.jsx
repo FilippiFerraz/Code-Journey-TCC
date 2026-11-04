@@ -1,51 +1,39 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { HardHat, Shield, ShieldHalf, Sword, Shirt, Footprints, HandFist } from "lucide-react";
 import "./EditarPersonagem.css";
 import api from "../../services/api";
-import { resolverAvatarPersonagem } from "../../hooks/usePersonagemAvatar";
+import { itensEquipadosDoPersonagem } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import IconeItem from "../../components/IconeItem";
 import BotaoPixel from "../../components/BotaoPixel";
+import EscolherAparencia from "../../components/EscolherAparencia";
 
 // Slots de equipamento ao redor do personagem. Os ids batem com Item.tipo
 // no backend (ver schema.prisma) — é assim que um item entra no slot certo.
+// "icone" é o componente do lucide-react (não uma instância) — a biblioteca
+// pixelada do resto do app não tem ícones de fantasia (capacete, peitoral,
+// espada...), então esses slots usam lucide-react só nesses casos.
+// Só esses 7 tipos podem ser equipados — o backend recusa qualquer outro
+// (ver TIPOS_EQUIPAVEIS em backend/src/services/personagem.service.js).
 const SLOTS_ESQUERDA = [
-  { id: "capacete", nome: "Capacete", icone: "🪖" },
-  { id: "peitoral", nome: "Peitoral", icone: "🛡️" },
-  { id: "sapato", nome: "Sapato", icone: "🥾" },
+  { id: "capacete", nome: "Capacete", icone: HardHat },
+  { id: "peitoral", nome: "Peitoral", icone: Shield },
+  { id: "luvas", nome: "Luvas", icone: HandFist },
+  { id: "escudo", nome: "Escudo", icone: ShieldHalf },
 ];
 
 const SLOTS_DIREITA = [
-  { id: "arma", nome: "Arma", icone: "⚔️" },
-  { id: "costas", nome: "Costas", icone: "🧥" },
-  { id: "acessorios", nome: "Acessórios", icone: "💍" },
+  { id: "arma", nome: "Arma", icone: Sword },
+  { id: "costas", nome: "Costas", icone: Shirt },
+  { id: "botas", nome: "Botas", icone: Footprints },
 ];
+
+const TIPOS_EQUIPAVEIS = [...SLOTS_ESQUERDA, ...SLOTS_DIREITA].map((slot) => slot.id);
 
 // Quantidade de espaços do inventário (visual) — cresce se o jogador tiver
 // mais itens do que isso, pra nunca esconder um item real.
 const SLOTS_INVENTARIO = 24;
-
-// Conquistas de exemplo, no espírito do protótipo.
-// TODO: substituir por GET no backend quando o sistema de conquistas existir.
-const CONQUISTAS = [
-  {
-    id: 1,
-    icone: "🥈",
-    texto:
-      "50 perguntas respondidas com sucesso. Esta conquista mostra o quanto você evoluiu e domina os desafios do jogo.",
-  },
-  {
-    id: 2,
-    icone: "🥇",
-    texto:
-      "Você conquistou a Trilha da Sabedoria ao responder 100 perguntas com sucesso. Sua jornada está só começando!",
-  },
-  {
-    id: 3,
-    icone: "🐉",
-    texto:
-      "A Cabeça do Dragão é sua recompensa por vencer 200 perguntas com precisão.",
-  },
-];
 
 function Slot({ slot, itemPersonagem, ocupado, onClicar }) {
   const item = itemPersonagem?.item;
@@ -66,7 +54,9 @@ function Slot({ slot, itemPersonagem, ocupado, onClicar }) {
             classeEmoji="editar-slot-icone editar-slot-icone-cheio"
           />
         ) : (
-          <span className="editar-slot-icone">{slot.icone}</span>
+          <span className="editar-slot-icone">
+            <slot.icone size={24} />
+          </span>
         )}
       </div>
       <span className="editar-slot-nome">{slot.nome}</span>
@@ -108,6 +98,7 @@ function EditarPersonagem() {
   const [erro, setErro] = useState(null);
   const [itemEmAcao, setItemEmAcao] = useState(null); // id do ItemPersonagem sendo (des)equipado
   const [itemSelecionado, setItemSelecionado] = useState(null); // item com descrição aberta
+  const [escolhendoAparencia, setEscolhendoAparencia] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -155,7 +146,7 @@ function EditarPersonagem() {
 
   const itens = personagem.itens ?? [];
   const itemDoSlot = (slotId) => itens.find((ip) => ip.equipado && ip.item.tipo === slotId);
-  const avatar = resolverAvatarPersonagem(itens);
+  const itensEquipados = itensEquipadosDoPersonagem(itens);
 
   // itens reais primeiro, depois células vazias até completar a grade
   // (ou além dela, se o jogador tiver mais itens do que SLOTS_INVENTARIO)
@@ -169,7 +160,7 @@ function EditarPersonagem() {
         classeMiolo="editar-voltar-miolo"
         onClick={() => navigate("/perfil")}
       >
-        ← Voltar
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
       {/* Cena de equipamento: personagem no centro, slots em volta */}
@@ -189,11 +180,11 @@ function EditarPersonagem() {
           })}
         </div>
 
-        <img
-          src={avatar}
-          alt="Personagem"
+        <AvatarPersonagem
+          itensEquipados={itensEquipados}
+          aparencia={personagem.aparencia}
           className="editar-avatar"
-          draggable={false}
+          alt="Personagem"
         />
 
         <div className="editar-slots">
@@ -215,7 +206,9 @@ function EditarPersonagem() {
       {/* Inventário */}
       <h2 className="editar-titulo">Seus itens</h2>
       <section className="editar-card">
-        <header className="editar-card-topo">Inventário 🎒</header>
+        <header className="editar-card-topo">
+          Inventário <i className="hn hn-briefcase" aria-hidden="true"></i>
+        </header>
         <div className="editar-inventario">
           {erro && <p className="editar-inventario-erro">{erro}</p>}
           <div className="editar-madeira">
@@ -240,7 +233,7 @@ function EditarPersonagem() {
                 onClick={() => setItemSelecionado(null)}
                 aria-label="Fechar detalhes do item"
               >
-                ✕
+                <i className="hn hn-times" aria-hidden="true"></i>
               </BotaoPixel>
 
               <IconeItem
@@ -262,6 +255,13 @@ function EditarPersonagem() {
                   {itemSelecionado.item.descricao ?? "Sem descrição."}
                 </p>
 
+                {/* Item de um tipo sem slot (ex: sapato) fica só no
+                    inventário — a não ser que já estivesse equipado, aí
+                    ainda dá pra desequipar. */}
+                {!itemSelecionado.equipado &&
+                !TIPOS_EQUIPAVEIS.includes(itemSelecionado.item.tipo) ? (
+                  <p className="editar-item-detalhe-aviso">Este item não pode ser equipado.</p>
+                ) : (
                 <BotaoPixel
                   className={`editar-item-detalhe-botao ${
                     itemSelecionado.equipado ? "editar-item-detalhe-botao--desequipar" : ""
@@ -278,22 +278,31 @@ function EditarPersonagem() {
                       ? "Desequipar"
                       : "Equipar"}
                 </BotaoPixel>
+                )}
               </div>
             </div>
           )}
         </div>
       </section>
 
-      {/* Conquistas */}
-      <h2 className="editar-titulo">Suas conquistas</h2>
-      <section className="editar-conquistas">
-        {CONQUISTAS.map((c) => (
-          <div className="editar-conquista" key={c.id}>
-            <div className="editar-conquista-icone">{c.icone}</div>
-            <p className="editar-conquista-texto">{c.texto}</p>
-          </div>
-        ))}
-      </section>
+      <BotaoPixel
+        className="editar-aparencia-botao"
+        classeMiolo="editar-aparencia-botao-miolo"
+        onClick={() => setEscolhendoAparencia(true)}
+      >
+        <i className="hn hn-user-solid" aria-hidden="true" /> Alterar aparência
+      </BotaoPixel>
+
+      {escolhendoAparencia && (
+        <EscolherAparencia
+          aparenciaAtual={personagem.aparencia}
+          onFechar={() => setEscolhendoAparencia(false)}
+          onConcluir={(aparencia) => {
+            setPersonagem((atual) => ({ ...atual, aparencia }));
+            setEscolhendoAparencia(false);
+          }}
+        />
+      )}
     </div>
   );
 }

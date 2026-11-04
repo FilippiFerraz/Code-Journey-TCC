@@ -8,17 +8,32 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",
-    "prisma:seed": "prisma db seed"
+    "prisma:seed": "prisma db seed",
+    "reset:baus": "node scripts/resetBaus.js",
+    "reset:intro": "node scripts/resetIntro.js",
+    "desafio:ia": "node scripts/criarDesafioIA.js",
+    "desafios:portal2": "node scripts/criarDesafiosPortal2.js",
+    "recompensas:sincronizar": "node scripts/sincronizarRecompensas.js",
+    "itens:guardiao-cristal": "node scripts/cadastrarItensGuardiaoCristal.js",
+    "itens:arena-dragao": "node scripts/cadastrarItensArenaDragao.js",
+    "itens:dar-todos": "node scripts/darTodosOsItens.js",
+    "conta:liberar-tudo": "node scripts/liberarTudo.js",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
+    "@google/genai": "^2.24.0",
     "@prisma/client": "^6.16.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^9.0.3"
   },

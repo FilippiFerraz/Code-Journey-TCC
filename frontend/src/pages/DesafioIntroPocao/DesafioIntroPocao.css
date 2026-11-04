@@ -1,0 +1,246 @@
+/* ============================================================
+   DesafioIntroPocao.css — cena de introdução do desafio "Monte a Poção"
+   Mesmo padrão visual do DesafioIntro.css (fundo escuro, personagem em
+   destaque flutuando, balão de fala, card de enunciado) — a Bruxa usa
+   emoji como placeholder de arte em vez de sprite (ver comentário em
+   DesafioIntroPocao.jsx).
+   ============================================================ */
+
+.pocaoIntro-container {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #26325a 0%, #151d33 60%, #0f1626 100%);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Botão "Voltar" no canto superior esquerdo — mesmo padrão de
+   .intro-voltar em DesafioIntro.css. */
+.pocaoIntro-voltar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(10, 14, 26, 0.9);
+}
+
+.pocaoIntro-voltar-miolo {
+  padding: 8px 16px;
+  font-size: 14px;
+  background: rgba(30, 38, 66, 0.9);
+}
+
+/* ---------- Cena com a bruxa em destaque ---------- */
+.pocaoIntro-cena {
+  flex: 1;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+/* Anúncio do encontro — aviso + nome da bruxa, acima do personagem */
+.pocaoIntro-anuncio {
+  padding: 0 24px;
+  text-align: center;
+  animation: pocaoIntro-aparecer 0.4s ease-out;
+}
+
+.pocaoIntro-aviso {
+  margin: 0 0 6px;
+  color: #ffd84d;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.pocaoIntro-nome {
+  margin: 0;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Sprite da bruxa — mesmo padrão do .intro-inimigo-destaque em
+   DesafioIntro.css */
+.pocaoIntro-personagem {
+  width: 200px;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.45));
+  animation: pocaoIntro-flutuar 1.8s ease-in-out infinite;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@keyframes pocaoIntro-flutuar {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-16px); }
+  100% { transform: translateY(0); }
+}
+
+/* ---------- Balão de fala ---------- */
+.pocaoIntro-balao {
+  position: relative;
+  margin: 0 16px 20px;
+  padding: 20px 22px 16px;
+  background: var(--cj-cartao);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--cj-borda-forte);
+  z-index: 5;
+  animation: pocaoIntro-surgirBalao 0.25s ease-out;
+}
+
+.pocaoIntro-balao::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 28px;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 12px solid var(--cj-cartao);
+}
+
+@keyframes pocaoIntro-surgirBalao {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pocaoIntro-fala {
+  margin: 0 0 14px;
+  color: var(--cj-texto);
+  font-size: 16px;
+  line-height: 1.5;
+  text-align: center;
+  animation: pocaoIntro-aparecer 0.3s ease-out;
+}
+
+.pocaoIntro-rodape-balao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pocaoIntro-pontos {
+  display: flex;
+  gap: 6px;
+}
+
+.pocaoIntro-ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5b4d7a;
+  transition: background 0.2s;
+}
+
+.pocaoIntro-ponto-ativo {
+  background: var(--cj-roxo-claro);
+}
+
+.pocaoIntro-continuar {
+  color: #ff8fe6;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ---------- Overlay do enunciado ---------- */
+.pocaoIntro-enunciado-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 8, 20, 0.72);
+  animation: pocaoIntro-aparecer 0.25s ease-out;
+}
+
+.pocaoIntro-enunciado-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 26px 24px 24px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, #6a3fd9 0%, #9b2fc9 55%, #b229c4 100%);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  text-align: center;
+  cursor: default;
+}
+
+.pocaoIntro-enunciado-tag {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.pocaoIntro-enunciado-titulo {
+  margin: 14px 0 10px;
+  font-size: 24px;
+  font-weight: 900;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.pocaoIntro-enunciado-texto {
+  margin: 0 0 16px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.pocaoIntro-enunciado-dica {
+  margin: 0 0 22px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.pocaoIntro-enunciado-dica code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 13px;
+  color: #ffe08a;
+}
+
+/* Botão "Iniciar Desafio" — pixelado (ver BotaoPixel) */
+.pocaoIntro-botao-iniciar {
+  display: block;
+  width: 100%;
+  background: #2c7a3d;
+}
+
+.pocaoIntro-botao-iniciar-miolo {
+  padding: 14px 0;
+  background: linear-gradient(180deg, #55c46b 0%, #3a9d50 100%);
+  font-size: 16px;
+}
+
+@keyframes pocaoIntro-aparecer {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* respeita quem prefere menos animação no sistema */
+@media (prefers-reduced-motion: reduce) {
+  .pocaoIntro-personagem,
+  .pocaoIntro-anuncio {
+    animation: none;
+  }
+}

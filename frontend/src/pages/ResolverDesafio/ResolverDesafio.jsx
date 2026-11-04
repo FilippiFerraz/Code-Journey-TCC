@@ -1,13 +1,34 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Check, X } from "lucide-react";
 import api from "../../services/api";
-import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import { usePersonagemAvatar, useAparenciaPropria } from "../../hooks/usePersonagemAvatar";
+import { APARENCIA_PADRAO } from "../../data/spritesPersonagem";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
+import { useCronometro } from "../../hooks/useCronometro";
+import { useCongelarTempo } from "../../hooks/useCongelarTempo";
+import { textoMoedasElixir } from "../../utils/loja";
+import { formatarTempo } from "../../utils/tempo";
+import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
+import AvisoSalvamento from "../../components/AvisoSalvamento";
+import { useSalvarVitoria } from "../../hooks/useSalvarVitoria";
+import ConfirmarSairDesafio from "../../components/ConfirmarSairDesafio";
+import Temporizador from "../../components/Temporizador";
+import MochilaItens from "../../components/MochilaItens";
+import ControleMusica from "../../components/ControleMusica";
 import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import slime from "../../assets/images/Slime.png";
 import goblinJS from "../../assets/images/GoblinJS.png";
+import esqueletoInimigo from "../../assets/images/esqueleto_inimigo.webp";
+import mercadorInimigo from "../../assets/images/mercador_inimigo.webp";
+import { cenaDoDesafio } from "../../data/cenasPortal3";
+import { falaDerrota, falaGolpeCerteiro, falasGolpe, tituloDerrotado } from "../../utils/textosInimigo";
+import { GrupoInimigos } from "../DesafioEtapas/SpriteInimigo";
 import fundoBatalha from "../../assets/images/Fundo_batalha.png";
-import fundoBatalha2 from "../../assets/images/Fundo_batalha2.png";
+import fundoBatalha2 from "../../assets/images/Fundo_batalha2.webp";
+import fundoDesafio3P1 from "../../assets/images/Fundo_desafio_3_P1.webp";
+import fundoDesafio4P1 from "../../assets/images/Fundo_desafio_4_P1.webp";
 import "./ResolverDesafio.css";
 
 const VIDA_MAXIMA = 3;
@@ -29,8 +50,25 @@ const DURACAO_GIF_ATAQUE_MS = 600;
 // - "ordenar_blocos": desafio.blocos (embaralhados na tela) + desafio.ordemCorreta
 //   com a sequência de ids que forma o programa certo
 // - "dissertativa": o jogador escreve a resposta com as próprias palavras
-//   num <textarea>; a correção ainda é mockada localmente (ver
-//   corrigirRespostaComIA) até existir a rota real de IA no backend
+//   num <textarea> (com um trecho de código opcional em desafio.codigo) e
+//   quem corrige é a IA no backend — POST /api/progresso com respostaTexto,
+//   ver responderDissertativa e backend/src/services/ia.service.js
+// - "avaliar_codigo": desafio.cartas com { id, codigo, correta, explicacao } —
+//   mecânica de arrastar ao estilo Tinder (ver renderAvaliarCodigo): o
+//   jogador arrasta cada cartão pra direita se achar o código CERTO, ou pra
+//   esquerda se achar ERRADO. Precisa acertar a classificação dos cartoes
+//   na ordem em que aparecem (um errado não pula pro próximo — perde vida e
+//   tenta esse mesmo cartão de novo) pra derrotar o inimigo.
+//
+// Inimigo: `inimigo` ({ imagem, nome, largura }) ou, num grupo (O Enigma da
+// Bruxa), `inimigos` + `grupo: true` — todos atacam e caem juntos (ver
+// GrupoInimigos em DesafioEtapas/SpriteInimigo.jsx); aí `inimigo.nome` é o
+// nome do grupo.
+
+// O Enigma da Bruxa (portal 2) usa os inimigos e o fundo do portal 2, de
+// data/cenasPortal3.js — mesma fonte da tela genérica dos outros desafios.
+const CENA_ENIGMA_BRUXA = cenaDoDesafio(2, 2);
+
 const DESAFIOS = {
   1: {
     1: {
@@ -62,45 +100,105 @@ const DESAFIOS = {
         { id: "d", texto: "NaN (number)", correta: false },
       ],
     },
+    3: {
+      numero: 3,
+      tipo: "ordenar_blocos",
+      titulo: "Soma de Números",
+      enunciado:
+        "O Esqueleto Contador guarda a passagem seguinte e só deixa passar quem consegue somar dois números corretamente.\n\nEscreva um programa em JavaScript que declare duas variáveis com valores numéricos, guarde a soma delas em uma terceira variável e exiba o resultado no console.\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.",
+      dica: "toda variável só pode ser usada depois de declarada — a soma dos dois números precisa vir antes do console.log() que exibe o resultado.",
+      // Largura igual à do guerreiro (120px, ver cena-heroi mais abaixo).
+      inimigo: { imagem: esqueletoInimigo, nome: "Esqueleto Contador", largura: 120 },
+      fundo: fundoDesafio3P1,
+      blocos: [
+        { id: "b1", codigo: "let numeroA = 4;" },
+        { id: "b2", codigo: "let numeroB = 7;" },
+        { id: "b3", codigo: "let soma = numeroA + numeroB;" },
+        { id: "b4", codigo: "console.log(soma);" },
+      ],
+      ordemCorreta: ["b1", "b2", "b3", "b4"],
+    },
+    4: {
+      numero: 4,
+      tipo: "avaliar_codigo",
+      titulo: "Certo ou Errado?",
+      enunciado:
+        "O Elfo Mercador quer saber se você reconhece código correto de verdade.\n\nArraste cada cartão para a direita se achar que o código está CERTO, ou para a esquerda se achar que está ERRADO. Acerte os 3 cartões para derrotá-lo.",
+      dica: "leia com calma — às vezes o erro está em um detalhe pequeno, como um sinal de igual sozinho ou uma chave que não fecha.",
+      // Largura um pouco maior que a do guerreiro (120px, ver cena-heroi
+      // logo abaixo) — o Elfo Mercador é mais alto que os outros inimigos.
+      inimigo: { imagem: mercadorInimigo, nome: "Elfo Mercador", largura: 136 },
+      fundo: fundoDesafio4P1,
+      cartas: [
+        {
+          id: "c1",
+          codigo: 'function somar(a, b) {\n  return a + b;\n}\n\nconsole.log(somar(2, 3));',
+          correta: true,
+          explicacao:
+            "Certo! A função declara os parâmetros direito, usa return pra devolver o resultado, e o console.log() exibe 5 corretamente.",
+        },
+        {
+          id: "c2",
+          codigo: 'function saudacao(nome) {\n  console.log("Olá, " + nome);\n\nsaudacao("Ana");',
+          correta: false,
+          explicacao:
+            "Errado! Falta a chave de fechamento } da função saudacao() — sem ela, o código tem um erro de sintaxe e nem chega a rodar.",
+        },
+        {
+          id: "c3",
+          codigo:
+            'let nota = 8;\n\nif (nota >= 6) {\n  console.log("Aprovado");\n} else {\n  console.log("Reprovado");\n}',
+          correta: true,
+          explicacao:
+            "Certo! O operador >= compara nota com 6 corretamente, e o if/else cobre os dois resultados possíveis.",
+        },
+      ],
+    },
   },
   2: {
-    1: {
-      numero: 1,
-      tipo: "ordenar_blocos",
-      titulo: "Desafio JavaScript",
-      enunciado:
-        'Você está desenvolvendo um sistema que verifica se uma pessoa pode acessar uma área restrita.\n\nO programa deve receber a idade de uma pessoa e verificar se ela possui 18 anos ou mais. Caso tenha, deve exibir "Acesso permitido". Caso contrário, deve exibir "Acesso negado".\n\nOrganize os blocos de código na sequência correta para formar um programa JavaScript funcional.',
-      dica: "o bloco if/else só executa o trecho entre chaves quando a condição é avaliada — preste atenção em qual chave abre e qual fecha cada parte.",
-      // Reaproveitando a arte do GoblinJS — o portal 2 ainda não tem
-      // inimigo nem cenário próprios desenhados.
-      inimigo: { imagem: goblinJS, nome: "Goblin Guardião" },
-      fundo: fundoBatalha,
-      blocos: [
-        { id: "b1", codigo: "let idade = 20;" },
-        { id: "b2", codigo: "if (idade >= 18) {" },
-        { id: "b3", codigo: 'console.log("Acesso permitido");', indent: 1 },
-        { id: "b4", codigo: "} else {" },
-        { id: "b5", codigo: 'console.log("Acesso negado");', indent: 1 },
-        { id: "b6", codigo: "}" },
-      ],
-      ordemCorreta: ["b1", "b2", "b3", "b4", "b5", "b6"],
-    },
+    // Os desafios 1, 3, 4, 5 e 6 do portal 2 não têm tela própria: vêm da
+    // API e são jogados na tela genérica (ver data/telasDesafio.js e
+    // backend/prisma/desafios/portal2.js).
+    // Desafio corrigido por IA. Enunciado e código iguais aos de
+    // backend/prisma/desafios/desafioIA.js — os critérios de correção ficam
+    // SÓ no backend (o jogador não deve ver o gabarito pelo navegador).
     2: {
       numero: 2,
       tipo: "dissertativa",
-      titulo: "Explique com suas palavras",
+      titulo: "O Enigma da Bruxa",
       enunciado:
-        "O Goblin Sábio bloqueia o caminho e exige uma explicação antes de deixar você passar.\n\nCom suas próprias palavras, explique o que o comando console.log() faz em JavaScript e para que ele é usado.",
-      dica: "pense no que aparece no console do navegador quando esse comando roda, e por que isso ajuda quem está programando.",
-      // Reaproveitando a arte do GoblinJS — o portal 2 ainda não tem
-      // inimigo nem cenário próprios desenhados.
-      inimigo: { imagem: goblinJS, nome: "Goblin Sábio" },
-      fundo: fundoBatalha2,
+        "A Bruxa do Acampamento guarda o portão com um enigma e só deixa passar quem entende de verdade como o JavaScript toma decisões.\n\nLeia o código abaixo e explique, com suas palavras, qual mensagem aparece no console e por quê.",
+      codigo: `let moedas = 7;
+
+if (moedas >= 10) {
+  console.log("Você pode comprar a espada!");
+} else if (moedas >= 5) {
+  console.log("Você pode comprar o escudo!");
+} else {
+  console.log("Continue juntando moedas.");
+}`,
+      dica: "o JavaScript testa as condições de cima para baixo e executa só o primeiro bloco cuja condição for verdadeira.",
+      inimigo: { nome: CENA_ENIGMA_BRUXA.nome },
+      inimigos: CENA_ENIGMA_BRUXA.inimigos,
+      grupo: CENA_ENIGMA_BRUXA.grupo,
+      fundo: CENA_ENIGMA_BRUXA.fundo,
     },
   },
   3: {
     1: {
       numero: 1,
+      tipo: "dissertativa",
+      titulo: "Explique com suas palavras",
+      enunciado:
+        "O Goblin Sábio bloqueia o caminho e exige uma explicação antes de deixar você passar.\n\nCom suas próprias palavras, explique o que o comando console.log() faz em JavaScript e para que ele é usado.",
+      dica: "pense no que aparece no console do navegador quando esse comando roda, e por que isso ajuda quem está programando.",
+      // Reaproveitando a arte do GoblinJS — o portal 3 ainda não tem
+      // inimigo nem cenário próprios desenhados.
+      inimigo: { imagem: goblinJS, nome: "Goblin Sábio" },
+      fundo: fundoBatalha2,
+    },
+    2: {
+      numero: 2,
       tipo: "dissertativa",
       titulo: "Domine o Laço de Repetição",
       enunciado:
@@ -125,49 +223,24 @@ function embaralhar(lista) {
   return copia;
 }
 
-// Simula a correção por IA de uma resposta dissertativa: espera ~1,5s (pra
-// imitar o tempo de resposta de uma API de IA de verdade) e sorteia acerto
-// ou erro, com uma mensagem de feedback fixa de exemplo pra cada caso.
-//
-// TODO: substituir por chamada real à API quando a rota
-// POST /api/desafios/:id/responder existir (ver responderDissertativa
-// logo abaixo — é o único ponto que precisa trocar).
-function corrigirRespostaComIA(_texto) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const acertou = Math.random() < 0.5;
-      resolve({
-        correta: acertou,
-        mensagem: acertou
-          ? "Boa explicação! Você entendeu que o console.log() serve pra exibir informações no console, ajudando a conferir o que o código está fazendo."
-          : "Quase lá! Sua explicação ainda não deixa claro que o console.log() serve pra exibir informações no console do navegador — tente detalhar isso.",
-      });
-    }, 1500);
-  });
-}
+// Mesmo limite do backend (TAMANHO_MAXIMO_RESPOSTA em ia.service.js).
+const TAMANHO_MAXIMO_RESPOSTA = 2000;
 
 // Falas do golpe, em ordem de vida restante (2 -> 1 coração).
 // A intenção é dar o tom de "tomou dano" sem desanimar o jogador.
 // Recebem o nome do inimigo do desafio atual pra bater com a imagem exibida.
-function falasGolpe(nomeInimigo) {
-  return [
-    `${nomeInimigo} avança e te acerta! Sacuda a poeira e tente de novo.`,
-    "Mais um golpe! Respira, olha com calma — a resposta está aí.",
-  ];
-}
-
-function falaDerrota(nomeInimigo) {
-  return `${nomeInimigo} te derrubou desta vez... mas todo herói cai antes de aprender o golpe. Levante e tente novamente!`;
-}
-
 function ResolverDesafio() {
   const { mundoId, dificuldade, desafioId } = useParams();
   const navigate = useNavigate();
-  const guerreiro = usePersonagemAvatar();
+  const itensEquipados = usePersonagemAvatar();
+  // O GIF de ataque é do guerreiro original: as outras aparências fazem a
+  // investida (mesma animação CSS) com o próprio avatar em camadas.
+  const usaGifAtaque = (useAparenciaPropria() ?? APARENCIA_PADRAO) === APARENCIA_PADRAO;
 
   const desafio = DESAFIOS[mundoId]?.[desafioId] || DESAFIOS[1][1];
   const ehOrdenarBlocos = desafio.tipo === "ordenar_blocos";
   const ehDissertativa = desafio.tipo === "dissertativa";
+  const ehAvaliarCodigo = desafio.tipo === "avaliar_codigo";
 
   const [opcaoSelecionada, setOpcaoSelecionada] = useState(null);
   // null | "erro" | "derrota" | "acertando" | "vitoria"
@@ -188,11 +261,40 @@ function ResolverDesafio() {
   const [respostaTexto, setRespostaTexto] = useState("");
   const [corrigindo, setCorrigindo] = useState(false);
   const [feedbackDissertativa, setFeedbackDissertativa] = useState("");
+  // true quando o feedback é a falha ao falar com a IA (ganha o ícone de aviso)
+  const [falhaCorrecaoIA, setFalhaCorrecaoIA] = useState(false);
+
+  // Estado do exercício "avaliar_codigo": índice do cartão atual (0 até
+  // cartas.length - 1), quanto o cartão foi arrastado no eixo X (controla a
+  // rotação/translação dele e a opacidade dos selos CERTO/ERRADO), se o
+  // arraste está em andamento, pra qual lado o cartão acabou de ser solto
+  // (dispara a animação de saída antes de revelar o resultado), e se o
+  // cartão atual já foi acertado e está aguardando o jogador confirmar
+  // "Próximo cartão" — só o ÚLTIMO acerto dispara vencer().
+  const [indiceCartao, setIndiceCartao] = useState(0);
+  const [arrasteCartaoX, setArrasteCartaoX] = useState(0);
+  const [arrastandoCartao, setArrastandoCartao] = useState(false);
+  const [cartaoSolto, setCartaoSolto] = useState(null); // null | "certo" | "errado"
+  const [aguardandoProximoCartao, setAguardandoProximoCartao] = useState(false);
+  // O que o jogador marcou (true = "certo", false = "errado") em cada
+  // cartão já respondido corretamente até agora, na ordem — enviado pro
+  // backend junto com a vitória do último cartão, pra ele revalidar a
+  // resposta inteira em vez de confiar só na contagem (ver
+  // avaliarCartoes em progresso.service.js).
+  const [classificacoesCorretas, setClassificacoesCorretas] = useState([]);
+  const origemArrasteCartaoRef = useRef(0);
 
   // Resposta de POST /api/progresso (xpGanho, itemGanho, ...), levada pra
   // tela de recompensa. Fica null se a chamada ainda não voltou ou falhou —
   // RecompensaDesafio cai de volta pro conteúdo hardcoded nesse caso.
-  const [recompensaApi, setRecompensaApi] = useState(null);
+  // Vitória salva no servidor (ou não) — ver hooks/useSalvarVitoria.js.
+  const salvamento = useSalvarVitoria({ mundoId, dificuldade, desafioId });
+  const recompensaApi = salvamento.resultado;
+
+  // Popup de confirmação do botão "Voltar" — sair no meio de uma tentativa
+  // descarta a vida/blocos/resposta em andamento (nada disso é persistido),
+  // então avisamos antes de navegar pra fora da tela.
+  const [mostrarConfirmarSair, setMostrarConfirmarSair] = useState(false);
 
   // flags de animação da cena
   const [tomandoGolpe, setTomandoGolpe] = useState(false); // herói leva dano
@@ -210,6 +312,17 @@ function ResolverDesafio() {
   const perdeu = resultado === "derrota";
   const travado = atacando || venceu || perdeu || tomandoGolpe || corrigindo;
 
+  // Cronômetro do desafio: conta enquanto o jogador está de fato pensando
+  // ou tentando de novo depois de um erro, e pausa durante animações/espera
+  // (acerto, vitória, derrota, correção da IA) — esse tempo pausado não deve
+  // contar contra a pontuação. Usado pro bônus de velocidade no backend (ver
+  // registrarVitoria) e mostrado ao vivo na cena (ver HUD abaixo).
+  const cronometroAtivo = resultado === null || resultado === "erro";
+  const congelamento = useCongelarTempo(cronometroAtivo);
+  const [segundosDecorridos, reiniciarCronometro] = useCronometro(
+    cronometroAtivo && !congelamento.congelado
+  );
+
   function selecionarOpcao(id) {
     if (travado) return;
     setOpcaoSelecionada(id);
@@ -217,6 +330,7 @@ function ResolverDesafio() {
   }
 
   function sofrerGolpe(vidaRestante) {
+    tocarSom("erro");
     setTomandoGolpe(true);
     setVida(vidaRestante);
     setResultado(vidaRestante <= 0 ? "derrota" : "erro");
@@ -227,21 +341,17 @@ function ResolverDesafio() {
   // tiver um) assim que a resposta certa é confirmada. Roda em paralelo com
   // a animação de vencer() — se falhar (ex: offline), o jogo continua e a
   // tela de recompensa usa o conteúdo hardcoded como reserva.
-  async function registrarVitoria(respostaExtra) {
-    try {
-      const resposta = await api.post("/progresso", {
-        mundoId: Number(mundoId),
-        dificuldade,
-        numero: Number(desafioId),
-        ...respostaExtra,
-      });
-      setRecompensaApi(resposta.data);
-    } catch (erro) {
-      console.error("Não foi possível registrar o progresso no servidor:", erro);
-    }
+  function registrarVitoria(respostaExtra) {
+    salvamento.salvar({
+      tempoSegundos: segundosDecorridos,
+      ...respostaExtra,
+    });
   }
 
+
   function vencer() {
+    tocarSom("acerto");
+
     // 1) herói avança e desfere o golpe — troca a imagem parada pelo GIF
     setResultado("acertando");
     setCicloAtaque((ciclo) => ciclo + 1);
@@ -265,8 +375,22 @@ function ResolverDesafio() {
   // tipos de exercício — é o onClick do botão "VER RECOMPENSA".
   function irParaRecompensa() {
     navigate(`/recompensa/${mundoId}/${dificuldade}/${desafioId}`, {
-      state: { resultado: recompensaApi },
+      state: { resultado: recompensaApi, tempoSegundos: segundosDecorridos },
     });
+  }
+
+  function abrirConfirmarSair() {
+    setMostrarConfirmarSair(true);
+  }
+
+  function fecharConfirmarSair() {
+    setMostrarConfirmarSair(false);
+  }
+
+  function confirmarSairDesafio() {
+    // volta pra lista de desafios do portal em que estava (replace: o
+    // "voltar" do navegador não reabre o desafio abandonado)
+    navigate(`/desafios/${mundoId}/${dificuldade}`, { replace: true });
   }
 
   function responderMultiplaEscolha() {
@@ -307,20 +431,114 @@ function ResolverDesafio() {
   // assim, e não com um resultado "acertando" comum, porque o veredito só
   // chega depois da resposta da correção, diferente dos outros dois tipos
   // de desafio, que sabem na hora se acertaram.
+  //
+  // A correção é feita pela IA no backend, na mesma chamada que grava o
+  // progresso (POST /api/progresso com respostaTexto) — por isso aqui não
+  // passa por registrarVitoria: o acerto já volta registrado, com o XP e a
+  // recompensa. Se a IA falhar (servidor fora, chave não configurada...),
+  // o jogador vê o aviso e tenta de novo SEM perder vida: a falha não foi dele.
   async function responderDissertativa() {
     if (travado || !respostaTexto.trim()) return;
 
     setCorrigindo(true);
-    const resultadoIA = await corrigirRespostaComIA(respostaTexto);
+    let dados;
+    try {
+      const resposta = await api.post("/progresso", {
+        mundoId: Number(mundoId),
+        dificuldade,
+        numero: Number(desafioId),
+        tempoSegundos: segundosDecorridos,
+        respostaTexto,
+      });
+      dados = resposta.data;
+    } catch (erro) {
+      setCorrigindo(false);
+      setFalhaCorrecaoIA(true);
+      setFeedbackDissertativa(
+        erro.response?.data?.erro || "Não foi possível falar com o mago agora. Verifique sua conexão e tente de novo."
+      );
+      setResultado("erro");
+      return;
+    }
     setCorrigindo(false);
-    setFeedbackDissertativa(resultadoIA.mensagem);
+    setFalhaCorrecaoIA(false);
+    setFeedbackDissertativa(dados.feedbackIA || "");
 
-    if (resultadoIA.correta) {
-      registrarVitoria({ respostaTexto });
+    if (dados.correta) {
+      salvamento.marcarSalvo(dados);
       vencer();
     } else {
       sofrerGolpe(vida - 1);
     }
+  }
+
+  function iniciarArrasteCartao(e) {
+    if (travado || cartaoSolto) return;
+    setArrastandoCartao(true);
+    origemArrasteCartaoRef.current = e.clientX;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // Limpa o aviso de erro da tentativa anterior nesse cartão assim que o
+    // jogador começa a arrastar de novo — mesmo padrão de selecionarOpcao/
+    // alterarRespostaTexto pros outros tipos de exercício.
+    if (resultado === "erro") setResultado(null);
+  }
+
+  function moverArrasteCartao(e) {
+    if (!arrastandoCartao) return;
+    setArrasteCartaoX(e.clientX - origemArrasteCartaoRef.current);
+  }
+
+  // Solta o cartão: acima do limiar em qualquer direção conta como resposta
+  // (direita = "certo", esquerda = "errado"); abaixo disso, volta pro
+  // centro sem responder nada.
+  const LIMIAR_ARRASTE_CARTAO = 90;
+
+  function soltarArrasteCartao() {
+    if (!arrastandoCartao) return;
+    setArrastandoCartao(false);
+
+    if (arrasteCartaoX > LIMIAR_ARRASTE_CARTAO) {
+      responderCartao(true);
+    } else if (arrasteCartaoX < -LIMIAR_ARRASTE_CARTAO) {
+      responderCartao(false);
+    } else {
+      setArrasteCartaoX(0);
+    }
+  }
+
+  // Quanto tempo o cartão leva pra sair voando da tela (ver deslocamentoX
+  // em renderAvaliarCodigo) antes de revelar o resultado — dá tempo do
+  // jogador ver pra qual lado ele decidiu a resposta.
+  const DURACAO_SAIDA_CARTAO_MS = 260;
+
+  function responderCartao(marcouCerto) {
+    const carta = desafio.cartas[indiceCartao];
+    setCartaoSolto(marcouCerto ? "certo" : "errado");
+
+    setTimeout(() => {
+      const classificacaoCorreta = marcouCerto === carta.correta;
+      if (classificacaoCorreta) {
+        const novasClassificacoes = [...classificacoesCorretas, marcouCerto];
+        const ultimoCartao = indiceCartao === desafio.cartas.length - 1;
+        if (ultimoCartao) {
+          registrarVitoria({ classificacoes: novasClassificacoes });
+          vencer();
+        } else {
+          tocarSom("acerto");
+          setClassificacoesCorretas(novasClassificacoes);
+          setAguardandoProximoCartao(true);
+        }
+      } else {
+        sofrerGolpe(vida - 1);
+      }
+      setCartaoSolto(null);
+      setArrasteCartaoX(0);
+    }, DURACAO_SAIDA_CARTAO_MS);
+  }
+
+  function avancarCartao() {
+    setAguardandoProximoCartao(false);
+    setIndiceCartao((i) => i + 1);
   }
 
   function moverParaResposta(id) {
@@ -394,7 +612,8 @@ function ResolverDesafio() {
     setResultado(null);
     setOpcaoSelecionada(null);
     setTomandoGolpe(false);
-    setRecompensaApi(null);
+    salvamento.reiniciar();
+    reiniciarCronometro();
     // reset das flags de animação da batalha anterior, senão uma nova
     // tentativa pode começar com o slime já "morto" ou a câmera focada nele
     setGolpeHeroi(false);
@@ -407,7 +626,16 @@ function ResolverDesafio() {
     if (ehDissertativa) {
       setRespostaTexto("");
       setCorrigindo(false);
+      setFalhaCorrecaoIA(false);
       setFeedbackDissertativa("");
+    }
+    if (ehAvaliarCodigo) {
+      setIndiceCartao(0);
+      setArrasteCartaoX(0);
+      setArrastandoCartao(false);
+      setCartaoSolto(null);
+      setAguardandoProximoCartao(false);
+      setClassificacoesCorretas([]);
     }
   }
 
@@ -419,7 +647,7 @@ function ResolverDesafio() {
     return "selecionada";
   }
 
-  const golpesInimigo = falasGolpe(desafio.inimigo.nome);
+  const golpesInimigo = falasGolpe(desafio.inimigo.nome, desafio.grupo);
   const falaGolpe = golpesInimigo[VIDA_MAXIMA - 1 - vida] || golpesInimigo.at(-1);
   const mostrarDica = vida <= 1;
 
@@ -428,7 +656,7 @@ function ResolverDesafio() {
       return (
         <div className="derrota">
           <h2 className="derrota-titulo">Você caiu!</h2>
-          <p className="derrota-fala">{falaDerrota(desafio.inimigo.nome)}</p>
+          <p className="derrota-fala">{falaDerrota(desafio.inimigo.nome, desafio.grupo)}</p>
           <BotaoPixel
             className="botao-avante botao-avante--roxo"
             classeMiolo="botao-avante-miolo botao-avante-miolo--roxo"
@@ -443,15 +671,31 @@ function ResolverDesafio() {
     if (venceu) {
       return (
         <div className="vitoria">
-          <h2 className="vitoria-titulo">{desafio.inimigo.nome} derrotado!</h2>
+          <h2 className="vitoria-titulo">{tituloDerrotado(desafio.inimigo.nome, desafio.grupo)}</h2>
           <p className="vitoria-fala">
             Golpe certeiro! O caminho à frente está livre.
           </p>
 
+          {/* Só aparece quando o backend realmente concedeu XP agora (não
+              conta em replays de um desafio já concluído antes) — ver
+              xpConcedidoAgora em progresso.service.js. */}
+          {recompensaApi?.xpConcedidoAgora > 0 && (
+            <div className="vitoria-recompensa">
+              <span className="vitoria-recompensa-rotulo">XP ganho</span>
+              <span className="vitoria-recompensa-valor">
+                +{recompensaApi.xpConcedidoAgora} XP • Tempo: {formatarTempo(recompensaApi.tempoSegundos ?? segundosDecorridos)}
+                {recompensaApi.acertouDePrimeira ? " • Acertou de primeira!" : ""}
+                {textoMoedasElixir(recompensaApi)}
+              </span>
+            </div>
+          )}
+
+          <AvisoSalvamento salvamento={salvamento} onRefazer={() => navigate(0)} />
           <BotaoPixel
             className="botao-avante"
             classeMiolo="botao-avante-miolo"
             onClick={irParaRecompensa}
+            disabled={!salvamento.salvo}
           >
             VER RECOMPENSA
           </BotaoPixel>
@@ -468,7 +712,7 @@ function ResolverDesafio() {
               ? "Muito bem! Você organizou o código corretamente."
               : ehDissertativa
                 ? feedbackDissertativa
-                : `Golpe certeiro no ${desafio.inimigo.nome}!`}
+                : falaGolpeCerteiro(desafio.inimigo.nome, desafio.grupo)}
           </p>
         </div>
       );
@@ -494,43 +738,76 @@ function ResolverDesafio() {
             ? "Monte o código:"
             : ehDissertativa
               ? "Escreva sua resposta:"
-              : "Escolha a resposta:"}
+              : ehAvaliarCodigo
+                ? "Avalie o código:"
+                : "Escolha a resposta:"}
         </h2>
         <p className="painel-enunciado">{desafio.enunciado}</p>
+        {ehDissertativa && desafio.codigo && (
+          <pre className="dissertativa-codigo">
+            <code>{desafio.codigo}</code>
+          </pre>
+        )}
 
         {ehOrdenarBlocos
           ? renderMontagemBlocos()
           : ehDissertativa
             ? renderRespostaDissertativa()
-            : renderOpcoes()}
+            : ehAvaliarCodigo
+              ? renderAvaliarCodigo()
+              : renderOpcoes()}
 
         {resultado === "erro" && (
           <div className="retorno retorno--erro">
-            <p className="retorno-fala">{ehDissertativa ? feedbackDissertativa : falaGolpe}</p>
+            <p className="retorno-fala">
+              {ehDissertativa && falhaCorrecaoIA && (
+                <><i className="hn hn-exclamation-triangle-solid icone-aviso" aria-hidden="true" /> </>
+              )}
+              {ehDissertativa
+                ? feedbackDissertativa
+                : ehAvaliarCodigo
+                  ? desafio.cartas[indiceCartao].explicacao
+                  : falaGolpe}
+            </p>
             {mostrarDica && <p className="retorno-dica">Dica: {desafio.dica}</p>}
           </div>
         )}
 
-        <BotaoPixel
-          className="botao-avante"
-          classeMiolo="botao-avante-miolo"
-          onClick={
-            ehOrdenarBlocos
-              ? verificarBlocos
+        {/* No "avaliar_codigo" a resposta é o próprio arraste do cartão —
+            só existe botão aqui quando estamos aguardando o jogador seguir
+            pro próximo cartão depois de um acerto (ver aguardandoProximoCartao). */}
+        {!(ehAvaliarCodigo && !aguardandoProximoCartao) && (
+          <BotaoPixel
+            className="botao-avante"
+            classeMiolo="botao-avante-miolo"
+            onClick={
+              ehOrdenarBlocos
+                ? verificarBlocos
+                : ehDissertativa
+                  ? responderDissertativa
+                  : ehAvaliarCodigo
+                    ? avancarCartao
+                    : responderMultiplaEscolha
+            }
+            disabled={
+              ehOrdenarBlocos
+                ? blocosResposta.length !== desafio.blocos.length || travado
+                : ehDissertativa
+                  ? !respostaTexto.trim() || travado
+                  : ehAvaliarCodigo
+                    ? false
+                    : !opcaoSelecionada || travado
+            }
+          >
+            {ehOrdenarBlocos
+              ? "VERIFICAR"
               : ehDissertativa
-                ? responderDissertativa
-                : responderMultiplaEscolha
-          }
-          disabled={
-            ehOrdenarBlocos
-              ? blocosResposta.length !== desafio.blocos.length || travado
-              : ehDissertativa
-                ? !respostaTexto.trim() || travado
-                : !opcaoSelecionada || travado
-          }
-        >
-          {ehOrdenarBlocos ? "VERIFICAR" : ehDissertativa ? "ATACAR" : "AVANTE!"}
-        </BotaoPixel>
+                ? "ATACAR"
+                : ehAvaliarCodigo
+                  ? "PRÓXIMO CARTÃO"
+                  : "AVANTE!"}
+          </BotaoPixel>
+        )}
       </>
     );
   }
@@ -567,7 +844,67 @@ function ResolverDesafio() {
           onChange={(e) => alterarRespostaTexto(e.target.value)}
           disabled={travado}
           rows={5}
+          maxLength={TAMANHO_MAXIMO_RESPOSTA}
         />
+      </div>
+    );
+  }
+
+  // Mecânica de arrastar ao estilo Tinder: um cartão com um bloco de
+  // código por vez, que o jogador arrasta pra direita ("certo") ou pra
+  // esquerda ("errado"). Os selos ✕/✓ atrás do cartão vão ficando visíveis
+  // conforme o arraste se aproxima do limiar de cada lado (ver
+  // LIMIAR_ARRASTE_CARTAO), pra dar a mesma sensação de "prévia da decisão"
+  // de apps de arrastar.
+  function renderAvaliarCodigo() {
+    const carta = desafio.cartas[indiceCartao];
+
+    if (aguardandoProximoCartao) {
+      return (
+        <div className="acerto-banner">
+          <h2 className="acerto-titulo">Certo!</h2>
+          <p className="acerto-fala">{carta.explicacao}</p>
+        </div>
+      );
+    }
+
+    const deslocamentoX =
+      cartaoSolto === "certo" ? 480 : cartaoSolto === "errado" ? -480 : arrasteCartaoX;
+    const opacidadeErrado = deslocamentoX < 0 ? Math.min(-deslocamentoX / LIMIAR_ARRASTE_CARTAO, 1) : 0;
+    const opacidadeCerto = deslocamentoX > 0 ? Math.min(deslocamentoX / LIMIAR_ARRASTE_CARTAO, 1) : 0;
+
+    return (
+      <div className="avaliar-area">
+        <span className="avaliar-progresso">
+          Cartão {indiceCartao + 1} de {desafio.cartas.length}
+        </span>
+
+        <div className="avaliar-carta-wrapper">
+          <span className="avaliar-selo avaliar-selo--errado" style={{ opacity: opacidadeErrado }}>
+            <X size={22} strokeWidth={3} />
+          </span>
+          <span className="avaliar-selo avaliar-selo--certo" style={{ opacity: opacidadeCerto }}>
+            <Check size={22} strokeWidth={3} />
+          </span>
+
+          <div
+            className={`avaliar-carta ${cartaoSolto ? `avaliar-carta--${cartaoSolto}` : ""} ${
+              arrastandoCartao ? "avaliar-carta--arrastando" : ""
+            }`}
+            style={{ transform: `translateX(${deslocamentoX}px) rotate(${deslocamentoX / 18}deg)` }}
+            onPointerDown={iniciarArrasteCartao}
+            onPointerMove={moverArrasteCartao}
+            onPointerUp={soltarArrasteCartao}
+            onPointerCancel={soltarArrasteCartao}
+          >
+            <code className="avaliar-carta-codigo">{carta.codigo}</code>
+          </div>
+        </div>
+
+        <p className="avaliar-instrucao">
+          Arraste para a direita se estiver <strong>certo</strong>, ou para a esquerda se estiver{" "}
+          <strong>errado</strong>
+        </p>
       </div>
     );
   }
@@ -667,6 +1004,21 @@ function ResolverDesafio() {
 
   return (
     <div className="desafio-tela">
+      <BotaoPixel
+        className="desafio-voltar"
+        classeMiolo="desafio-voltar-miolo"
+        onClick={abrirConfirmarSair}
+      >
+        <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
+      </BotaoPixel>
+
+      {mostrarConfirmarSair && (
+        <ConfirmarSairDesafio
+          onManterDesafio={fecharConfirmarSair}
+          onSairDesafio={confirmarSairDesafio}
+        />
+      )}
+
       {/* Cena da batalha — fundo agora usa a arte Fundo_batalha.png */}
       <section
         className={`cena ${tomandoGolpe ? "cena--golpe" : ""} ${
@@ -682,34 +1034,45 @@ function ResolverDesafio() {
       >
         {/* palco = tudo que sofre o zoom da "câmera" */}
         <div className={`cena-palco ${focoSlime ? "cena-palco--foco" : ""}`}>
-          {/* chão marrom antigo desligado — o fundo novo já traz o piso */}
-          <div className="cena-chao" style={{ background: "transparent" }} />
+          {/* sem chão desenhado em CSS: cada imagem de fundo já traz o piso */}
+          {golpeHeroi && usaGifAtaque ? (
+            // Durante o golpe: GIF de ataque (ainda sem as camadas de
+            // equipamento — animar camadas é trabalho futuro). A key muda a
+            // cada golpe pra forçar o navegador a reiniciar o GIF do quadro zero.
+            <img
+              key={`heroi-ataque-${cicloAtaque}`}
+              src={guerreiroAtaque}
+              alt="Guerreiro"
+              className={`cena-heroi cena-heroi--golpeando ${
+                tomandoGolpe ? "cena-heroi--atingido" : ""
+              }`}
+              style={{ width: 120, height: 120, imageRendering: "pixelated" }}
+              draggable={false}
+            />
+          ) : (
+            <AvatarPersonagem
+              key={golpeHeroi ? `heroi-ataque-${cicloAtaque}` : "heroi"}
+              itensEquipados={itensEquipados}
+              alt="Guerreiro"
+              className={`cena-heroi ${golpeHeroi ? "cena-heroi--golpeando" : ""} ${
+                tomandoGolpe ? "cena-heroi--atingido" : ""
+              }`}
+              style={{ width: 120, height: 120 }}
+            />
+          )}
 
-          <img
-            // key muda a cada golpe pra forçar o navegador a reiniciar o
-            // GIF do quadro zero, e volta pra uma key fixa quando parado
-            key={golpeHeroi ? `heroi-ataque-${cicloAtaque}` : "heroi-parado"}
-            src={golpeHeroi ? guerreiroAtaque : guerreiro}
-            alt="Guerreiro"
-            className={`cena-heroi ${
-              tomandoGolpe ? "cena-heroi--atingido" : ""
-            } ${golpeHeroi ? "cena-heroi--golpeando" : ""}`}
-            style={{ width: 120, imageRendering: "pixelated" }}
-            draggable={false}
-          />
-
-          <img
-            src={desafio.inimigo.imagem}
-            alt={desafio.inimigo.nome}
+          <GrupoInimigos
+            inimigos={desafio.inimigos ?? [desafio.inimigo]}
+            nome={desafio.inimigo.nome}
+            classeGrupo="grupo-inimigos--cena"
+            larguraPadrao={96}
             className={`cena-inimigo ${
               tomandoGolpe ? "cena-inimigo--atacando" : ""
             } ${slimeMorrendo ? "cena-inimigo--morrendo" : ""}`}
-            style={{ width: 96, imageRendering: "pixelated" }}
-            draggable={false}
           />
         </div>
 
-        {/* HUD de vida fica fora do zoom */}
+        {/* HUD de vida e cronômetro ficam fora do zoom */}
         <div className="cena-vida" aria-label={`Vida: ${vida} de ${VIDA_MAXIMA}`}>
           {Array.from({ length: VIDA_MAXIMA }).map((_, i) => (
             <span
@@ -717,10 +1080,22 @@ function ResolverDesafio() {
               className={`coracao ${i < vida ? "" : "coracao--vazio"}`}
               aria-hidden="true"
             >
-              {i < vida ? "❤️" : "🖤"}
+              <i className="hn hn-heart-solid" />
             </span>
           ))}
         </div>
+
+        <Temporizador
+          className="cena-cronometro"
+          segundos={segundosDecorridos}
+          regressivo={false}
+          tamanho="medio"
+          pausado={!cronometroAtivo}
+          congelamento={congelamento}
+        >
+          <ControleMusica variante="jogo" />
+          <MochilaItens congelamento={congelamento} />
+        </Temporizador>
 
         {tomandoGolpe && <div className="cena-flash" />}
       </section>

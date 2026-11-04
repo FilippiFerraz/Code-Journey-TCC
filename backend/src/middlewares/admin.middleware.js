@@ -10,12 +10,17 @@ async function verificarAdmin(req, res, next) {
 
     const usuario = await prisma.usuario.findUnique({
       where: { id: usuarioId },
-      select: { role: true },
+      select: { id: true, nome: true, role: true },
     });
 
     if (!usuario || usuario.role !== "administrador") {
       return res.status(403).json({ erro: "Acesso restrito a administradores." });
     }
+
+    // Disponibiliza { id, nome, role } pros controllers de admin usarem no
+    // registro de auditoria (ver log.service.js) sem precisar buscar o
+    // usuário de novo — evita um segundo SELECT idêntico a este.
+    req.usuarioAdmin = usuario;
 
     return next();
   } catch (erro) {

@@ -2,7 +2,7 @@
    Ranking.css — ranking global por XP
    Renderiza dentro do MainLayout (área rolável .layout-conteudo).
    Estética: placas de madeira penduradas na parede da masmorra do fundo
-   (fundo_ranking.jpg), com rebites nos cantos — mesma linguagem "jogo de
+   (fundo_ranking.webp), com rebites nos cantos — mesma linguagem "jogo de
    RPG pixelado" do resto do app.
    ============================================================ */
 
@@ -14,7 +14,7 @@
   margin: -20px;
   padding: 20px;
   min-height: calc(100% + 40px);
-  background: url("../../assets/images/fundo_ranking.jpg") center / cover no-repeat;
+  background: url("../../assets/images/fundo_ranking.webp") center / cover no-repeat;
   image-rendering: pixelated;
 }
 
@@ -53,6 +53,7 @@
   display: grid;
   place-items: center;
   font-size: 16px;
+  color: #2e1a0d;
   background: radial-gradient(circle at 35% 30%, #ffe9b0, #c9962a 70%);
   border: 3px solid #2e1a0d;
   border-radius: 50%;
@@ -76,8 +77,9 @@
 
 .ranking-eu-avatar {
   flex-shrink: 0;
+  /* quadrado: o guerreiro é montado em camadas de 64x64 (AvatarPersonagem) */
   height: 36px;
-  width: auto;
+  width: 36px;
   image-rendering: pixelated;
   filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
 }
@@ -191,6 +193,7 @@
 .ranking-icone {
   flex-shrink: 0;
   font-size: 18px;
+  color: #2e1a0d;
   filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
 }
 

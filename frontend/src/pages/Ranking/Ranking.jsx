@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Shield } from "lucide-react";
 import MainLayout from "../../layouts/MainLayout";
 import api from "../../services/api";
 import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
+import AvatarPersonagem from "../../components/AvatarPersonagem";
 import "./Ranking.css";
 
 function classePorPosicao(posicao) {
@@ -14,15 +16,18 @@ function classePorPosicao(posicao) {
 // Ícone da placa de cada posição — sem retrato próprio por jogador (a API
 // só devolve nome/xp de quem não é o usuário logado), então o 1º lugar
 // ganha uma coroa e os demais um brasão genérico, no espírito medieval.
-function iconePorPosicao(posicao) {
-  return posicao === 1 ? "👑" : "🛡️";
+// A coroa existe na biblioteca pixelada (hn-crown); um brasão/escudo não —
+// por isso o 2º lugar em diante usa o Shield do lucide-react.
+function IconePosicao({ posicao }) {
+  if (posicao === 1) return <i className="hn hn-crown" aria-hidden="true"></i>;
+  return <Shield size={16} aria-hidden="true" />;
 }
 
 function Ranking() {
   const [ranking, setRanking] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
-  const avatar = usePersonagemAvatar();
+  const itensEquipados = usePersonagemAvatar();
 
   useEffect(() => {
     let ativo = true;
@@ -67,13 +72,13 @@ function Ranking() {
         <div className="ranking-titulo-placa">
           <h2 className="ranking-titulo">Ranking das Lendas</h2>
           <span className="ranking-titulo-coroa" aria-hidden="true">
-            👑
+            <i className="hn hn-crown"></i>
           </span>
         </div>
 
         {/* Resumo do jogador logado — sempre visível, esteja ele no top ou não */}
         <div className="ranking-eu">
-          <img src={avatar} alt="" className="ranking-eu-avatar" draggable={false} />
+          <AvatarPersonagem itensEquipados={itensEquipados} className="ranking-eu-avatar" alt="" />
           <span className="ranking-eu-nome">{eu.nome}</span>
           <span className="ranking-eu-posicao">#{eu.posicao.toLocaleString("pt-BR")}</span>
         </div>
@@ -92,7 +97,7 @@ function Ranking() {
                 {usuario.posicao}º
               </span>
               <span className="ranking-icone" aria-hidden="true">
-                {iconePorPosicao(usuario.posicao)}
+                <IconePosicao posicao={usuario.posicao} />
               </span>
               <span className="ranking-nome">{usuario.nome}</span>
               <span className="ranking-pontos">

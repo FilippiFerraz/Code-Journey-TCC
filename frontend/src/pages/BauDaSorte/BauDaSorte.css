@@ -1,0 +1,692 @@
+/* ============================================================
+   BauDaSorte.css — roleta do baú de fim de módulo (tela cheia).
+
+   Fundo: a mesma arte de SelecionarDificuldade (só vinheta por cima).
+   Entrada: fundo -> faixa desce com quique -> subtítulo -> roleta surge.
+   Giro: transition de 4.5s na fita (ver .sorte-fita--girando). Revelação:
+   flash, carta vencedora pulsando, faíscas, triângulos saltando e botão
+   "CONTINUAR" entrando. Tudo desligado com prefers-reduced-motion.
+   ============================================================ */
+
+.sorte-tela {
+  /* paleta (mesmos valores de SelecionarDificuldade/Desafios) */
+  --sorte-madeira: #3b2416;
+  --sorte-madeira-clara: #5a3822;
+  --sorte-ferro: #2b2a33;
+  --sorte-ferro-claro: #45434f;
+  --sorte-dourado: #f4c542;
+  --sorte-dourado-escuro: #d99a1e;
+  --sorte-dourado-sombra: #8a5a12;
+  --sorte-roxo: #4b2a9e;
+  --sorte-roxo-medio: #3a1f7a;
+  --sorte-roxo-escuro: #2a155a;
+  --sorte-pergaminho: #e6d2a6;
+  --sorte-creme: #f3e9d2;
+
+  /* largura de cada carta e vão entre elas — a roleta mede os valores
+     reais no DOM (ver calcularDeslocamentoFinal), então dá pra mexer aqui
+     à vontade */
+  --sorte-carta: clamp(56px, 16vw, 70px);
+  --sorte-vao: 8px;
+
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* padding de baixo maior: sobe o conteúdo e deixa o cavaleiro à mostra */
+  padding: 72px 0 16vh;
+  overflow: hidden;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  color: var(--sorte-creme);
+  background-color: #1d1540;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  animation: sorte-aparecer 0.4s ease-out both;
+}
+
+.sorte-tela::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 40%, rgba(8, 4, 24, 0.6) 100%);
+}
+
+/* ---------- Botão voltar (mesmo padrão das outras telas) ---------- */
+
+.sorte-voltar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  background: var(--sorte-dourado-sombra);
+  transition: opacity 0.2s ease-out;
+}
+
+.sorte-voltar:disabled {
+  opacity: 0.4;
+}
+
+.sorte-voltar-miolo {
+  height: 100%;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3048, #2b2338);
+  color: var(--sorte-creme);
+  font-size: 20px;
+}
+
+.sorte-voltar-miolo::before {
+  opacity: 0.25;
+}
+
+.sorte-voltar:focus-visible,
+.sorte-botao:focus-visible {
+  outline: none;
+}
+
+.sorte-voltar:focus-visible .botao-pixel-miolo,
+.sorte-botao:focus-visible .botao-pixel-miolo {
+  outline: 3px solid #ffffff;
+  outline-offset: -7px;
+}
+
+/* ---------- Conteúdo ---------- */
+
+.sorte-conteudo {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Faixa "MÓDULO CONCLUÍDO!" ---------- */
+
+/* wrapper com as pontas dobradas (atrás) + corpo roxo por cima — mesmo
+   esquema das faixas de RecompensaDesafio e Desafios */
+.sorte-faixa {
+  position: relative;
+  z-index: 0;
+  width: min(84%, 360px);
+  padding-top: 30px; /* metade do brasão fica acima da fita */
+  animation: sorte-descer 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) 0.15s both;
+}
+
+.sorte-faixa::before,
+.sorte-faixa::after {
+  content: "";
+  position: absolute;
+  top: 42px;
+  z-index: -1;
+  width: 34px;
+  height: calc(100% - 30px);
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--sorte-roxo-medio), #1c0f40);
+  border-top: 3px solid var(--sorte-dourado-escuro);
+  border-bottom: 3px solid var(--sorte-dourado-escuro);
+}
+
+.sorte-faixa::before {
+  left: -22px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 35% 50%);
+}
+
+.sorte-faixa::after {
+  right: -22px;
+  clip-path: polygon(0 0, 100% 0, 65% 50%, 100% 100%, 0 100%);
+}
+
+.sorte-faixa-corpo {
+  position: relative;
+  padding: 22px 12px 12px;
+  text-align: center;
+  background: linear-gradient(180deg, #6a44c2 0%, var(--sorte-roxo) 55%, var(--sorte-roxo-medio) 100%);
+  border-top: 3px solid var(--sorte-dourado);
+  border-bottom: 3px solid var(--sorte-dourado);
+  box-shadow:
+    0 4px 0 var(--sorte-dourado-sombra),
+    0 8px 18px rgba(0, 0, 0, 0.5);
+}
+
+.sorte-faixa-titulo {
+  margin: 0;
+  font-size: clamp(1.35rem, 6.5vw, 1.75rem);
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  color: var(--sorte-creme);
+  text-shadow:
+    -2px -2px 0 #1b0d33,
+    2px -2px 0 #1b0d33,
+    -2px 2px 0 #1b0d33,
+    2px 2px 0 #1b0d33,
+    0 4px 0 #1b0d33;
+}
+
+/* brasão (coroa num escudo roxo com moldura de ferro) no topo da fita —
+   invólucro sem recorte pro brilho não ser cortado */
+.sorte-brasao {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 50%;
+  width: 52px;
+  height: 60px;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 6px rgba(244, 197, 66, 0.6));
+}
+
+.sorte-brasao-ferro {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--sorte-ferro-claro), var(--sorte-ferro));
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+}
+
+.sorte-brasao-escudo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #6a44c2, var(--sorte-roxo-escuro));
+  clip-path: polygon(0 0, 100% 0, 100% 55%, 50% 100%, 0 55%);
+  color: var(--sorte-dourado);
+  font-size: 20px;
+}
+
+.sorte-subtitulo {
+  margin: 14px 0 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--sorte-creme);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+  animation: sorte-aparecer 0.4s ease-out 0.55s both;
+}
+
+.sorte-subtitulo span {
+  color: var(--sorte-dourado);
+}
+
+/* ---------- Roleta ---------- */
+
+.sorte-roleta {
+  position: relative;
+  width: 92%;
+  max-width: 420px;
+  margin-top: 22px;
+  padding: 10px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, var(--sorte-madeira-clara), var(--sorte-madeira));
+  box-shadow:
+    inset 0 0 0 2px #1e120a,
+    inset 0 0 0 4px rgba(255, 255, 255, 0.06),
+    0 14px 26px rgba(0, 0, 0, 0.55);
+  animation: sorte-surgir 0.45s ease-out 0.7s both;
+}
+
+.sorte-cantoneira {
+  position: absolute;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(135deg, var(--sorte-ferro-claro), var(--sorte-ferro));
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 35% 35%, 35% 100%, 0 100%);
+}
+
+.sorte-cantoneira--se {
+  top: -2px;
+  left: -2px;
+}
+
+.sorte-cantoneira--sd {
+  top: -2px;
+  right: -2px;
+  transform: scaleX(-1);
+}
+
+.sorte-cantoneira--ie {
+  bottom: -2px;
+  left: -2px;
+  transform: scaleY(-1);
+}
+
+.sorte-cantoneira--id {
+  bottom: -2px;
+  right: -2px;
+  transform: scale(-1, -1);
+}
+
+/* triângulos dourados marcando a posição do prêmio */
+.sorte-indicador {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  width: 22px;
+  height: 14px;
+  margin-left: -11px;
+  background: var(--sorte-dourado);
+  filter: drop-shadow(0 2px 0 var(--sorte-dourado-sombra));
+}
+
+.sorte-indicador--topo {
+  top: 2px;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.sorte-indicador--base {
+  bottom: 2px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.sorte-roleta--revelada .sorte-indicador--topo {
+  animation: sorte-salto-baixo 0.5s ease-out 2;
+}
+
+.sorte-roleta--revelada .sorte-indicador--base {
+  animation: sorte-salto-cima 0.5s ease-out 2;
+}
+
+.sorte-janela {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 0;
+  background: #1a1024;
+  box-shadow: inset 0 0 0 2px #120a05;
+}
+
+/* fade escuro nas pontas da janela */
+.sorte-janela::before,
+.sorte-janela::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  width: 18%;
+  pointer-events: none;
+}
+
+.sorte-janela::before {
+  left: 0;
+  background: linear-gradient(90deg, rgba(10, 5, 20, 0.9), transparent);
+}
+
+.sorte-janela::after {
+  right: 0;
+  background: linear-gradient(270deg, rgba(10, 5, 20, 0.9), transparent);
+}
+
+.sorte-fita {
+  display: flex;
+  column-gap: var(--sorte-vao);
+  width: max-content;
+  will-change: transform;
+}
+
+.sorte-fita--carregando {
+  width: auto;
+  justify-content: center;
+}
+
+.sorte-fita--girando {
+  transition: transform 4.5s cubic-bezier(0.12, 0.8, 0.2, 1);
+}
+
+.sorte-carta {
+  flex: 0 0 var(--sorte-carta);
+  height: calc(var(--sorte-carta) * 1.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 50% 40%, #f3e3bd 0%, var(--sorte-pergaminho) 60%, #cdb07a 100%);
+  border: 3px solid #2a1a10;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+  transition:
+    transform 0.3s ease-out,
+    border-color 0.3s ease-out;
+}
+
+.sorte-fita--girando .sorte-carta {
+  filter: blur(1px);
+}
+
+.sorte-carta--vazia {
+  animation: sorte-pulsar-vazia 1s ease-in-out infinite alternate;
+}
+
+.sorte-carta-imagem {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.sorte-carta-emoji {
+  font-size: calc(var(--sorte-carta) * 0.55);
+  line-height: 1;
+}
+
+.sorte-carta--vencedora {
+  position: relative;
+  z-index: 1;
+  transform: scale(1.1);
+  border-color: var(--sorte-dourado);
+  animation: sorte-brilho-vencedora 1.4s ease-in-out 0.3s infinite;
+}
+
+.sorte-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 236, 160, 0.9), rgba(255, 214, 102, 0) 70%);
+  animation: sorte-flash 0.6s ease-out both;
+}
+
+/* faíscas em volta da carta vencedora (fora da janela, pra não serem
+   cortadas pelo overflow) */
+.sorte-faiscas {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.sorte-faisca {
+  position: absolute;
+  color: var(--sorte-dourado);
+  filter: drop-shadow(0 0 4px rgba(255, 214, 102, 0.95));
+  animation: sorte-piscar 1.3s ease-in-out infinite both;
+}
+
+.sorte-faisca--1 {
+  top: 4px;
+  left: calc(50% - var(--sorte-carta) / 2 - 16px);
+  font-size: 14px;
+}
+
+.sorte-faisca--2 {
+  top: 10px;
+  left: calc(50% + var(--sorte-carta) / 2 + 4px);
+  font-size: 11px;
+  animation-delay: 0.4s;
+}
+
+.sorte-faisca--3 {
+  bottom: 8px;
+  left: calc(50% - var(--sorte-carta) / 2 - 12px);
+  font-size: 10px;
+  animation-delay: 0.8s;
+}
+
+.sorte-faisca--4 {
+  bottom: 4px;
+  left: calc(50% + var(--sorte-carta) / 2 + 2px);
+  font-size: 14px;
+  animation-delay: 0.2s;
+}
+
+/* ---------- Status (carregando / prêmio / erro...) ---------- */
+
+.sorte-status {
+  min-height: 150px;
+  width: 100%;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.sorte-mensagem {
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--sorte-creme);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+}
+
+.sorte-placa-premio {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  max-width: 80%;
+  padding: 8px 22px;
+  background: linear-gradient(180deg, #2e2540, #1d1729);
+  border: 3px solid var(--sorte-dourado-escuro);
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.45);
+  animation: sorte-subir 0.4s ease-out both;
+}
+
+.sorte-placa-premio strong {
+  font-size: 1.1rem;
+  font-weight: 900;
+  text-align: center;
+  color: var(--sorte-creme);
+}
+
+.sorte-placa-detalhe {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cfc5e6;
+}
+
+.sorte-raridade--comum {
+  color: #c9c2b0;
+}
+
+.sorte-raridade--raro {
+  color: #4aa3ff;
+}
+
+.sorte-raridade--epico {
+  color: #b46cff;
+}
+
+.sorte-raridade--lendario {
+  color: #ffcc33;
+}
+
+.sorte-aviso {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--sorte-dourado);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+  animation: sorte-aparecer 0.4s ease-out 0.15s both;
+}
+
+/* ---------- Botões (mesmo estilo roxo da SelecionarDificuldade) ---------- */
+
+.sorte-botao {
+  width: min(70%, 260px);
+  background: var(--sorte-dourado-sombra);
+  animation: sorte-subir 0.4s ease-out 0.25s backwards;
+}
+
+.sorte-botao--continuar {
+  animation:
+    sorte-subir 0.4s ease-out 0.25s backwards,
+    sorte-pulsar 1.8s ease-in-out 1s infinite;
+}
+
+.sorte-botao-miolo {
+  padding: 13px 16px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0 22%, transparent 22%),
+    linear-gradient(180deg, var(--sorte-roxo) 0%, var(--sorte-roxo-medio) 100%);
+  color: var(--sorte-creme);
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+/* texto só pro leitor de tela (aria-live) */
+.sorte-leitor-tela {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Animações ---------- */
+
+@keyframes sorte-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sorte-descer {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sorte-surgir {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sorte-subir {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sorte-pulsar {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes sorte-pulsar-vazia {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+
+@keyframes sorte-brilho-vencedora {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+      0 0 6px 2px rgba(244, 197, 66, 0.55);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+      0 0 14px 5px rgba(255, 214, 102, 0.95);
+  }
+}
+
+@keyframes sorte-flash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sorte-piscar {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes sorte-salto-baixo {
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes sorte-salto-cima {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Reduzir movimento: sem entradas, loops, flash nem transições (o giro já
+   é pulado no JSX — ver prefereMenosMovimento). */
+@media (prefers-reduced-motion: reduce) {
+  .sorte-tela,
+  .sorte-tela *,
+  .sorte-tela *::before,
+  .sorte-tela *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .sorte-flash {
+    display: none;
+  }
+
+  .sorte-carta--vencedora {
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.25),
+      0 0 10px 3px rgba(244, 197, 66, 0.8);
+  }
+
+  .sorte-faisca {
+    opacity: 0.85;
+  }
+}

@@ -19,4 +19,19 @@ router.use("/admin", adminRoutes);
 const rankingRoutes = require("./ranking.routes.js");
 router.use("/ranking", rankingRoutes);
 
+const bauRoutes = require("./bau.routes.js");
+router.use("/baus", bauRoutes);
+
+const itemRoutes = require("./item.routes.js");
+router.use("/itens", itemRoutes);
+
+const contaRoutes = require("./conta.routes.js");
+router.use("/conta", contaRoutes);
+
+const desafiosRoutes = require("./desafios.routes.js");
+router.use("/desafios", desafiosRoutes);
+
+const lojaRoutes = require("./loja.routes.js");
+router.use("/loja", lojaRoutes);
+
 module.exports = router;

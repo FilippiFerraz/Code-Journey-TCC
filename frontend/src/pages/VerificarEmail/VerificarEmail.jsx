@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../../services/api";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/logo.webp";
 import BotaoPixel from "../../components/BotaoPixel";
+import { EMAIL_MAXIMO, validarCodigo, validarEmail } from "../../utils/validacoes";
+import { desbloquearAudio } from "../../utils/audioContexto";
 import "../Login/Login.css";
 import "./VerificarEmail.css";
 
@@ -26,6 +28,9 @@ function VerificarEmail() {
 
   async function handleVerificar(e) {
     e.preventDefault();
+    // libera o som AGORA, dentro do clique: a cutscene de introdução toca
+    // na Home logo depois e o navegador só deixa tocar áudio após interação
+    desbloquearAudio();
     setErro("");
     setAviso("");
 
@@ -37,16 +42,23 @@ function VerificarEmail() {
       setErro("Informe o código que você recebeu por e-mail.");
       return;
     }
+    const erroCampo = validarEmail(email) || validarCodigo(codigo);
+    if (erroCampo) {
+      setErro(erroCampo);
+      return;
+    }
 
     try {
       setCarregando(true);
       const resposta = await api.post("/auth/verificar-email", {
-        email,
+        email: email.trim().toLowerCase(),
         codigo: codigo.trim(),
       });
 
       localStorage.setItem("token", resposta.data.token);
-      navigate("/home");
+      // conta acabou de ser criada: a Home já abre com a cutscene de
+      // introdução (o /perfil confirma em seguida — Usuario.introVista)
+      navigate("/home", { state: { introPendente: true } });
     } catch (err) {
       setErro(mensagemErro(err, "Não foi possível confirmar. Verifique o código e tente novamente."));
     } finally {
@@ -62,10 +74,15 @@ function VerificarEmail() {
       setErro("Informe o e-mail que você cadastrou.");
       return;
     }
+    const erroEmail = validarEmail(email);
+    if (erroEmail) {
+      setErro(erroEmail);
+      return;
+    }
 
     try {
       setReenviando(true);
-      await api.post("/auth/reenviar-verificacao", { email });
+      await api.post("/auth/reenviar-verificacao", { email: email.trim().toLowerCase() });
       setAviso("Se essa conta ainda não foi confirmada, reenviamos o código.");
     } catch (err) {
       setErro(mensagemErro(err, "Não foi possível reenviar o código agora."));
@@ -94,6 +111,8 @@ function VerificarEmail() {
                 type="email"
                 className="login-input"
                 placeholder="seuemail@gmail.com"
+                maxLength={EMAIL_MAXIMO}
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
