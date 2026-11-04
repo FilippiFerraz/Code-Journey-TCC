@@ -34,17 +34,21 @@
 }
 
 /* ---------- Banner do personagem ---------- */
+/* Fundo do personagem: o MESMO da tela de personalizar o personagem
+   (.editar-cena em Editarpersonagem/EditarPersonagem.css) — cinza liso com
+   um brilho roxo suave no alto, que não disputa com o herói. Mudou lá?
+   Mude aqui também. */
 .perfil-banner {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 190px;
   background: radial-gradient(
-      circle at 50% 120%,
-      rgba(138, 47, 184, 0.35),
-      transparent 60%
+      circle at 50% 30%,
+      rgba(138, 47, 184, 0.25),
+      transparent 65%
     ),
-    linear-gradient(180deg, #3a3340 0%, #241f2b 100%);
+    linear-gradient(180deg, #4b4550 0%, #2c2732 100%);
   border-bottom: 4px solid var(--roxo);
   overflow: hidden;
 }

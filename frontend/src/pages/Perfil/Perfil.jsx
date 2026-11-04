@@ -6,7 +6,6 @@ import { usePersonagemAvatar } from "../../hooks/usePersonagemAvatar";
 import AvatarPersonagem from "../../components/AvatarPersonagem";
 import IconeItem from "../../components/IconeItem";
 import BotaoPixel from "../../components/BotaoPixel";
-import fundoPersonagemPerfil from "../../assets/images/Fundo_Personagem_Perfil.webp";
 
 // "2024-04-10..." -> "abril de 2024"
 function formatarMesAno(dataIso) {
@@ -78,16 +77,8 @@ function Perfil() {
         <i className="hn hn-arrow-left" aria-hidden="true" /> Voltar
       </BotaoPixel>
 
-      {/* Banner do personagem */}
-      <div
-        className="perfil-banner"
-        style={{
-          backgroundImage: `url(${fundoPersonagemPerfil})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
+      {/* Banner do personagem — cenário simples, só em CSS (ver .perfil-banner) */}
+      <div className="perfil-banner">
         <AvatarPersonagem
           itensEquipados={itensEquipados}
           aparencia={aparencia}
