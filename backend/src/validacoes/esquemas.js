@@ -31,6 +31,8 @@ const auth = {
       email: campo("e-mail", r.email),
       senha: campo("senha", r.senhaNova),
       idade: campo("idade", r.idade),
+      // LGPD: aceite dos Termos de Uso e da Política de Privacidade
+      aceiteTermos: campo("aceite dos termos", r.aceiteObrigatorio),
     },
   },
   login: {

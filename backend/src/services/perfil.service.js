@@ -9,6 +9,20 @@ const { resumoJogador } = require("./resumoJogador.service.js");
 // recentes primeiro — ver Perfil.jsx, seção "Itens em destaque").
 const LIMITE_ITENS_DESTAQUE = 3;
 
+// @usuário exibido no perfil e na busca. Antes era a parte do e-mail antes
+// do @ — visível pra QUALQUER jogador logado (busca da Home, perfil público),
+// o que expunha parte do e-mail de todo mundo (dado pessoal; muitos jogadores
+// são menores de idade). Agora sai do nome + id: único e sem dado de contato.
+function handleDoUsuario(usuario) {
+  const base = String(usuario.nome ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, 20);
+  return (base || "jogador") + usuario.id;
+}
+
 // Itens equipados de um usuário, numa consulta só e filtrando direto pelo dono
 // (antes: buscar o personagem, depois os itens em destaque, depois os
 // equipados — três idas ao banco, uma depois da outra).
@@ -76,9 +90,7 @@ async function buscarPerfil(usuarioId) {
     throw erro;
   }
 
-  // @usuário provisório derivado do e-mail (parte antes do @).
-  // Futuro: coluna própria "nomeUsuario" na fase de personalização.
-  const nomeUsuario = usuario.email.split("@")[0];
+  const nomeUsuario = handleDoUsuario(usuario);
 
   const [posicao, resumo] = await Promise.all([
     posicaoDoUsuario(usuario.xpTotal),
@@ -121,7 +133,7 @@ async function buscarUsuariosPorNome(usuarioIdAtual, termo) {
       nome: { contains: termoEscapado, mode: "insensitive" },
       id: { not: usuarioIdAtual },
     },
-    select: { id: true, nome: true, email: true },
+    select: { id: true, nome: true },
     orderBy: { nome: "asc" },
     take: LIMITE_BUSCA,
   });
@@ -129,8 +141,7 @@ async function buscarUsuariosPorNome(usuarioIdAtual, termo) {
   return usuarios.map((usuario) => ({
     id: usuario.id,
     nome: usuario.nome,
-    // mesmo @handle provisório usado em buscarPerfil (derivado do e-mail)
-    nomeUsuario: usuario.email.split("@")[0],
+    nomeUsuario: handleDoUsuario(usuario),
   }));
 }
 
@@ -146,7 +157,6 @@ async function buscarPerfilPublico(usuarioId) {
       select: {
         id: true,
         nome: true,
-        email: true,
         criadoEm: true,
         xpTotal: true,
         moedas: true,
@@ -165,7 +175,7 @@ async function buscarPerfilPublico(usuarioId) {
     throw erro;
   }
 
-  const nomeUsuario = usuario.email.split("@")[0];
+  const nomeUsuario = handleDoUsuario(usuario);
   const [posicao, resumo] = await Promise.all([
     usuario.rankingVisivel ? posicaoDoUsuario(usuario.xpTotal) : null,
     resumoJogador(usuario.id, usuario.xpTotal, usuario.moedas),

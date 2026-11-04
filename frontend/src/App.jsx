@@ -9,7 +9,7 @@ import { RotaAdmin, RotaDesafio, RotaProtegida, RotaPublica, TelaPropria } from 
 // Cada tela é um arquivo à parte, baixado só quando o jogador entra nela
 // (ver telas.js) — o Login, primeira tela, continua no pacote principal.
 const {
-  Cadastro, VerificarEmail, EsqueciSenha, Home, SelecionarDificuldade, Desafios,
+  Cadastro, VerificarEmail, EsqueciSenha, Privacidade, Home, SelecionarDificuldade, Desafios,
   DesafioIntro, ResolverDesafio, DesafioChefe, DesafioIntroPocao, ResolverDesafioPocao,
   DesafioEtapas, Perfil, Ranking, EditarPersonagem, RecompensaDesafio, BauDaSorte, DesafioRei, DesafioCristais, BatalhaDragao, Loja,
   Configuracoes, Conta, Admin, AdminUsuarios, AdminDesafios, EditarDesafioAdmin,
@@ -35,6 +35,9 @@ function App() {
           </Route>
           <Route path="/verificar-email" element={<VerificarEmail />} />
           <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+          {/* LGPD: Política de Privacidade e Termos de Uso — abrem com ou sem login */}
+          <Route path="/privacidade" element={<Privacidade documento="politica" />} />
+          <Route path="/termos" element={<Privacidade documento="termos" />} />
 
           {/* Só para quem está logado (ver components/Rotas.jsx) */}
           <Route element={<RotaProtegida />}>

@@ -1,4 +1,17 @@
 const contaService = require("../services/conta.service");
+const { exportarMeusDados } = require("../services/privacidade.service");
+
+// LGPD, art. 18 (II e V): cópia de todos os dados pessoais do jogador em JSON
+async function getMeusDados(req, res, next) {
+  try {
+    const dados = await exportarMeusDados(idUsuario(req));
+    res.setHeader("Content-Disposition", 'attachment; filename="meus-dados-code-journey.json"');
+    res.setHeader("Cache-Control", "no-store");
+    res.status(200).json(dados);
+  } catch (erro) {
+    next(erro);
+  }
+}
 
 function idUsuario(req) {
   return req.usuario?.id ?? req.usuarioId;
@@ -55,6 +68,7 @@ async function postExcluirConta(req, res, next) {
 }
 
 module.exports = {
+  getMeusDados,
   getConta,
   putNome,
   postSolicitarTrocaEmail,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import BotaoPixel from "../../components/BotaoPixel";
 import { BarraAvancoFala, BotaoPularFalas } from "../../components/ControlesFalas";
@@ -149,6 +149,16 @@ function DesafioIntro() {
 
   const [indice, setIndice] = useState(0);
   const [mostrarEnunciado, setMostrarEnunciado] = useState(false);
+
+  // Enquanto o jogador lê as falas, já baixa o código da batalha e as imagens
+  // da cena (fundo e inimigo) — "Iniciar Desafio" abre a luta pronta, sem o
+  // fundo aparecendo aos poucos. import() é o mesmo módulo da tela lazy
+  // (telas.js), então não baixa nada duas vezes.
+  useEffect(() => {
+    import("../ResolverDesafio/ResolverDesafio")
+      .then((tela) => tela.precarregarCena(mundoId, desafioId))
+      .catch(() => {});
+  }, [mundoId, desafioId]);
 
   function handleCliqueTela() {
     if (mostrarEnunciado) return;

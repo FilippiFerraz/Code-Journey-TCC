@@ -1,5 +1,6 @@
 const prisma = require("../config/prisma");
 const { escaparLike } = require("../utils/busca");
+const { limparDadosVencidos } = require("./privacidade.service");
 
 const LIMITE_PADRAO = 20;
 const LIMITE_MAXIMO = 100;
@@ -16,6 +17,11 @@ async function registrarTentativaLogin({
   ip,
   userAgent,
 }) {
+  // LGPD (retenção): apaga histórico com mais de 6 meses e cadastros nunca
+  // confirmados — no máximo a cada 6 h por instância (ver privacidade.service.js).
+  // Falha aqui nunca atrapalha o login.
+  limparDadosVencidos().catch((erro) => console.error("Limpeza de dados vencidos falhou:", erro.message));
+
   return prisma.loginHistorico.create({
     data: {
       usuarioId: usuarioId ?? null,

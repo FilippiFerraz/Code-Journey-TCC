@@ -44,7 +44,7 @@ const POR_ROTA = [
 ];
 
 // Telas públicas: sem leituras (nem token, normalmente).
-const PUBLICAS = /^\/($|cadastrar|verificar-email|esqueci-senha)/;
+const PUBLICAS = /^\/($|cadastrar|verificar-email|esqueci-senha|privacidade|termos)/;
 
 export function adiantarLeituras(caminho) {
   if (PUBLICAS.test(caminho)) return;

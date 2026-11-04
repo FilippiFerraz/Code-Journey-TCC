@@ -4,6 +4,7 @@ import logo from "../../assets/images/logo.webp";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
 import CampoSenha from "../../components/CampoSenha";
+import LinksLegais from "../../components/LinksLegais";
 import { EMAIL_MAXIMO, SENHA_MAXIMO, validarEmail } from "../../utils/validacoes";
 import { prefetchTelas } from "../../telas";
 import { desbloquearAudio } from "../../utils/audioContexto";
@@ -162,6 +163,7 @@ function Login() {
           >
             {carregando ? "Entrando..." : "ENTRAR E COMEÇAR"}
           </BotaoPixel>
+          <LinksLegais />
         </form>
       </div>
 

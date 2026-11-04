@@ -28,7 +28,7 @@ async function getUsuarios(req, res, next) {
 
 async function getExportarUsuarios(req, res, next) {
   try {
-    const buffer = await adminService.exportarUsuariosXlsx({ busca: req.query.busca });
+    const buffer = await adminService.exportarUsuariosXlsx({ busca: req.query.busca }, req.usuarioAdmin);
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

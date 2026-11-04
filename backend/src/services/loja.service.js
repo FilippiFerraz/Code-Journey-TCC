@@ -320,8 +320,10 @@ async function pularDesafio(usuarioId, { mundoId, dificuldade, numero }) {
 
 // Chamado por progresso.service.js quando um desafio é vencido pela primeira
 // vez: gasta o Elixir do Sábio que foi bebido, se houver (true = o XP dobra).
-function consumirElixir(usuarioId) {
-  return gastarItem(usuarioId, CHAVE_ELIXIR_ATIVO);
+// cliente: a transação de progresso.service.js::gravarResposta (o Elixir só
+// é gasto se a vitória for de fato creditada)
+function consumirElixir(usuarioId, cliente = prisma) {
+  return gastarItem(usuarioId, CHAVE_ELIXIR_ATIVO, cliente);
 }
 
 function moedasPorVitoria(semErros) {

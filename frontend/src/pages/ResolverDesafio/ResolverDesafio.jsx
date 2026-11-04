@@ -9,6 +9,7 @@ import { useCronometro } from "../../hooks/useCronometro";
 import { useCongelarTempo } from "../../hooks/useCongelarTempo";
 import { textoMoedasElixir } from "../../utils/loja";
 import { regrasDaDificuldade } from "../../data/dificuldades";
+import { imagensDaCena, precarregarImagens } from "../../utils/precarregarImagens";
 import { formatarTempo } from "../../utils/tempo";
 import { tocarSom } from "../../utils/sons";
 import BotaoPixel from "../../components/BotaoPixel";
@@ -225,6 +226,14 @@ function embaralhar(lista) {
 
 // Mesmo limite do backend (TAMANHO_MAXIMO_RESPOSTA em ia.service.js).
 const TAMANHO_MAXIMO_RESPOSTA = 2000;
+
+// Chamado pela introdução do desafio (DesafioIntro.jsx): baixa o fundo e o
+// inimigo da batalha enquanto o jogador lê as falas, pra cena já abrir pronta.
+// oxlint-disable-next-line react/only-export-components -- o DESAFIOS mora aqui
+export function precarregarCena(mundoId, desafioId) {
+  const desafio = DESAFIOS[mundoId]?.[desafioId] || DESAFIOS[1][1];
+  precarregarImagens(imagensDaCena(desafio));
+}
 
 // Falas do golpe, em ordem de vida restante (2 -> 1 coração).
 // A intenção é dar o tom de "tomou dano" sem desanimar o jogador.

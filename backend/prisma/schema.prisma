@@ -23,6 +23,28 @@ model Usuario {
   codigoExpiraEm    DateTime?
   criadoEm          DateTime  @default(now())
 
+  // Segurança dos códigos de 6 dígitos (recuperação de senha, confirmação
+  // de cadastro e troca de e-mail): quantas vezes o código ATUAL foi errado.
+  // Passou do limite, o código é descartado e é preciso pedir outro — sem
+  // isso, dava pra tentar os 900 mil códigos possíveis e trocar a senha de
+  // qualquer conta (o limite por IP não basta: fica na memória de cada
+  // instância da Vercel e o atacante troca de IP). Ver utils/codigos.js.
+  codigoRecuperacaoTentativas Int @default(0)
+  codigoVerificacaoTentativas Int @default(0)
+  codigoTrocaEmailTentativas  Int @default(0)
+
+  // Versão das sessões: vai dentro do token (JWT) e sobe quando a senha é
+  // redefinida — todo token emitido antes deixa de valer na hora (ver
+  // middlewares/auth.middleware.js). Sem isso, quem tivesse roubado um
+  // token continuava logado por até 7 dias mesmo depois da troca de senha.
+  sessaoVersao Int @default(0)
+
+  // LGPD: quando e qual versão dos Termos de Uso / Política de Privacidade o
+  // jogador aceitou no cadastro (ver config/privacidade.js). Null = conta
+  // criada antes do aceite existir.
+  termosAceitosEm DateTime?
+  termosVersao    String?
+
   // Confirmação de e-mail no cadastro (campos separados dos de recuperação
   // de senha acima, pra um fluxo nunca sobrescrever o código do outro).
   // Login é bloqueado enquanto emailVerificado for false — ver auth.service.js.

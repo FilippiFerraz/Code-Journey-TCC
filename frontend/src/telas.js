@@ -16,6 +16,7 @@ const carregadores = {
   Cadastro: () => import("./pages/Cadastro/Cadastro"),
   VerificarEmail: () => import("./pages/VerificarEmail/VerificarEmail"),
   EsqueciSenha: () => import("./pages/EsqueciSenha/EsqueciSenha"),
+  Privacidade: () => import("./pages/Privacidade/Privacidade"),
   Home: () => import("./pages/Home/Home"),
   SelecionarDificuldade: () => import("./pages/SelecionarDificuldade/SelecionarDificuldade"),
   Desafios: () => import("./pages/Desafios/Desafios"),

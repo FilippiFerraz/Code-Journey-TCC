@@ -1,0 +1,146 @@
+/* Política de Privacidade e Termos de Uso — texto longo: fonte do sistema
+   (as fontes pixel do jogo cansam a leitura), linhas curtas e bom contraste. */
+.priv-tela {
+  min-height: 100dvh;
+  padding: 16px;
+  background: var(--cj-fundo-profundo);
+  color: var(--cj-texto);
+  box-sizing: border-box;
+}
+
+.priv-cartao {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 18px 32px;
+  border: 1px solid var(--cj-borda);
+  border-radius: 12px;
+  background: var(--cj-painel);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.priv-topo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.priv-voltar {
+  padding: 8px 12px;
+  border: 1px solid var(--cj-borda-forte);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cj-texto);
+  font: inherit;
+  cursor: pointer;
+}
+
+.priv-abas {
+  display: flex;
+  gap: 6px;
+}
+
+.priv-aba {
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--cj-texto-secundario);
+  text-decoration: none;
+}
+
+.priv-aba--ativa {
+  background: var(--cj-roxo);
+  color: #fff;
+}
+
+.priv-cartao h1 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.priv-vigencia {
+  margin: 0 0 20px;
+  color: var(--cj-texto-secundario);
+  font-size: 13px;
+}
+
+.priv-cartao h2 {
+  margin: 26px 0 8px;
+  font-size: 18px;
+  color: var(--cj-ouro);
+}
+
+.priv-cartao h3 {
+  margin: 16px 0 4px;
+  font-size: 15px;
+  color: var(--cj-roxo-claro);
+}
+
+.priv-cartao p,
+.priv-cartao ul {
+  margin: 0 0 10px;
+}
+
+.priv-cartao ul {
+  padding-left: 20px;
+}
+
+.priv-cartao li + li {
+  margin-top: 4px;
+}
+
+.priv-cartao a {
+  color: var(--cj-roxo-claro);
+}
+
+/* Links "Privacidade · Termos" usados no login, cadastro e configurações */
+.links-legais {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 12px;
+  margin: 14px 0 0;
+  font-size: 12px;
+}
+
+.links-legais a {
+  color: var(--cj-texto-secundario, #bdb1d4);
+  text-decoration: underline;
+}
+
+/* Caixa de aceite dos termos no cadastro */
+.cadastro-aceite {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 12px 0 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+  color: var(--cj-texto, #f5f0ff);
+  cursor: pointer;
+}
+
+.cadastro-aceite input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--cj-roxo-claro, #b76aff);
+}
+
+.cadastro-aceite a {
+  color: var(--cj-ouro, #f5c45e);
+}
+
+/* Texto da seção "Privacidade" em Configurações */
+.configuracoes-texto-privacidade {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cj-texto-secundario, #bdb1d4);
+  text-align: center;
+}

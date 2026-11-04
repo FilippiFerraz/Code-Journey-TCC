@@ -5,14 +5,17 @@ import BotaoPixel from "../../../components/BotaoPixel";
 import api from "../../../services/api";
 import verificarIcon from "../../../assets/images/verificar.png";
 import atencaoIcon from "../../../assets/images/atencao.png";
+import LinksLegais from "../../../components/LinksLegais";
 import "./Conta.css";
 
 // Tela "Minha Conta" (Configurações > Conta). Tudo aqui conversa com
 // /api/conta (ver backend/src/services/conta.service.js):
 // - nome: 1 troca a cada 30 dias
 // - e-mail: 1 troca a cada 30 dias, em duas etapas (código no e-mail novo)
-// - excluir conta: escondido em "Opções avançadas"; é um soft delete (a
-//   conta é desativada, não apagada — um administrador pode reativar)
+// - meus dados: download de tudo o que guardamos sobre o jogador (LGPD,
+//   art. 18 — GET /api/conta/meus-dados)
+// - excluir conta: escondido em "Opções avançadas"; anonimiza nome, e-mail,
+//   idade e senha de forma irreversível (ver privacidade.service.js)
 
 const TEXTO_CONFIRMACAO_EXCLUSAO = "EXCLUIR";
 
@@ -36,6 +39,51 @@ function Aviso({ aviso }) {
     <div className={aviso.tipo === "sucesso" ? "conta-sucesso" : "conta-erro"} role="status">
       {aviso.texto}
     </div>
+  );
+}
+
+// ---------- Meus dados (LGPD, art. 18) ----------
+
+// Baixa o JSON pelo axios (precisa do header Authorization) e entrega como
+// arquivo — mesmo jeito da exportação de planilha do admin.
+function BaixarMeusDados() {
+  const [baixando, setBaixando] = useState(false);
+  const [aviso, setAviso] = useState(null);
+
+  async function baixar() {
+    setBaixando(true);
+    setAviso(null);
+    try {
+      const res = await api.get("/conta/meus-dados", { responseType: "blob" });
+      const url = URL.createObjectURL(res.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "meus-dados-code-journey.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setAviso({ tipo: "sucesso", texto: "Pronto! O arquivo com os seus dados foi baixado." });
+    } catch {
+      setAviso({ tipo: "erro", texto: "Não foi possível gerar o arquivo agora. Tente novamente." });
+    } finally {
+      setBaixando(false);
+    }
+  }
+
+  return (
+    <section className="conta-fieldset">
+      <h2 className="conta-fieldset-titulo">Meus dados</h2>
+      <p className="conta-avancado-texto">
+        Baixe uma cópia de tudo o que o Code Journey guarda sobre você: dados da conta, progresso, itens e histórico
+        de login. É um arquivo JSON, que também serve para levar seus dados para outro serviço.
+      </p>
+      <Aviso aviso={aviso} />
+      <button type="button" className="conta-botao" onClick={baixar} disabled={baixando}>
+        {baixando ? "Gerando arquivo…" : "Baixar meus dados"}
+      </button>
+      <LinksLegais />
+    </section>
   );
 }
 
@@ -83,8 +131,12 @@ function ModalExcluirConta({ onCancelar, onExcluida }) {
           <li>você não conseguirá mais entrar no Code Journey com ela;</li>
           <li>seu nome sai do ranking e da busca de jogadores;</li>
           <li>
-            seu progresso, XP e itens <strong>ficam guardados</strong> — a conta é desativada, não
-            apagada. Se mudar de ideia, peça a um administrador para reativá-la.
+            seu nome, e-mail, idade e senha são <strong>apagados para sempre</strong> — não dá para
+            desfazer nem reativar a conta depois;
+          </li>
+          <li>
+            o progresso e o XP ficam só como estatística, sem identificar você. O histórico de login é
+            apagado em até 6 meses, como exige a lei.
           </li>
         </ul>
 
@@ -439,13 +491,15 @@ function Conta() {
             )}
           </section>
 
+          <BaixarMeusDados />
+
           {/* ---------- Opções avançadas (fechado por padrão) ---------- */}
           <details className="conta-avancado">
             <summary className="conta-avancado-titulo">Opções avançadas</summary>
             <div className="conta-avancado-corpo">
               <p className="conta-avancado-texto">
-                Excluir a conta desativa seu acesso ao Code Journey. Seu progresso fica guardado e um
-                administrador pode reativar a conta se você pedir.
+                Excluir a conta apaga para sempre seu nome, e-mail, idade e senha. Antes, se quiser, baixe
+                uma cópia dos seus dados acima.
               </p>
               <button
                 type="button"

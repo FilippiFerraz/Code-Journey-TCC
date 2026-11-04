@@ -1,33 +1,36 @@
-// Memória curta de "esta conta existe e está ativa", usada por
-// auth.middleware.js. Sem ela, TODA requisição autenticada fazia uma consulta
-// ao banco só pra reconfirmar a conta — e na Vercel cada consulta é uma ida e
-// volta de rede até o banco.
+// Memória curta de "esta conta existe, está ativa e está na versão de
+// sessão X", usada por auth.middleware.js. Sem ela, TODA requisição
+// autenticada fazia uma consulta ao banco só pra reconfirmar a conta — e na
+// Vercel cada consulta é uma ida e volta de rede até o banco.
 //
-// O custo: uma conta excluída/desativada pode continuar sendo aceita por até
-// TTL_MS na instância onde ela estava em memória. Na instância que executa a
-// exclusão o efeito é imediato (esquecerConta é chamada em conta.service.js e
-// admin.service.js).
+// O custo: uma conta excluída/desativada (ou com a senha redefinida) pode
+// continuar sendo aceita por até TTL_MS nas OUTRAS instâncias onde ela
+// estava em memória. Na instância que executa a ação o efeito é imediato
+// (esquecerConta é chamada em conta.service.js, admin.service.js e
+// auth.service.js).
 const TTL_MS = 30 * 1000;
 const LIMITE_ENTRADAS = 5000;
-const validoAte = new Map();
+const cache = new Map(); // usuarioId -> { validoAte, sessaoVersao }
 
-function contaConfirmadaRecentemente(usuarioId) {
-  const limite = validoAte.get(usuarioId);
-  if (limite === undefined) return false;
-  if (limite < Date.now()) {
-    validoAte.delete(usuarioId);
-    return false;
+// Versão de sessão conhecida da conta, ou undefined se não está em memória
+// (ou expirou).
+function versaoEmCache(usuarioId) {
+  const entrada = cache.get(usuarioId);
+  if (!entrada) return undefined;
+  if (entrada.validoAte < Date.now()) {
+    cache.delete(usuarioId);
+    return undefined;
   }
-  return true;
+  return entrada.sessaoVersao;
 }
 
-function lembrarContaAtiva(usuarioId) {
-  if (validoAte.size >= LIMITE_ENTRADAS) validoAte.clear();
-  validoAte.set(usuarioId, Date.now() + TTL_MS);
+function lembrarContaAtiva(usuarioId, sessaoVersao) {
+  if (cache.size >= LIMITE_ENTRADAS) cache.clear();
+  cache.set(usuarioId, { validoAte: Date.now() + TTL_MS, sessaoVersao });
 }
 
 function esquecerConta(usuarioId) {
-  validoAte.delete(usuarioId);
+  cache.delete(usuarioId);
 }
 
-module.exports = { contaConfirmadaRecentemente, lembrarContaAtiva, esquecerConta };
+module.exports = { versaoEmCache, lembrarContaAtiva, esquecerConta };

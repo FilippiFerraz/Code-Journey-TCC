@@ -18,6 +18,7 @@ import guerreiroAtaque from "../../assets/images/Guerreiro_ataque.gif";
 import { cenaDoDesafio } from "../../data/cenasPortal3";
 import { falaDerrota, falaGolpeCerteiro, falasGolpe, tituloDerrotado } from "../../utils/textosInimigo";
 import { regrasDaDificuldade } from "../../data/dificuldades";
+import { imagensDaCena, precarregarImagens } from "../../utils/precarregarImagens";
 import IntroEtapas from "./IntroEtapas";
 import { GrupoInimigos } from "./SpriteInimigo";
 import { EXERCICIOS, TITULO_PAINEL, precarregarExercicios } from "./exercicios";
@@ -59,6 +60,14 @@ export default function DesafioEtapas() {
   const usaGifAtaque = (useAparenciaPropria() ?? APARENCIA_PADRAO) === APARENCIA_PADRAO;
   const cena = cenaDoDesafio(Number(desafioId), Number(mundoId));
   const nomeInimigo = cena.nome;
+
+  // O fundo da batalha (100–200 KB, via CSS) só apareceria depois da
+  // introdução: baixa já, enquanto o jogador lê as falas.
+  useEffect(() => {
+    precarregarImagens(imagensDaCena(cena));
+    // cena depende só da rota
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mundoId, desafioId]);
 
   const [desafio, setDesafio] = useState(null);
   const [erroCarregar, setErroCarregar] = useState("");

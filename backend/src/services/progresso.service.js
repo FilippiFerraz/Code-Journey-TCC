@@ -219,6 +219,81 @@ async function verificarDesafioLiberado(usuarioId, desafio) {
   }
 }
 
+// ---- Gravação atômica da resposta ----
+//
+// Antes, a resposta lia o progresso, decidia "é a primeira vitória?" e só
+// depois gravava. Enviando a MESMA resposta certa várias vezes em paralelo,
+// todas liam "ainda não concluído" e TODAS davam XP e moedas — dava pra
+// inflar o ranking e o ouro à vontade. Agora a primeira conclusão é
+// "reivindicada" direto no banco: um UPDATE condicional (só se concluido
+// ainda for false) ou um INSERT protegido pela chave única (usuário, desafio).
+// Só a requisição que vence essa disputa recebe XP, moedas e gasta o Elixir.
+
+// true = esta requisição concluiu o desafio; false = outra concluiu antes.
+async function reivindicarConclusao({ usuarioId, desafioId, existe, dados, condicao = {} }) {
+  if (!existe) {
+    try {
+      await prisma.progresso.create({
+        data: { usuarioId, desafioId, ...dados, concluido: true, tentativas: 1 },
+      });
+      return true;
+    } catch (erro) {
+      // outra requisição criou o registro no meio do caminho: disputa pelo UPDATE
+      if (erro.code !== "P2002") throw erro;
+    }
+  }
+  const { count } = await prisma.progresso.updateMany({
+    where: { usuarioId, desafioId, concluido: false, ...condicao },
+    data: { ...dados, concluido: true, tentativas: { increment: 1 } },
+  });
+  return count > 0;
+}
+
+// Resposta que NÃO conclui o desafio agora (errou, etapa do meio, refazendo
+// ou perdeu a disputa acima): só soma a tentativa (com incremento no banco,
+// não "valor lido + 1") e aplica `dados` (ex: etapasConcluidas).
+async function registrarTentativa({ usuarioId, desafioId, dados = {} }) {
+  const chave = { usuarioId_desafioId: { usuarioId, desafioId } };
+  const gravar = () =>
+    prisma.progresso.upsert({
+      where: chave,
+      update: { ...dados, tentativas: { increment: 1 } },
+      create: { usuarioId, desafioId, ...dados, tentativas: 1 },
+    });
+  try {
+    return await gravar();
+  } catch (erro) {
+    if (erro.code !== "P2002") throw erro;
+    return gravar(); // criado por outra requisição ao mesmo tempo: agora é update
+  }
+}
+
+// Grava a resposta. `concluindo` = esta resposta conclui o desafio pela
+// primeira vez (pelo que foi lido antes); a reivindicação atômica confirma.
+// Quem vence credita XP (dobrado se havia Elixir do Sábio ativo) e moedas
+// numa transação. Devolve { progresso, concluiu, elixirUsado }.
+async function gravarResposta({ usuarioId, desafioId, existe, concluindo, dadosConclusao, dadosTentativa, moedas, condicao }) {
+  const chave = { usuarioId_desafioId: { usuarioId, desafioId } };
+
+  if (concluindo && (await reivindicarConclusao({ usuarioId, desafioId, existe, dados: dadosConclusao, condicao }))) {
+    const elixirUsado = await prisma.$transaction(async (tx) => {
+      const usado = await consumirElixir(usuarioId, tx);
+      const xp = usado ? dadosConclusao.xpGanho * 2 : dadosConclusao.xpGanho;
+      if (usado) await tx.progresso.update({ where: chave, data: { xpGanho: xp } });
+      await tx.usuario.update({
+        where: { id: usuarioId },
+        data: { xpTotal: { increment: xp }, moedas: { increment: moedas } },
+      });
+      return usado;
+    });
+    const progresso = await prisma.progresso.findUnique({ where: chave });
+    return { progresso, concluiu: true, elixirUsado };
+  }
+
+  const progresso = await registrarTentativa({ usuarioId, desafioId, dados: dadosTentativa });
+  return { progresso, concluiu: false, elixirUsado: false };
+}
+
 // Confere a resposta contra o gabarito de Desafio.alternativas (nunca confia
 // num "correta: true" vindo do cliente) e grava o resultado em Progresso. O
 // XP só é somado em Usuario.xpTotal na primeira vez que o jogador acerta
@@ -361,29 +436,29 @@ async function responderDesafio({
 
   // Primeira vitória: moedas pra Lojinha do Mago e, se houver um Elixir do
   // Sábio ativo, ele é gasto e o XP dobra (ver loja.service.js).
-  let moedasGanhas = 0;
-  let elixirUsado = false;
-  if (primeiraVezConcluindo) {
-    moedasGanhas = moedasDaVitoria(desafio.dificuldade, acertouDePrimeira);
-    elixirUsado = await consumirElixir(usuarioId);
-    if (elixirUsado) dados.xpGanho *= 2;
+  // Gravação atômica (ver gravarResposta): só a requisição que de fato
+  // conclui o desafio ganha XP, moedas e gasta o Elixir do Sábio.
+  const { tentativas: _tentativasLidas, concluido: _concluidoLido, ...dadosConclusao } = dados;
+  const moedasPrevistas = primeiraVezConcluindo ? moedasDaVitoria(desafio.dificuldade, acertouDePrimeira) : 0;
+  const gravado = await gravarResposta({
+    usuarioId,
+    desafioId: idDesafio,
+    existe: Boolean(progressoAnterior),
+    concluindo: primeiraVezConcluindo,
+    dadosConclusao,
+    moedas: moedasPrevistas,
+  });
+  const { progresso, concluiu: concluiuAgora, elixirUsado } = gravado;
+  // perdeu a disputa pra outra requisição igual: esta não concede nada
+  const perdeuDisputa = primeiraVezConcluindo && !concluiuAgora;
+  if (!concluiuAgora) {
+    xpBase = 0;
+    bonusVelocidade = 0;
+    bonusPrimeiraTentativa = 0;
+    bonusDificuldade = 0;
   }
-
-  const progresso = progressoAnterior
-    ? await prisma.progresso.update({
-        where: { usuarioId_desafioId: { usuarioId, desafioId: idDesafio } },
-        data: dados,
-      })
-    : await prisma.progresso.create({
-        data: { usuarioId, desafioId: idDesafio, ...dados },
-      });
-
-  if (primeiraVezConcluindo) {
-    await prisma.usuario.update({
-      where: { id: usuarioId },
-      data: { xpTotal: { increment: dados.xpGanho }, moedas: { increment: moedasGanhas } },
-    });
-  }
+  const moedasGanhas = concluiuAgora ? moedasPrevistas : 0;
+  const xpConcedidoAgora = concluiuAgora ? progresso.xpGanho : 0;
 
   // Recompensa em item: entra no inventário se o jogador ainda não tem esse
   // item — não depende de ser a primeira conclusão. Antes só a primeira
@@ -410,7 +485,7 @@ async function responderDesafio({
     concluido: progresso.concluido,
     tentativas: progresso.tentativas,
     xpGanho: progresso.xpGanho,
-    xpConcedidoAgora: dados.xpGanho ?? 0,
+    xpConcedidoAgora,
     // Detalhamento de como xpConcedidoAgora foi calculado — só faz sentido
     // quando essa resposta concedeu XP de fato (fora disso vem tudo zerado).
     xpBase,
@@ -420,12 +495,12 @@ async function responderDesafio({
     // multiplicador aplicado — a tela de vitória mostra o "x2".
     bonusDificuldade,
     multiplicadorXp: regrasDaDificuldade(desafio.dificuldade).multiplicadorXp,
-    acertouDePrimeira: primeiraVezConcluindo ? acertouDePrimeira : false,
+    acertouDePrimeira: concluiuAgora ? acertouDePrimeira : false,
     tempoSegundos: progresso.tempoSegundos,
     itemGanho,
     // Desafio REFEITO: já tinha sido concluído antes desta resposta (a tela
     // de recompensa mostra um elogio por ter vencido de novo).
-    jaConcluidoAntes: correta && jaEstavaConcluido,
+    jaConcluidoAntes: correta && (jaEstavaConcluido || perdeuDisputa),
     // O item do desafio já estava no inventário — nada foi acrescentado.
     recompensaJaRecebida,
     // Só nos desafios dissertativos: explicação da IA sobre a correção.
@@ -531,25 +606,31 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
       : null;
   }
 
-  // Mesmas moedas e Elixir do Sábio dos desafios de etapa única.
-  let moedasGanhas = 0;
-  let elixirUsado = false;
-  if (concluiAgora) {
-    moedasGanhas = moedasDaVitoria(desafio.dificuldade, semErros);
-    elixirUsado = await consumirElixir(usuarioId);
-    if (elixirUsado) dados.xpGanho *= 2;
+  // Mesmas moedas e Elixir do Sábio dos desafios de etapa única, com a
+  // mesma gravação atômica (ver gravarResposta). A conclusão só vale se, no
+  // banco, todas as etapas anteriores já estiverem vencidas.
+  const { tentativas: _tentativasLidas, concluido: _concluidoLido, ...dadosConclusao } = dados;
+  const moedasPrevistas = concluiAgora ? moedasDaVitoria(desafio.dificuldade, semErros) : 0;
+  const gravado = await gravarResposta({
+    usuarioId,
+    desafioId: desafio.id,
+    existe: Boolean(progressoAnterior),
+    concluindo: concluiAgora,
+    dadosConclusao,
+    dadosTentativa: correta && !jaConcluido && !ultimaEtapa ? { etapasConcluidas: numeroEtapa } : {},
+    moedas: moedasPrevistas,
+    condicao: { etapasConcluidas: totalEtapas - 1 },
+  });
+  const { progresso, concluiu: concluiuAgora, elixirUsado } = gravado;
+  const perdeuDisputa = concluiAgora && !concluiuAgora;
+  if (!concluiuAgora) {
+    xpBase = 0;
+    bonusVelocidade = 0;
+    bonusPrimeiraTentativa = 0;
+    bonusDificuldade = 0;
   }
-
-  const progresso = progressoAnterior
-    ? await prisma.progresso.update({ where: chave, data: dados })
-    : await prisma.progresso.create({ data: { usuarioId, desafioId: desafio.id, ...dados } });
-
-  if (concluiAgora) {
-    await prisma.usuario.update({
-      where: { id: usuarioId },
-      data: { xpTotal: { increment: dados.xpGanho }, moedas: { increment: moedasGanhas } },
-    });
-  }
+  const moedasGanhas = concluiuAgora ? moedasPrevistas : 0;
+  const xpConcedidoAgora = concluiuAgora ? progresso.xpGanho : 0;
 
   // Recompensa só ao vencer a última etapa (primeira vez ou refazendo).
   let itemGanho = null;
@@ -570,16 +651,16 @@ async function responderEtapa({ usuarioId, desafio, etapa, resposta, tempoSegund
     concluido: progresso.concluido,
     tentativas: progresso.tentativas,
     xpGanho: progresso.xpGanho,
-    xpConcedidoAgora: dados.xpGanho ?? 0,
+    xpConcedidoAgora,
     xpBase,
     bonusVelocidade,
     bonusPrimeiraTentativa,
     bonusDificuldade,
     multiplicadorXp: regrasDaDificuldade(desafio.dificuldade).multiplicadorXp,
-    acertouDePrimeira: concluiAgora ? semErros : false,
+    acertouDePrimeira: concluiuAgora ? semErros : false,
     tempoSegundos: progresso.tempoSegundos,
     itemGanho,
-    jaConcluidoAntes: correta && ultimaEtapa && jaConcluido,
+    jaConcluidoAntes: correta && ultimaEtapa && (jaConcluido || perdeuDisputa),
     recompensaJaRecebida,
     feedbackIA,
     moedasGanhas,

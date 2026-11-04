@@ -2,13 +2,13 @@ const authService = require("../services/auth.service");
 
 async function cadastrar(req, res, next) {
   try {
-    const { nome, email, senha, idade } = req.body;
+    const { nome, email, senha, idade, aceiteTermos } = req.body;
 
     if (!nome || !email || !senha || idade === undefined || idade === null || idade === "") {
       return res.status(400).json({ erro: "Nome, email, senha e idade são obrigatórios." });
     }
 
-    const resultado = await authService.cadastrar({ nome, email, senha, idade });
+    const resultado = await authService.cadastrar({ nome, email, senha, idade, aceiteTermos });
     return res.status(201).json(resultado);
   } catch (erro) {
     next(erro);

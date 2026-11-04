@@ -4,6 +4,7 @@ import BotaoPixel from "../../components/BotaoPixel";
 import { PainelVolume } from "../../components/ControleMusica";
 import personagemIcon from "../../assets/images/personagem.png";
 import portaIcon from "../../assets/images/porta.png";
+import LinksLegais from "../../components/LinksLegais";
 import "./Configuracoes.css";
 
 function Configuracoes() {
@@ -41,6 +42,15 @@ function Configuracoes() {
         <section className="configuracoes-secao">
           <h2 className="configuracoes-secao-titulo">Som</h2>
           <PainelVolume className="configuracoes-musica" />
+        </section>
+
+        {/* Privacidade (LGPD): política, termos e onde exercer os direitos */}
+        <section className="configuracoes-secao">
+          <h2 className="configuracoes-secao-titulo">Privacidade</h2>
+          <p className="configuracoes-texto-privacidade">
+            Para baixar ou excluir seus dados, vá em Conta. Saiba como cuidamos deles:
+          </p>
+          <LinksLegais />
         </section>
 
         {/* Seção de Ações (embaixo, próximo ao footer) */}

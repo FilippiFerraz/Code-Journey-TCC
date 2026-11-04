@@ -175,6 +175,13 @@ function booleano(valor, rotulo) {
   throw erroDeValidacao(`O campo "${rotulo}" deve ser verdadeiro ou falso.`);
 }
 
+// Caixa de aceite obrigatória (ex: Termos de Uso / Política de Privacidade
+// no cadastro): só passa se vier marcada.
+function aceiteObrigatorio(valor) {
+  if (valor === true || valor === "true") return true;
+  throw erroDeValidacao("Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.");
+}
+
 function umDe(valoresPermitidos) {
   return (valor, rotulo) => {
     if (!valoresPermitidos.includes(valor)) {
@@ -219,6 +226,7 @@ function objeto(esquema) {
 
 module.exports = {
   erroDeValidacao,
+  aceiteObrigatorio,
   opcional,
   texto,
   nome,

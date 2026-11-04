@@ -23,9 +23,10 @@ function erroDeValidacao(mensagem) {
   return erro;
 }
 
-function gerarCodigo() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
+// gerarCodigo (criptográfico) e conferirCodigo (limite de tentativas por
+// código, no banco) — ver utils/codigos.js
+const { gerarCodigo, conferirCodigo } = require("../utils/codigos");
+const { anonimizarConta } = require("./privacidade.service");
 
 // Quantos dias faltam pra poder alterar de novo (0 = já pode).
 function diasRestantes(ultimaAlteracao) {
@@ -134,6 +135,7 @@ async function solicitarTrocaEmail(usuarioId, { novoEmail, senha }) {
       emailPendente: emailLimpo,
       codigoTrocaEmail: codigo,
       codigoTrocaEmailExpiraEm: new Date(Date.now() + CODIGO_VALIDO_MINUTOS * 60 * 1000),
+      codigoTrocaEmailTentativas: 0,
     },
   });
 
@@ -158,12 +160,16 @@ async function confirmarTrocaEmail(usuarioId, codigo) {
   if (!usuario.emailPendente || !usuario.codigoTrocaEmail) {
     throw erroDeValidacao("Não há nenhuma troca de e-mail em andamento.");
   }
-  if (!usuario.codigoTrocaEmailExpiraEm || usuario.codigoTrocaEmailExpiraEm < new Date()) {
-    throw erroDeValidacao("O código expirou. Peça um novo código.");
-  }
-  if (String(codigo ?? "").trim() !== usuario.codigoTrocaEmail) {
-    throw erroDeValidacao("Código incorreto.");
-  }
+  await conferirCodigo(usuario, String(codigo ?? "").trim(), {
+    campos: {
+      codigo: "codigoTrocaEmail",
+      expiraEm: "codigoTrocaEmailExpiraEm",
+      tentativas: "codigoTrocaEmailTentativas",
+    },
+    // código queimado = a troca inteira é cancelada
+    descartar: ["emailPendente"],
+    mensagens: { expirado: "O código expirou. Peça um novo código." },
+  });
 
   // Confere de novo: alguém pode ter se cadastrado com esse e-mail enquanto
   // o código estava pendente.
@@ -187,6 +193,7 @@ async function confirmarTrocaEmail(usuarioId, codigo) {
       emailPendente: null,
       codigoTrocaEmail: null,
       codigoTrocaEmailExpiraEm: null,
+      codigoTrocaEmailTentativas: 0,
     },
   });
   return formatarConta(atualizado);
@@ -214,7 +221,9 @@ async function excluirConta(usuarioId, { senha, confirmacao }) {
   }
   await conferirSenha(usuario, senha);
 
-  await prisma.usuario.delete({ where: { id: usuarioId } });
+  // LGPD: anonimiza nome, e-mail, idade e senha de forma irreversível (ver
+  // privacidade.service.js) — antes só escondia a conta e guardava tudo.
+  await anonimizarConta(usuarioId);
   esquecerConta(usuarioId);
   return { excluida: true };
 }

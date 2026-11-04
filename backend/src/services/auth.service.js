@@ -3,6 +3,9 @@ const prisma = require("../config/prisma");
 const { gerarToken } = require("../utils/jwt");
 const { enviarEmailRecuperacao, enviarEmailVerificacao } = require("./email.service");
 const { registrarTentativaLogin } = require("./loginHistorico.service");
+const { gerarCodigo, conferirCodigo } = require("../utils/codigos");
+const { esquecerConta } = require("../utils/sessaoCache");
+const { VERSAO_TERMOS } = require("../config/privacidade");
 
 const SALT_ROUNDS = 10;
 const CODIGO_VALIDO_MINUTOS = 15;
@@ -13,8 +16,45 @@ function erroDeValidacao(mensagem) {
   return erro;
 }
 
-function gerarCodigo() {
-  return String(Math.floor(100000 + Math.random() * 900000));
+// Força bruta no login: o limite por IP (rateLimit.middleware.js) fica na
+// memória de cada instância da Vercel e o atacante pode trocar de IP. Este
+// limite é POR CONTA e usa o histórico de login que já fica no banco:
+// muitas senhas erradas seguidas pro mesmo e-mail bloqueiam novas tentativas
+// por alguns minutos (o dono da conta também espera, mas a senha não cai).
+const LOGIN_FALHAS_MAXIMAS = 8;
+const LOGIN_JANELA_MINUTOS = 15;
+
+async function contaBloqueadaPorTentativas(email) {
+  const desde = new Date(Date.now() - LOGIN_JANELA_MINUTOS * 60 * 1000);
+  const ultimoSucesso = await prisma.loginHistorico.findFirst({
+    where: { emailTentado: email, sucesso: true, criadoEm: { gte: desde } },
+    orderBy: { criadoEm: "desc" },
+    select: { criadoEm: true },
+  });
+  const falhas = await prisma.loginHistorico.count({
+    where: {
+      emailTentado: email,
+      sucesso: false,
+      motivoFalha: "Senha incorreta",
+      criadoEm: { gte: ultimoSucesso?.criadoEm ?? desde },
+    },
+  });
+  return falhas >= LOGIN_FALHAS_MAXIMAS;
+}
+
+// Hash de uma senha qualquer, comparado quando o e-mail não existe: assim o
+// tempo de resposta é o mesmo de uma senha errada e não denuncia quais
+// e-mails têm conta.
+// (hash fixo de uma senha aleatória descartada — calcular na partida custaria
+// ~70 ms a cada instância nova da Vercel)
+const HASH_FICTICIO = "$2a$10$iUXT7UniE./EwKAZcsVt4e6F0OVGbFihcMOlcfO/OTYrYUAR6sTSS";
+
+function erroMuitasTentativas() {
+  const erro = new Error(
+    `Muitas tentativas de login nesta conta. Aguarde ${LOGIN_JANELA_MINUTOS} minutos ou redefina sua senha.`
+  );
+  erro.status = 429;
+  return erro;
 }
 
 // Formato, tamanho e força de nome/e-mail/senha/idade/código são validados
@@ -40,7 +80,12 @@ function erroDeEnvioDeEmail(causa) {
   return erro;
 }
 
-async function cadastrar({ nome, email, senha, idade }) {
+async function cadastrar({ nome, email, senha, idade, aceiteTermos }) {
+  // a rota já exige (esquemas.js); conferido de novo por ser base do tratamento
+  if (aceiteTermos !== true) {
+    throw erroDeValidacao("Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.");
+  }
+
   // semFiltro: o e-mail de uma conta excluída (soft delete) continua
   // ocupado no banco (Usuario.email é único) — sem isso, o create abaixo
   // estourava erro 500 em vez desta mensagem.
@@ -64,6 +109,9 @@ async function cadastrar({ nome, email, senha, idade }) {
       idade,
       codigoVerificacao: codigo,
       codigoVerificacaoExpiraEm: expiraEm,
+      // LGPD: registro de quando e qual versão dos termos foi aceita
+      termosAceitosEm: new Date(),
+      termosVersao: VERSAO_TERMOS,
     },
   });
 
@@ -117,6 +165,9 @@ async function login({ email, senha, ip, userAgent }) {
   const usuario = usuarioBruto?.deletedAt ? null : usuarioBruto;
 
   if (!usuario) {
+    // mesmo custo de uma senha errada: o tempo de resposta não denuncia
+    // quais e-mails têm conta
+    await bcrypt.compare(senha, HASH_FICTICIO);
     // Busca sem o filtro de soft delete só pra saber se é uma conta
     // desativada (pra vincular usuarioId/nomeUsuario no histórico mesmo
     // nesse caso) — não muda a mensagem de erro nem o comportamento do login.
@@ -147,6 +198,19 @@ async function login({ email, senha, ip, userAgent }) {
     const erro = new Error("Email ou senha inválidos.");
     erro.status = 401;
     throw erro;
+  }
+
+  if (await contaBloqueadaPorTentativas(email)) {
+    await registrarTentativa({
+      usuarioId: usuario.id,
+      nomeUsuario: usuario.nome,
+      emailTentado: email,
+      sucesso: false,
+      motivoFalha: "Bloqueado por excesso de tentativas",
+      ip,
+      userAgent,
+    });
+    throw erroMuitasTentativas();
   }
 
   const senhaValida = await bcrypt.compare(senha, usuario.senha);
@@ -183,7 +247,7 @@ async function login({ email, senha, ip, userAgent }) {
     throw erro;
   }
 
-  const token = gerarToken({ id: usuario.id });
+  const token = gerarToken({ id: usuario.id, v: usuario.sessaoVersao });
 
   await registrarTentativa({
     usuarioId: usuario.id,
@@ -205,17 +269,13 @@ async function login({ email, senha, ip, userAgent }) {
 async function verificarEmailCadastro({ email, codigo }) {
   const usuario = await buscarPorEmail(email);
 
-  if (!usuario || !usuario.codigoVerificacao || !usuario.codigoVerificacaoExpiraEm) {
-    throw erroDeValidacao("Código inválido. Peça um novo código.");
-  }
-
-  if (usuario.codigoVerificacao !== codigo) {
-    throw erroDeValidacao("Código incorreto.");
-  }
-
-  if (new Date() > usuario.codigoVerificacaoExpiraEm) {
-    throw erroDeValidacao("Código expirado. Peça um novo código.");
-  }
+  await conferirCodigo(usuario, codigo, {
+    campos: {
+      codigo: "codigoVerificacao",
+      expiraEm: "codigoVerificacaoExpiraEm",
+      tentativas: "codigoVerificacaoTentativas",
+    },
+  });
 
   const usuarioAtualizado = await prisma.usuario.update({
     where: { id: usuario.id },
@@ -223,10 +283,11 @@ async function verificarEmailCadastro({ email, codigo }) {
       emailVerificado: true,
       codigoVerificacao: null,
       codigoVerificacaoExpiraEm: null,
+      codigoVerificacaoTentativas: 0,
     },
   });
 
-  const token = gerarToken({ id: usuarioAtualizado.id });
+  const token = gerarToken({ id: usuarioAtualizado.id, v: usuarioAtualizado.sessaoVersao });
 
   return {
     usuario: {
@@ -255,7 +316,7 @@ async function reenviarVerificacaoEmail({ email }) {
 
   await prisma.usuario.update({
     where: { id: usuario.id },
-    data: { codigoVerificacao: codigo, codigoVerificacaoExpiraEm: expiraEm },
+    data: { codigoVerificacao: codigo, codigoVerificacaoExpiraEm: expiraEm, codigoVerificacaoTentativas: 0 },
   });
 
   try {
@@ -285,7 +346,7 @@ async function esqueciSenha({ email }) {
 
   await prisma.usuario.update({
     where: { id: usuario.id },
-    data: { codigoRecuperacao: codigo, codigoExpiraEm: expiraEm },
+    data: { codigoRecuperacao: codigo, codigoExpiraEm: expiraEm, codigoRecuperacaoTentativas: 0 },
   });
 
   try {
@@ -301,19 +362,18 @@ async function esqueciSenha({ email }) {
 async function validarCodigoRecuperacao(email, codigo) {
   const usuario = await buscarPorEmail(email);
 
-  if (!usuario || !usuario.codigoRecuperacao || !usuario.codigoExpiraEm) {
-    throw erroDeValidacao("Código inválido. Solicite um novo código.");
-  }
-
-  if (usuario.codigoRecuperacao !== codigo) {
-    throw erroDeValidacao("Código incorreto.");
-  }
-
-  if (new Date() > usuario.codigoExpiraEm) {
-    throw erroDeValidacao("Código expirado. Solicite um novo código.");
-  }
-
-  return usuario;
+  // limite de tentativas POR CÓDIGO, no banco (ver utils/codigos.js)
+  return conferirCodigo(usuario, codigo, {
+    campos: {
+      codigo: "codigoRecuperacao",
+      expiraEm: "codigoExpiraEm",
+      tentativas: "codigoRecuperacaoTentativas",
+    },
+    mensagens: {
+      semCodigo: "Código inválido. Solicite um novo código.",
+      expirado: "Código expirado. Solicite um novo código.",
+    },
+  });
 }
 
 async function verificarCodigo({ email, codigo }) {
@@ -325,15 +385,20 @@ async function redefinirSenha({ email, codigo, novaSenha }) {
   const usuario = await validarCodigoRecuperacao(email, codigo);
   const senhaHash = await bcrypt.hash(novaSenha, SALT_ROUNDS);
 
-  // Salva a nova senha e queima o código, para não poder ser usado de novo
+  // Salva a nova senha e queima o código, para não poder ser usado de novo.
+  // sessaoVersao + 1 derruba todas as sessões abertas (tokens antigos) — se
+  // a senha foi trocada porque alguém invadiu a conta, o invasor sai junto.
   await prisma.usuario.update({
     where: { id: usuario.id },
     data: {
       senha: senhaHash,
       codigoRecuperacao: null,
       codigoExpiraEm: null,
+      codigoRecuperacaoTentativas: 0,
+      sessaoVersao: { increment: 1 },
     },
   });
+  esquecerConta(usuario.id);
 
   return { mensagem: "Senha redefinida com sucesso." };
 }

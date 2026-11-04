@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { IDADE_MINIMA } from "../../data/privacidade";
 import logo from "../../assets/images/logo.webp";
 import api from "../../services/api";
 import BotaoPixel from "../../components/BotaoPixel";
@@ -18,6 +19,7 @@ import "./Cadastro.css";
 
 function Cadastro() {
   const [nome, setNome] = useState("");
+  const [aceiteTermos, setAceiteTermos] = useState(false);
   const [idade, setIdade] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -51,11 +53,23 @@ function Cadastro() {
       return;
     }
 
+    // LGPD: o backend também exige e registra o aceite (data e versão)
+    if (!aceiteTermos) {
+      setErro("Para criar a conta, leia e aceite os Termos de Uso e a Política de Privacidade.");
+      return;
+    }
+
     try {
       setCarregando(true);
 
       const emailLimpo = email.trim().toLowerCase();
-      await api.post("/auth/cadastro", { nome: nome.trim(), email: emailLimpo, senha, idade: idadeNumero });
+      await api.post("/auth/cadastro", {
+        nome: nome.trim(),
+        email: emailLimpo,
+        senha,
+        idade: idadeNumero,
+        aceiteTermos,
+      });
 
       // Sem login automático — a conta só fica ativa depois de confirmar
       // o código enviado por e-mail.
@@ -159,6 +173,21 @@ function Cadastro() {
             value={confirmarSenha}
             onChange={(e) => setConfirmarSenha(e.target.value)}
           />
+
+          {/* LGPD: aceite explícito (caixa nunca vem marcada) */}
+          <label className="cadastro-aceite" htmlFor="aceiteTermos">
+            <input
+              id="aceiteTermos"
+              type="checkbox"
+              checked={aceiteTermos}
+              onChange={(e) => setAceiteTermos(e.target.checked)}
+            />
+            <span>
+              Tenho {IDADE_MINIMA} anos ou mais e li e aceito os{" "}
+              <Link to="/termos" target="_blank" rel="noopener">Termos de Uso</Link> e a{" "}
+              <Link to="/privacidade" target="_blank" rel="noopener">Política de Privacidade</Link>.
+            </span>
+          </label>
 
           {erro && <p className="login-erro login-erro-cadastro">{erro}</p>}
 

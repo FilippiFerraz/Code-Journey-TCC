@@ -48,11 +48,15 @@ function porChave(arquivos) {
   );
 }
 
+// ?no-inline: cada desenho vira um arquivo próprio (cacheado pelo navegador
+// para sempre), baixado só quando aparece na tela. Antes os 88 PNGs pequenos
+// eram embutidos em base64 neste módulo (~95 KB de JS, ~60 KB comprimido)
+// e TODO jogador baixava todos antes de ver o herói — mesmo usando 3 itens.
 const CAMADAS = porChave(
-  import.meta.glob("../assets/personagem/camadas/**/*.png", { eager: true, import: "default" })
+  import.meta.glob("../assets/personagem/camadas/**/*.png", { eager: true, import: "default", query: "?no-inline" })
 );
 const ICONES = porChave(
-  import.meta.glob("../assets/personagem/icones/**/*.png", { eager: true, import: "default" })
+  import.meta.glob("../assets/personagem/icones/**/*.png", { eager: true, import: "default", query: "?no-inline" })
 );
 
 // Itens criados antes das camadas guardavam o NOME DO ARQUIVO do sprite

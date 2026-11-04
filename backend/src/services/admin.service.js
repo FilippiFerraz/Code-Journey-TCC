@@ -132,6 +132,12 @@ async function alterarAtivo(admin, usuarioId, ativo) {
   const usuario = await buscarUsuarioOuFalhar(usuarioId);
   const ativoAntes = !usuario.deletedAt;
 
+  // Conta excluída pelo próprio jogador já foi anonimizada (LGPD — ver
+  // privacidade.service.js::anonimizarConta): não há o que reativar.
+  if (ativo && usuario.email.endsWith("@conta-excluida.invalid")) {
+    throw erroDeValidacao("Esta conta foi excluída pelo próprio jogador e anonimizada — não pode ser reativada.");
+  }
+
   const atualizado = await prisma.semFiltro.usuario.update({
     where: { id: usuarioId },
     data: { deletedAt: ativo ? null : new Date() },
@@ -252,7 +258,10 @@ async function liberarTudoParaUsuario(admin, usuarioId) {
 // que a tabela de administração mostra — sem paginação, pra sair tudo que
 // bate com a busca de uma vez. Devolve o arquivo já como Buffer, pronto
 // pro controller mandar como download.
-async function exportarUsuariosXlsx({ busca }) {
+// "admin": quem exportou — a planilha tem nome e e-mail de todos os
+// jogadores, então cada exportação fica registrada no log de auditoria
+// (LGPD, art. 37: registro das operações de tratamento).
+async function exportarUsuariosXlsx({ busca }, admin) {
   const usuarios = await prisma.semFiltro.usuario.findMany({
     where: construirFiltroBusca(busca),
     select: {
@@ -302,6 +311,19 @@ async function exportarUsuariosXlsx({ busca }) {
       criadoEm: usuario.criadoEm ? usuario.criadoEm.toLocaleDateString("pt-BR") : "—",
     });
   });
+
+  if (admin) {
+    await registrarLog({
+      usuarioId: admin.id,
+      nomeUsuario: admin.nome,
+      role: admin.role,
+      acao: "usuario.exportar",
+      entidade: "Usuario",
+      entidadeId: null,
+      descricao: `Exportou a planilha de usuários (${usuarios.length} registro(s)${busca ? `, busca "${busca}"` : ""}).`,
+      alteracoes: null,
+    });
+  }
 
   return workbook.xlsx.writeBuffer();
 }
